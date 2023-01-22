@@ -1,0 +1,10 @@
+{
+  "extends": "@bluryar/tsconfig/tsconfig.web.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": [
+    "src/is-web.ts",
+    "./src/misc.ts"
+  ]
+}

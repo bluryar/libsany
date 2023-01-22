@@ -1,0 +1,11 @@
+{
+  "extends": "@bluryar/tsconfig/tsconfig.json",
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.d.ts",
+    "../env.d.ts"
+  ],
+  "references": [
+    { "path": "./tsconfig.web.json" }
+  ]
+}

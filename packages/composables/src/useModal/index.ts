@@ -1,0 +1,5 @@
+const useModal = () => {}
+
+export {
+  useModal,
+}

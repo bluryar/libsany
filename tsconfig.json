@@ -1,0 +1,6 @@
+{
+  "extends": "@bluryar/tsconfig/tsconfig.json",
+  "include": [
+    "vitest.config.ts"
+  ]
+}

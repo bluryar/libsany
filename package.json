@@ -1,0 +1,72 @@
+{
+  "name": "@bluryar/libsany",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "⚙️ Vue3开发者自用的常用工具库",
+  "author": "bluryar <bluryarl@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/bluryar/libsany#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluryar/libsany.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bluryar/libsany/issues"
+  },
+  "keywords": [
+    "libs",
+    "vue3",
+    "ts",
+    "utils"
+  ],
+  "scripts": {
+    "dev": "nr -F playground dev",
+    "build": "nr -r build",
+    "stub": "nr -r stub",
+    "test": "vitest",
+    "test:watch": "vitest -w",
+    "check:types": "tsc --noEmit",
+    "clear:modules": "rimraf ./node_modules && rimraf ./packages/*/node_modules",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "bump:patch": "nr -r bump:patch && npx bumpp patch --all --yes",
+    "bump:minor": "nr -r bump:minor && npx bumpp minor --all --yes",
+    "bump:major": "nr -r bump:major && npx bumpp major --all --yes",
+    "release": "nr -r release",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@antfu/ni": "^0.18.8",
+    "@bluryar/commitlint-config": "^1.0.5",
+    "@bluryar/eslint-config-vue": "^1.0.5",
+    "@bluryar/shared": "workspace:*",
+    "@bluryar/tsconfig": "^1.0.5",
+    "@commitlint/config-conventional": "^17.4.2",
+    "@types/lodash-es": "^4.17.6",
+    "bumpp": "^8.2.1",
+    "commitizen": "^4.2.6",
+    "commitlint": "^17.4.2",
+    "cross-env": "^7.0.3",
+    "cz-git": "^1.4.1",
+    "eslint": "^8.32.0",
+    "husky": "^8.0.3",
+    "jsdom": "^21.0.0",
+    "lint-staged": "^13.1.0",
+    "lodash-es": "^4.17.21",
+    "pnpm": "^7.25.1",
+    "taze": "^0.8.5",
+    "tsx": "^3.12.2",
+    "typescript": "^4.9.4",
+    "unbuild": "^1.1.1",
+    "vitest": "^0.27.2"
+  },
+  "lint-staged": {
+    "*.{vue,js,jsx,ts,tsx,cjs,mjs,cts,mts,yaml,md,yml}": "eslint"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-git"
+    }
+  }
+}

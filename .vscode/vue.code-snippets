@@ -1,0 +1,19 @@
+{
+	"⚡vue-script-setup": {
+		"prefix": "<sc",
+		"description": "⚡vue 组合式API 语法糖",
+		"scope": "vue",
+		"body": [
+			"<script setup lang=\"ts\">",
+			"",
+			"</script>",
+			"",
+			"<template>",
+			"  <div>",
+			"    <slot />",
+			"  </div>",
+			"</template>",
+			""
+		]
+	}
+}
