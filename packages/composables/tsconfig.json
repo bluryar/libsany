@@ -1,12 +1,11 @@
 {
-  "extends": "@bluryar/tsconfig/tsconfig.web.json",
+  "extends": "@bluryar/tsconfig/tsconfig.json",
   "compilerOptions": {
     "jsx": "preserve"
   },
   "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx",
-    "./src/**/*.d.ts",
+    "index.ts",
+    "./src",
     "../env.d.ts"
   ]
 }

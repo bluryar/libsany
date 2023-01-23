@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import * as Is from './is'
+import * as Is from '../src/is'
 
 describe('function: isString', () => {
   it('should return boolean', () => {

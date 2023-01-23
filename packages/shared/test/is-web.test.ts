@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import * as Is from './is-web'
+import * as Is from '../src/is-web'
 
 describe('constant: isWebClient', () => {
   it('should be true', () => {

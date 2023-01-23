@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import * as Misc from './misc'
+import * as Misc from '../src/misc'
 
 describe('function: NOOP', () => {
   it('should not return empty object and be a dry run function', () => {

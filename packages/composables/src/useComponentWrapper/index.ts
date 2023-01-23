@@ -1,23 +1,19 @@
 import { type MaybeComputedRef, resolveUnref } from '@vueuse/core'
-import { type AllowedComponentProps, type Component, type VNodeProps, defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue'
+import type { Component } from 'vue'
+import { defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue'
 import { isNull, merge } from 'lodash-es'
-
-type DefineProps<Props = object> = Props & AllowedComponentProps & VNodeProps
-type DefineLooseProps<Props = object> = Partial<DefineProps<Props>>
-
-interface UseComponentWrapperOptions<Props = object> {
-  component: Component<Props> | ({
-    new (): {
-      $props: DefineLooseProps<Props>
-      [key: string]: any
-    }
-  })
-  state?: MaybeComputedRef<DefineLooseProps<Props>>
-}
-type UseComponentWrapperReturn<Props = object> = ReturnType<typeof useComponentWrapper<Props>>
+import type { DefineLooseProps, UseComponentWrapperOptions, UseComponentWrapperReturn } from './types'
 
 /**
  * @desc - 使用 `defineComponent` 创建一个包裹组件，函数将返回新声明的组件 `Wrapper` 和 原组件需要绑定的Props `getState`。
+ *
+ * props的优先级（高到低）：
+ *
+ * 1. 在模板或者JSX或者h函数中传递的Props
+ * 2. 通过 `invoke` 传递参数
+ * 3. 通过 `useComponentWrapper` 传递的参数
+ *
+ * ---
  *
  * **1. 一般用法**
  *
@@ -43,6 +39,8 @@ type UseComponentWrapperReturn<Props = object> = ReturnType<typeof useComponentW
  * setTimeout(() => { invoke(() => ({ foo:4 })) }, 1000)
  * ```
  *
+ * ---
+ *
  * **2. 异步组件**
  *
  * @example
@@ -55,7 +53,7 @@ type UseComponentWrapperReturn<Props = object> = ReturnType<typeof useComponentW
  * })
  * ```
  */
-const useComponentWrapper = <Props = object>({
+const useComponentWrapper = <Props = Record<string, any>>({
   component,
   state = () => ({}),
 }: UseComponentWrapperOptions<Props>) => {
@@ -68,13 +66,17 @@ const useComponentWrapper = <Props = object>({
   const ivkState = shallowRef<DefineLooseProps<Props>>({})
   const resolveState = () => merge({}, resolveUnref(ivkState), resolveUnref(cmpState), resolveUnref(state))
 
-  const Wrapper = defineComponent<DefineLooseProps<Props>>((props, ctx) => {
-    cmpState.value = mergeProps({}, ctx.attrs, props)
-    return () => h(component as Component, resolveUnref(resolveState))
+  const Wrapper = defineComponent<DefineLooseProps<Props>>({
+    name: 'UseComponentWrapper',
+    __name: 'UseComponentWrapper',
+    setup(props, ctx) {
+      cmpState.value = mergeProps({}, ctx.attrs, props as any)
+      return () => h(component as Component, resolveUnref(resolveState), ctx.slots)
+    },
   })
 
-  function invoke(state: MaybeComputedRef<DefineLooseProps<Props>>) {
-    ivkState.value = merge({}, resolveUnref(state))
+  function invoke(state?: MaybeComputedRef<Partial<Props>>) {
+    ivkState.value = resolveUnref(state)
   }
 
   return {

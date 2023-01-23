@@ -1,11 +1,14 @@
 {
   "extends": "@bluryar/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "DOM", "ES2022", "ESNext"
+    ]
+  },
   "include": [
-    "./src/**/*.ts",
-    "./src/**/*.d.ts",
+    "test",
+    "src",
+    "./index.ts",
     "../env.d.ts"
-  ],
-  "references": [
-    { "path": "./tsconfig.web.json" }
   ]
 }

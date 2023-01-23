@@ -1,2 +1,2 @@
 export * from './useComponentWrapper'
-export * from './useModal'
+export * from './useDialog'

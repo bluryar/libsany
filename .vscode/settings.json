@@ -252,6 +252,8 @@
     "bumpp",
     "commitlintrc",
     "esbuild",
+    "unref",
     "vueuse"
-  ]
+  ],
+  "references.preferredLocation": "peek"
 }

@@ -30,7 +30,8 @@
     "vivaxy.vscode-conventional-commits",
     "zjffun.snippetsmanager",
     "wmaurer.change-case",
-    "zixuanchen.vitest-explorer"
+    "zixuanchen.vitest-explorer",
+    "johnsoncodehk.vscode-tsconfig-helper"
   ],
   "unwantedRecommendations": [
     "octref.vetur",

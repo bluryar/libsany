@@ -1,5 +1,0 @@
-const useModal = () => {}
-
-export {
-  useModal,
-}
