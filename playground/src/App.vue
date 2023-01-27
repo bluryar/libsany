@@ -6,6 +6,7 @@ import { defineAsyncComponent, h, ref, unref } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
 
 const foo = ref(10)
+const obj = ref({ test: 1 })
 const Comp = defineAsyncComponent(() => import('@/components/AsyncComponent.vue'))
 const AsyncCmp: FunctionalComponent<{ foo: number }> = () => h('div', '123')
 
@@ -19,7 +20,7 @@ invoke(() => ({}))
 
 <template>
   <header>
-    <AsyncComponent v-model:foo="foo" @click="() => {}" />
+    <AsyncComponent v-model:foo="foo" v-model:obj="obj" @click="() => {}" />
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125">
 
     <div class="wrapper">

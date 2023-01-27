@@ -255,5 +255,10 @@
     "unref",
     "vueuse"
   ],
-  "references.preferredLocation": "peek"
+  "references.preferredLocation": "peek",
+  "volar.diagnostics.delay": 300,
+  "volar.doctor.checkVueTsc": false,
+  "volar.icon.preview": false,
+  "volar.icon.splitEditors": true,
+  "volar.vueserver.disableFileWatcher": false
 }

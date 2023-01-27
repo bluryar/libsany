@@ -1,9 +1,9 @@
 import { resolveUnref } from '@vueuse/core'
-import type { MaybeComputedRef } from '@vueuse/core'
 import { ref } from 'vue'
 import { isUndefined } from 'lodash-es'
-import type { UseComponentWrapperOptions } from '../useComponentWrapper'
+import type { MaybeComputedRef } from '@vueuse/core'
 import { useComponentWrapper } from '../useComponentWrapper'
+import type { UseComponentWrapperOptions } from '../useComponentWrapper'
 
 interface UseDialogOptions<Props extends Record<string, any>> extends UseComponentWrapperOptions<Props> {
   /**
@@ -93,8 +93,8 @@ const useDialog = <Props extends Record<string, any>>(
   return {
     Dialog: Wrapper,
     visible,
-    getState,
-    invoke,
+    getDialogState: getState,
+    setDialogState: invoke,
     openDialog,
     closeDialog,
   }

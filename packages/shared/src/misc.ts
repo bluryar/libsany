@@ -14,3 +14,11 @@ export const toRawType = (value: unknown): string => {
   // extract "RawType" from strings like "[object RawType]"
   return toTypeString(value).slice(8, -1)
 }
+
+export const sleep = (ms: number) => {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, ms)
+  })
+}

@@ -1,3 +1,4 @@
+// require('@rushstack/eslint-patch/modern-module-resolution')
 // process.env.ESLINT_TSCONFIG = 'tsconfig.json'
 
 /**

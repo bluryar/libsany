@@ -6,7 +6,8 @@ export default defineBuildConfig({
   entries: [
     'src/index',
   ],
-  declaration: true,
+
+  declaration: !!1,
   clean: true,
   rollup: {
     emitCJS: true,
@@ -16,8 +17,7 @@ export default defineBuildConfig({
       },
     },
     inlineDependencies: !!1,
-
   },
 
-  externals: ['@vueuse/core', 'lodash-es', 'vue'],
+  externals: ['vue'],
 })

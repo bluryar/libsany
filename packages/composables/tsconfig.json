@@ -1,11 +1,26 @@
 {
-  "extends": "@bluryar/tsconfig/tsconfig.json",
+  "extends": "@bluryar/tsconfig/tsconfig.web.json",
   "compilerOptions": {
-    "jsx": "preserve"
+    "baseUrl": ".",
+    "jsx": "preserve",
+    "types": [
+      "node", "jsdom"
+    ],
+    "paths": {
+      "@bluryar/shared": ["../shared/index.ts"],
+      "@bluryar/shared/*": ["../shared/src/*"]
+    }
   },
   "include": [
+    "../env.d.ts",
     "index.ts",
-    "./src",
-    "../env.d.ts"
+    "*.config.ts",
+    "src"
+  ],
+  "exclude": [
+    "test",
+    "test/**/*.vue",
+    "test/**/*.test.ts",
+    "test/**/*.test.tsx"
   ]
 }

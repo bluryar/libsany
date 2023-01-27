@@ -33,3 +33,15 @@ describe('function: toRawType', () => {
     expect(Misc.toRawType('')).not.toBe('string')
   })
 })
+
+describe('function: misc', () => {
+  it('should return await 200ms', async () => {
+    let foo = 1
+    setTimeout(() => {
+      foo = 2
+    }, 100)
+    expect(foo).toBe(1)
+    await Misc.sleep(200)
+    expect(foo).toBe(2)
+  })
+})

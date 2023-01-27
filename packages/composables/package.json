@@ -48,6 +48,7 @@
     "bump:major": "npx bumpp major --no-commit --no-tag --no-push --yes",
     "release": "npm publish"
   },
+
   "devDependencies": {
     "@vueuse/core": "^9.11.1",
     "@vueuse/shared": "^9.11.1",

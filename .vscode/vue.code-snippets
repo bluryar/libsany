@@ -1,4 +1,20 @@
 {
+	"⚡export-all": {
+		"prefix": "ex",
+		"description": "⚡export-all",
+		"scope": "javascript,typescript,javascriptreact,typescriptreact",
+		"body": [
+			"export * from '$2';"
+		]
+	},
+	"⚡import-pkg": {
+		"prefix": "im",
+		"description": "⚡import-pkg",
+		"scope": "javascript,typescript,javascriptreact,typescriptreact",
+		"body": [
+			"import { $2 } from '$1';"
+		]
+	},
 	"⚡vue-script-setup": {
 		"prefix": "<sc",
 		"description": "⚡vue 组合式API 语法糖",

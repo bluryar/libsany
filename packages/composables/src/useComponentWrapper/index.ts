@@ -1,8 +1,23 @@
-import { type MaybeComputedRef, resolveUnref } from '@vueuse/core'
-import type { Component } from 'vue'
+import { resolveUnref } from '@vueuse/shared'
+
 import { defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue'
-import { isNull, merge } from 'lodash-es'
-import type { DefineLooseProps, UseComponentWrapperOptions, UseComponentWrapperReturn } from './types'
+
+import type { AllowedComponentProps, Component, DefineComponent, Events, ExtractPropTypes, VNodeProps } from 'vue'
+import type { MaybeComputedRef } from '@vueuse/shared'
+
+type DefineLooseProps<Props = Record<string, any>> = Partial<
+  AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props>
+>
+
+interface UseComponentWrapperOptions<Props = Record<string, any>> {
+  component: DefineComponent<Props, any, any> | Component<Props> | ({
+    new(): {
+      $props: DefineLooseProps<Props>
+      [key: string]: any
+    }
+  })
+  state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
+}
 
 /**
  * @desc - 使用 `defineComponent` 创建一个包裹组件，函数将返回新声明的组件 `Wrapper` 和 原组件需要绑定的Props `getState`。
@@ -59,12 +74,32 @@ const useComponentWrapper = <Props = Record<string, any>>({
 }: UseComponentWrapperOptions<Props>) => {
   const vm = getCurrentInstance()
 
-  if (isNull(vm))
+  if (vm === null)
     console.warn('[useComponentWrapper] 该函数建议在setup作用域内调用')
 
   const cmpState = shallowRef<DefineLooseProps<Props>>({})
   const ivkState = shallowRef<DefineLooseProps<Props>>({})
-  const resolveState = () => merge({}, resolveUnref(ivkState), resolveUnref(cmpState), resolveUnref(state))
+  const resolveState = () => {
+    const _state = resolveUnref(state)
+    const _ivkState = resolveUnref(ivkState)
+    const _cmpState = resolveUnref(cmpState)
+
+    // 检查属性是否重复，为了避免出现无法调试的BUG，建议用户不要将同一个属性从不同地方多次传入
+    const obj = ({ ...{}, ...(_state), ...(_ivkState), ...(_cmpState) })
+
+    const checkList = [_state ?? {}, _ivkState ?? {}, _cmpState ?? {}]
+
+    // 检查是否重复设置状态，重复设置不利于维护
+    Object.keys(obj).forEach((k) => {
+      const exits = checkList.filter((s) => {
+        return Object.prototype.hasOwnProperty.call(s, k)
+      })
+      if (exits.length > 1)
+        console.warn('[useComponentWrapper] 建议用户不要将同一个属性从不同地方多次传入, 大多数情况下推荐使用`options.state`来传递参数, 模板传值仅推荐进行双向绑定, `invoke`方法推荐传入那些动态获取的值')
+    })
+
+    return obj
+  }
 
   const Wrapper = defineComponent<DefineLooseProps<Props>>({
     name: 'UseComponentWrapper',
@@ -75,8 +110,8 @@ const useComponentWrapper = <Props = Record<string, any>>({
     },
   })
 
-  function invoke(state?: MaybeComputedRef<Partial<Props>>) {
-    ivkState.value = resolveUnref(state)
+  function invoke(_state?: typeof state) {
+    ivkState.value = resolveUnref(_state)
   }
 
   return {
@@ -88,4 +123,4 @@ const useComponentWrapper = <Props = Record<string, any>>({
 
 export { useComponentWrapper }
 
-export type { UseComponentWrapperOptions, UseComponentWrapperReturn }
+export type { UseComponentWrapperOptions }
