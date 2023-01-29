@@ -1,21 +1,21 @@
+import { defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
-
-import { defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue'
-
-import type { AllowedComponentProps, Component, DefineComponent, Events, ExtractPropTypes, VNodeProps } from 'vue'
 import type { MaybeComputedRef } from '@vueuse/shared'
 
-type DefineLooseProps<Props = Record<string, any>> = Partial<
-  AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props>
->
+import type {
+  AllowedComponentProps,
+  Component,
+  DefineComponent,
+  Events,
+  ExtractPropTypes,
+  VNodeProps,
+} from 'vue'
+
+type DefineProps<Props = Record<string, any>> = AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props> & { [x: string]: any }
+type DefineLooseProps<Props = Record<string, any>> = Partial<DefineProps<Props>>
 
 interface UseComponentWrapperOptions<Props = Record<string, any>> {
-  component: DefineComponent<Props, any, any> | Component<Props> | ({
-    new(): {
-      $props: DefineLooseProps<Props>
-      [key: string]: any
-    }
-  })
+  component: DefineComponent<Props, any, any>
   state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
 }
 

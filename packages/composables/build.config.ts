@@ -19,5 +19,5 @@ export default defineBuildConfig({
     inlineDependencies: !!1,
   },
 
-  externals: ['vue'],
+  externals: ['vue-demi', 'vue', 'vitest'],
 })

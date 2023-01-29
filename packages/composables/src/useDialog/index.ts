@@ -1,5 +1,5 @@
 import { resolveUnref } from '@vueuse/core'
-import { ref } from 'vue'
+import { ref } from 'vue-demi'
 import { isUndefined } from 'lodash-es'
 import type { MaybeComputedRef } from '@vueuse/core'
 import { useComponentWrapper } from '../useComponentWrapper'

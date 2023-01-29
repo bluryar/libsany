@@ -1,6 +1,27 @@
 {
-  "extends": "@bluryar/tsconfig/tsconfig.json",
+  "extends": "@bluryar/tsconfig/tsconfig.web.json",
+
+  "compilerOptions": {
+    "jsx": "preserve",
+    "paths": {
+      "@unionman/shared": ["./packages/shared/index.ts"],
+      "@unionman/shared/*": ["./packages/shared/*"],
+      "@unionman/composables": ["./packages/composables/index.ts"],
+      "@unionman/composables/*": ["./packages/composables/*"]
+    }
+  },
+
   "include": [
-    "vitest.config.ts"
+    "packages"
+  ],
+
+  "exclude": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/client/**",
+    "**/playground/**",
+    "**/examples/**",
+    "**/interactive/**",
+    "**/test/dts/**"
   ]
 }
