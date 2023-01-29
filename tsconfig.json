@@ -4,15 +4,16 @@
   "compilerOptions": {
     "jsx": "preserve",
     "paths": {
-      "@unionman/shared": ["./packages/shared/index.ts"],
-      "@unionman/shared/*": ["./packages/shared/*"],
-      "@unionman/composables": ["./packages/composables/index.ts"],
-      "@unionman/composables/*": ["./packages/composables/*"]
+      "@bluryar/shared": ["./packages/shared/index.ts"],
+      "@bluryar/shared/*": ["./packages/shared/*"],
+      "@bluryar/composables": ["./packages/composables/index.ts"],
+      "@bluryar/composables/*": ["./packages/composables/*"]
     }
   },
 
   "include": [
-    "packages"
+    "packages",
+    "packages/**/*.vue"
   ],
 
   "exclude": [

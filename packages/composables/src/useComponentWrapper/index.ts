@@ -11,11 +11,17 @@ import type {
   VNodeProps,
 } from 'vue'
 
-type DefineProps<Props = Record<string, any>> = AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props> & { [x: string]: any }
+type DefineProps<Props = Record<string, any>> = AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props>
+
 type DefineLooseProps<Props = Record<string, any>> = Partial<DefineProps<Props>>
 
 interface UseComponentWrapperOptions<Props = Record<string, any>> {
-  component: DefineComponent<Props, any, any>
+  component: DefineComponent<Props, any, any> | Component<Props> | ({
+    new(): {
+      $props: DefineLooseProps<Props>
+      [key: string]: any
+    }
+  })
   state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
 }
 
@@ -101,7 +107,7 @@ const useComponentWrapper = <Props = Record<string, any>>({
     return obj
   }
 
-  const Wrapper = defineComponent<DefineLooseProps<Props>>({
+  const Wrapper = defineComponent<ExtractPropTypes<Props>, any, any>({
     name: 'UseComponentWrapper',
     __name: 'UseComponentWrapper',
     setup(props, ctx) {
