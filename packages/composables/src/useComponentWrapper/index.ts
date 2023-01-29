@@ -107,7 +107,7 @@ const useComponentWrapper = <Props = Record<string, any>>({
     return obj
   }
 
-  const Wrapper = defineComponent<ExtractPropTypes<Props>, any, any>({
+  const Wrapper: DefineComponent<Props> = defineComponent({
     name: 'UseComponentWrapper',
     __name: 'UseComponentWrapper',
     setup(props, ctx) {

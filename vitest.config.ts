@@ -6,6 +6,14 @@ export default defineConfig({
   define: {
     __DEV__: JSON.stringify('false'),
   },
+  resolve: {
+    alias: {
+      '@bluryar/shared': './packages/shared/index.ts',
+      '@bluryar/shared/*': './packages/shared/*',
+      '@bluryar/composables': './packages/composables/index.ts',
+      '@bluryar/composables/*': './packages/composables/*',
+    },
+  },
   test: {
     environment: 'jsdom',
   },
