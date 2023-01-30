@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import { useComponentWrapper } from '@bluryar/composables'
+import { useComponentWrapper, useDialog } from '@bluryar/composables'
 import type { DefineComponent, FunctionalComponent } from 'vue'
 import { defineAsyncComponent, h, ref, unref } from 'vue'
 import type { VueTypeValidableDef } from 'vue-types'

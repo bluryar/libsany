@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defineAsyncComponent, nextTick, ref } from 'vue'
+import { defineAsyncComponent, nextTick, ref, unref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { sleep } from '@bluryar/shared'
 import { useComponentWrapper } from '../src'
@@ -12,7 +12,7 @@ describe('composable: useComponentWrapper', () => {
       test: 1,
     })
 
-    const { Wrapper, getState, invoke } = useComponentWrapper({
+    const { Wrapper, getState, setState: invoke, state } = useComponentWrapper({
       component: WrapperComponent,
       state: () => ({ 'foo': foo.value, 'obj': obj.value, 'onUpdate:obj': (val: any) => obj.value = val }),
     })
@@ -32,6 +32,7 @@ describe('composable: useComponentWrapper', () => {
     // 被绑定的组件内部状态的变更是由于其维护的是ref变量
     // 但是由于外部没有`v-model`进行双向绑定所以不会变更外部状态以及hook作用域内的状态
     expect(getState().foo).toBe(foo.value)
+    expect(unref(state).foo).toBe(foo.value)
 
     expect(obj.value.test).toEqual(2)
     await cmp1.trigger('click')
@@ -57,6 +58,16 @@ describe('composable: useComponentWrapper', () => {
         "onUpdate:obj": [Function],
       }
     `)
+    expect(unref(state)).toMatchInlineSnapshot(`
+      {
+        "foo": 5,
+        "obj": {
+          "test": 4,
+        },
+        "onUpdate:foo": [Function],
+        "onUpdate:obj": [Function],
+      }
+    `)
 
     obj.value.test += 1
 
@@ -70,7 +81,16 @@ describe('composable: useComponentWrapper', () => {
         "onUpdate:obj": [Function],
       }
     `)
-
+    expect(unref(state)).toMatchInlineSnapshot(`
+      {
+        "foo": 5,
+        "obj": {
+          "test": 5,
+        },
+        "onUpdate:foo": [Function],
+        "onUpdate:obj": [Function],
+      }
+    `)
     await nextTick()
 
     expect({ foo: foo.value, obj: obj.value }).toMatchInlineSnapshot(`
@@ -89,7 +109,7 @@ describe('composable: useComponentWrapper', () => {
       test: 1,
     })
 
-    const { Wrapper, getState, invoke } = useComponentWrapper({
+    const { Wrapper, getState, setState: invoke, state } = useComponentWrapper({
       component: defineAsyncComponent(() => import('./fixtures/components/Wrapper.vue')),
       // 优先级低
       state: () => ({ foo: foo.value, obj: obj.value }),
@@ -132,6 +152,16 @@ describe('composable: useComponentWrapper', () => {
     await nextTick()
     expect(cmp1.text()).toMatchInlineSnapshot('"foo: 100obj.test: 2"')
     expect(getState()).toMatchInlineSnapshot(`
+      {
+        "foo": 100,
+        "obj": {
+          "test": 2,
+        },
+        "onUpdate:foo": [Function],
+        "onUpdate:obj": [Function],
+      }
+    `)
+    expect(unref(state)).toMatchInlineSnapshot(`
       {
         "foo": 100,
         "obj": {

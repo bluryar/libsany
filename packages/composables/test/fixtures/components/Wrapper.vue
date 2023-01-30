@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useVModels } from '@vueuse/core'
-import { watchEffect } from 'vue'
 import { number, object } from 'vue-types'
 
 const props = defineProps({

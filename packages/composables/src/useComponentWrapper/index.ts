@@ -1,27 +1,19 @@
-import { defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue-demi'
+import { computed, defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
 import type { MaybeComputedRef } from '@vueuse/shared'
 
 import type {
-  AllowedComponentProps,
   Component,
   DefineComponent,
-  Events,
   ExtractPropTypes,
-  VNodeProps,
-} from 'vue'
+} from 'vue-demi'
+import type { DefineLooseProps } from '../types'
 
-type DefineProps<Props = Record<string, any>> = AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props>
+export interface UseComponentWrapperOptions<Props extends Record<string, any>> {
+  /** 【必传】需要处理的组件 */
+  component: DefineComponent<Props, any, any>
 
-type DefineLooseProps<Props = Record<string, any>> = Partial<DefineProps<Props>>
-
-interface UseComponentWrapperOptions<Props = Record<string, any>> {
-  component: DefineComponent<Props, any, any> | Component<Props> | ({
-    new(): {
-      $props: DefineLooseProps<Props>
-      [key: string]: any
-    }
-  })
+  /** 弹窗的props，一般用于定义一些在非动态获取的props，比如非接口返回值 */
   state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
 }
 
@@ -31,7 +23,7 @@ interface UseComponentWrapperOptions<Props = Record<string, any>> {
  * props的优先级（高到低）：
  *
  * 1. 在模板或者JSX或者h函数中传递的Props
- * 2. 通过 `invoke` 传递参数
+ * 2. 通过 `setState` 传递参数
  * 3. 通过 `useComponentWrapper` 传递的参数
  *
  * ---
@@ -43,7 +35,7 @@ interface UseComponentWrapperOptions<Props = Record<string, any>> {
  * import { useComponentWrapper } from '@bluryar/composables'
  * import { defineComponent, h } from 'vue'
  *
- * const { Wrapper, getState, invoke } = useComponentWrapper({
+ * const { Wrapper, getState, setState } = useComponentWrapper({
  *   component: defineComponent({
  *     name: 'Test',
  *     props: {
@@ -57,7 +49,7 @@ interface UseComponentWrapperOptions<Props = Record<string, any>> {
  * h(Wrapper, { foo: 3 })
  *
  * // 1s后foo=4
- * setTimeout(() => { invoke(() => ({ foo:4 })) }, 1000)
+ * setTimeout(() => { setState(() => ({ foo:4 })) }, 1000)
  * ```
  *
  * ---
@@ -69,15 +61,16 @@ interface UseComponentWrapperOptions<Props = Record<string, any>> {
  * import { useComponentWrapper } from '@bluryar/composables'
  * import { defineAsyncComponent } from 'vue'
  *
- * const { Wrapper, getState, invoke } = useComponentWrapper({
+ * const { Wrapper, getState, setState } = useComponentWrapper({
  *   component: defineAsyncComponent(() => import('path/to/your/component'))
  * })
  * ```
  */
-const useComponentWrapper = <Props = Record<string, any>>({
-  component,
-  state = () => ({}),
-}: UseComponentWrapperOptions<Props>) => {
+export function useComponentWrapper<Props extends Record<string, any>>(options: UseComponentWrapperOptions<Props>) {
+  const {
+    component,
+    state = () => ({}),
+  } = options
   const vm = getCurrentInstance()
 
   if (vm === null)
@@ -97,36 +90,49 @@ const useComponentWrapper = <Props = Record<string, any>>({
 
     // 检查是否重复设置状态，重复设置不利于维护
     Object.keys(obj).forEach((k) => {
-      const exits = checkList.filter((s) => {
+      const exitsCount = checkList.filter((s) => {
         return Object.prototype.hasOwnProperty.call(s, k)
       })
-      if (exits.length > 1)
-        console.warn('[useComponentWrapper] 建议用户不要将同一个属性从不同地方多次传入, 大多数情况下推荐使用`options.state`来传递参数, 模板传值仅推荐进行双向绑定, `invoke`方法推荐传入那些动态获取的值')
+      if (exitsCount.length > 1)
+        console.warn('[useComponentWrapper] 建议用户不要将同一个属性从不同地方多次传入')
     })
 
-    return obj
+    return obj as Partial<ExtractPropTypes<Props>>
   }
+  const wrapperState = computed(resolveState)
 
   const Wrapper: DefineComponent<Props> = defineComponent({
     name: 'UseComponentWrapper',
     __name: 'UseComponentWrapper',
     setup(props, ctx) {
       cmpState.value = mergeProps({}, ctx.attrs, props as any)
-      return () => h(component as Component, resolveUnref(resolveState), ctx.slots)
+      return () => h(component as Component, resolveUnref(wrapperState), ctx.slots)
     },
   })
 
-  function invoke(_state?: typeof state) {
+  function invoke(_state?: typeof state | MaybeComputedRef<undefined>) {
     ivkState.value = resolveUnref(_state)
   }
 
   return {
+    /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
     Wrapper,
+
+    /**
+     * - 依赖于`getState`创建的计算属性
+     * */
+    state: wrapperState,
+
+    /**
+     * 被代理的组件的props，它会合并从代理组件传递过来的props、setState方法传递的props，以及options.state
+     *
+     * 合并优先级从高到底，即在返回的代理组件<Wrapper>中配置属性的优先级最高
+     */
     getState: resolveState,
-    invoke,
+
+    /**
+     * 设置被代理组件的状态，通常这个方法用于设置接口返回值。
+     */
+    setState: invoke,
   }
 }
-
-export { useComponentWrapper }
-
-export type { UseComponentWrapperOptions }
