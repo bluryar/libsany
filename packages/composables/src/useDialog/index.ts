@@ -2,6 +2,7 @@ import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
 import { ref } from 'vue-demi'
 import type { DefineComponent, ExtractPropTypes } from 'vue-demi'
 import { useComponentWrapper } from '../useComponentWrapper'
+import { vModels } from '../_utils_'
 
 const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const
 
@@ -78,8 +79,9 @@ export const useDialog = <Props extends Record<string, any>>(
 
   const resolveState = () => ({
     ...resolveUnref(state),
-    [visibleKey]: visible.value,
-    [`onUpdate:${visibleKey}`]: (val: boolean) => visible.value = val,
+    ...vModels({
+      [visibleKey]: visible,
+    }),
   })
 
   const { Wrapper, getState, setState: invoke, state: wrapperState } = useComponentWrapper({

@@ -80,12 +80,14 @@ importers:
       '@vueuse/shared': ^9.11.1
       vue: ^3.2.45
       vue-demi: latest
+      vue-request: 2.0.0-rc.4
     dependencies:
       '@vueuse/core': 9.11.1_vue@3.2.45
       '@vueuse/shared': 9.11.1_vue@3.2.45
       vue-demi: 0.13.11_vue@3.2.45
     devDependencies:
       vue: 3.2.45
+      vue-request: 2.0.0-rc.4_vue@3.2.45
 
   packages/shared:
     specifiers: {}
@@ -6918,7 +6920,6 @@ packages:
         optional: true
     dependencies:
       vue: 3.2.45
-    dev: false
 
   /vue-eslint-parser/9.1.0_eslint@8.33.0:
     resolution: {integrity: sha512-NGn/iQy8/Wb7RrRa4aRkokyCZfOUWk19OP5HP6JEozQFX5AoS/t+Z0ZN7FY4LlmWc4FNI922V7cvX28zctN8dQ==}
@@ -6936,6 +6937,19 @@ packages:
       semver: 7.3.8
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /vue-request/2.0.0-rc.4_vue@3.2.45:
+    resolution: {integrity: sha512-Nv/CpfKlfwW9SVHakEukeSQpuqSwskeJsHK4gfw8KB8NZogWfR8+EU+XupLe+Dapnm+RAP+wZYzhw89v3Zyx2g==}
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^2.0.0 || >=3.0.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dependencies:
+      vue: 3.2.45
+      vue-demi: 0.13.11_vue@3.2.45
     dev: true
 
   /vue-router/4.1.6_vue@3.2.45:

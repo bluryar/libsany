@@ -8,7 +8,7 @@ declare global {
 }
 
 declare module '*.vue' {
-  import { defineComponent } from 'vue'
-  const Component: ReturnType<typeof defineComponent>
-  export default Component
+  import type { ComponentOptions } from 'vue'
+  const componentOptions: ComponentOptions
+  export default componentOptions
 }
