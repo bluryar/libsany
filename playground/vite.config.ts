@@ -10,8 +10,6 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     cors: !!1,
-    https: !!1,
-
   },
   resolve: {
     alias: {

@@ -11,12 +11,12 @@ const obj = ref({ test: 1 })
 const Comp = defineAsyncComponent(() => import('@/components/AsyncComponent.vue'))
 const AsyncCmp: FunctionalComponent<{ foo: number }> = () => h('div', '123')
 
-const { Wrapper: AsyncComponent, invoke, getState } = useComponentWrapper({
+const { Wrapper: AsyncComponent, setState, getState } = useComponentWrapper({
   component: Comp,
   state: () => ({ foo: unref(foo) }),
 })
 
-invoke(() => ({}))
+setState(() => ({}))
 </script>
 
 <template>

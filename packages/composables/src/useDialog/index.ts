@@ -3,6 +3,8 @@ import { ref } from 'vue-demi'
 import type { DefineComponent, ExtractPropTypes } from 'vue-demi'
 import { useComponentWrapper } from '../useComponentWrapper'
 
+const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const
+
 /**
  * @todo provide/inject注入配置
  */
@@ -17,7 +19,7 @@ export interface UseDialogOptions<Props extends Record<string, any>> {
    * 弹出双向绑定的key `<Dialog v-model:visible="bool"></Dialog>`
    * @default 'visible'
    * */
-  visibleKey?: 'visible' | 'show' | 'modelValue' | 'value'
+  visibleKey?: typeof UseDialogVisibleKeys[number]
 }
 
 /**
