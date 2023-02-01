@@ -1,7 +1,7 @@
 import type { Options as UseRequestOptions } from 'vue-request'
 import { useRequest } from 'vue-request'
 import { type InjectionKey, type Ref, type ShallowRef, inject, provide, ref, shallowRef, unref } from 'vue-demi'
-import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
+import { resolveUnref } from '@vueuse/shared'
 import type { Rule } from 'async-validator'
 
 interface FormInstance {
@@ -9,7 +9,15 @@ interface FormInstance {
   [k: string]: any
 }
 
-export interface UseFormOptions<Params = {}, Response = {}> extends UseRequestOptions<Response, [OnlyParams:Params] > {
+export interface UseFormOptions<Params = {}, Response = {}> extends UseRequestOptions<Response, [OnlyParams?:Params] > {
+  /**
+   * 请求函数
+   *
+   * @param params 通常情况下你不需要传入这个参数，这个参数会被返回的`run`和`runAsync`参数
+   * @returns
+   */
+  service: (params?: Partial<Params>) => Promise<Response>
+
   /**
    * 表单的数据模型， ES6的类语法。
    *
@@ -21,25 +29,32 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseRequestOp
 
   /**
    * 表单实例，假如不为空，hook内部不会声明这个ref（shallow）
+   *
+   * @default undefined
    */
   formRef?: Ref<FormInstance | null> | ShallowRef<FormInstance | null>
 
   /**
    * 校验规则
+   *
+   * @default
    */
   rules?: Record<keyof Params & keyof { [x: string]: any }, Rule>
 
   /**
    * 表单校验函数，在发起请求前调用
+   *
+   * @default ()=>Promise<void>
    */
   validate?: () => Promise<void | never>
 
+  /**
+   * 校验失败
+   *
+   * @default ()=>void
+   */
   onValidateFail?: (...args: unknown[]) => void
 }
-
-// export interface UseFormInjection {
-//   foo?: number
-// }
 
 export type UseFormInjection<Params = {}, Response = {}> = ReturnType<typeof useForm<Params, Response>>
 
@@ -56,7 +71,8 @@ export function useFormInject<Params = {}, Response extends Object = {}>(params?
     console.error('[UseForm] 无法注入表单状态，也许上层没有调用 useForm 方法')
 }
 
-function useFormProvide<Params = {}, Response = {}>(params: UseFormInjection<Params, Response>) {
+function useFormProvide<Params = {}, Response = {}>(
+  params: UseFormInjection<Params, Response>) {
   return provide(UseFormKey, params as object)
 }
 
@@ -109,11 +125,13 @@ function useFormProvide<Params = {}, Response = {}>(params: UseFormInjection<Par
  *
  * 如上，子组件通过`inject`获取父元素注入的状态，完成页面的渲染
  */
-export function useForm<Params = {}, Response = {}>(
-  service: (params?: Partial<Params>) => Promise<Response>,
-  options: UseFormOptions<Partial<Params>, Response>,
-) {
-  const { Model, validate = () => Promise.resolve() } = options
+export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Partial<Params>, Response>) {
+  const {
+    Model,
+    service,
+    validate = () => Promise.resolve(),
+    onValidateFail = () => {},
+  } = options
 
   const formRef = shallowRef(options.formRef ?? shallowRef<null | FormInstance>(null))
 
@@ -123,7 +141,7 @@ export function useForm<Params = {}, Response = {}>(
   const formParams = ref<Partial<Params>>(new Model())
 
   const requestData = useRequest(
-    (params?: MaybeComputedRef<Partial<Params>>) => service({ ...unref(requestParams), ...resolveUnref(params) }),
+    (params?: Partial<Params>) => service({ ...unref(requestParams), ...resolveUnref(params) }),
     { manual: !!1, ...options },
   )
 
@@ -133,10 +151,10 @@ export function useForm<Params = {}, Response = {}>(
 
       requestParams.value = formParams.value
 
-      return requestData.runAsync({})
+      return requestData.runAsync()
     }
     catch (error) {
-      options?.onValidateFail?.(error)
+      onValidateFail(error)
     }
   }
 
