@@ -1,12 +1,15 @@
-import { computed, defineComponent, getCurrentInstance, h, mergeProps, shallowRef } from 'vue-demi'
+import {
+  computed, defineComponent, getCurrentInstance, h, mergeProps,
+  shallowRef,
+} from 'vue-demi'
+import type {
+
+  DefineComponent, ExtractPropTypes,
+  // FunctionalComponent,
+} from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
 import type { MaybeComputedRef } from '@vueuse/shared'
 
-import type {
-  Component,
-  DefineComponent,
-  ExtractPropTypes,
-} from 'vue-demi'
 import type { DefineLooseProps } from '../types'
 
 export interface UseComponentWrapperOptions<Props extends Record<string, any>> {
@@ -66,7 +69,7 @@ export interface UseComponentWrapperOptions<Props extends Record<string, any>> {
  * })
  * ```
  */
-export function useComponentWrapper<Props extends Record<string, any>>(options: UseComponentWrapperOptions<Props>) {
+export function useComponentWrapper<Props extends Record<string, any>, ComponentInstance = {}>(options: UseComponentWrapperOptions<Props>) {
   const {
     component,
     state = () => ({}),
@@ -75,6 +78,8 @@ export function useComponentWrapper<Props extends Record<string, any>>(options: 
 
   if (vm === null)
     console.warn('[useComponentWrapper] 该函数建议在setup作用域内调用')
+
+  const instance = shallowRef<null | ComponentInstance >(null)
 
   const cmpState = shallowRef<DefineLooseProps<Props>>({})
   const ivkState = shallowRef<DefineLooseProps<Props>>({})
@@ -101,14 +106,23 @@ export function useComponentWrapper<Props extends Record<string, any>>(options: 
   }
   const wrapperState = computed(resolveState)
 
-  const Wrapper: DefineComponent<Props> = defineComponent({
+  const UseComponentWrapper: DefineComponent<Props> = defineComponent({
     name: 'UseComponentWrapper',
     __name: 'UseComponentWrapper',
     setup(props, ctx) {
       cmpState.value = mergeProps({}, ctx.attrs, props as any)
-      return () => h(component as Component, resolveUnref(wrapperState), ctx.slots)
+      return () => h(component as DefineComponent, {
+        ...resolveUnref(wrapperState),
+        ref: el => instance.value = el as any,
+      }, ctx.slots)
     },
   })
+  // const UseComponentWrapper: FunctionalComponent<ExtractPropTypes<Props>> = (props, ctx) => {
+  //   cmpState.value = mergeProps({}, ctx.attrs, props as any)
+  //   return h(component as Component, resolveUnref(wrapperState), ctx.slots)
+  // }
+  // UseComponentWrapper.__name = 'UseComponentWrapper'
+  // UseComponentWrapper.displayName = 'UseComponentWrapper'
 
   function invoke(_state?: typeof state | MaybeComputedRef<undefined>) {
     ivkState.value = resolveUnref(_state)
@@ -116,7 +130,7 @@ export function useComponentWrapper<Props extends Record<string, any>>(options: 
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
-    Wrapper,
+    Wrapper: UseComponentWrapper,
 
     /**
      * - 依赖于`getState`创建的计算属性
@@ -134,5 +148,8 @@ export function useComponentWrapper<Props extends Record<string, any>>(options: 
      * 设置被代理组件的状态，通常这个方法用于设置接口返回值。
      */
     setState: invoke,
+
+    /** 内部组件的实例 */
+    instance,
   }
 }

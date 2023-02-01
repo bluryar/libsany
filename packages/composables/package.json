@@ -65,6 +65,7 @@
     "vue-demi": "latest"
   },
   "devDependencies": {
+    "async-validator": "^4.2.5",
     "vue": "^3.2.45",
     "vue-request": "2.0.0-rc.4"
   }

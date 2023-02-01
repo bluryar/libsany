@@ -78,6 +78,7 @@ importers:
     specifiers:
       '@vueuse/core': ^9.11.1
       '@vueuse/shared': ^9.11.1
+      async-validator: ^4.2.5
       vue: ^3.2.45
       vue-demi: latest
       vue-request: 2.0.0-rc.4
@@ -86,6 +87,7 @@ importers:
       '@vueuse/shared': 9.11.1_vue@3.2.45
       vue-demi: 0.13.11_vue@3.2.45
     devDependencies:
+      async-validator: 4.2.5
       vue: 3.2.45
       vue-request: 2.0.0-rc.4_vue@3.2.45
 
