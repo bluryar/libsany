@@ -1,78 +1,23 @@
-import type { Options as UseRequestOptions } from 'vue-request'
-import { useRequest } from 'vue-request'
-import { type InjectionKey, type Ref, type ShallowRef, inject, provide, ref, shallowRef, unref } from 'vue-demi'
+import { type InjectionKey, type Ref, inject, provide, ref, shallowRef, unref } from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
-import type { Rule } from 'async-validator'
+import { get } from 'lodash-es'
+import { useFormRequest } from './useFormRequest'
+import type { FormInstance, KeyOf, UseFormOptions, UseFormReturns } from './types'
 
-interface FormInstance {
-  validate: <P extends unknown[]>(...args: P) => Promise<unknown> | void
-  [k: string]: any
-}
-
-export interface UseFormOptions<Params = {}, Response = {}> extends UseRequestOptions<Response, [OnlyParams?:Params] > {
-  /**
-   * 请求函数
-   *
-   * @param params 通常情况下你不需要传入这个参数，这个参数会被返回的`run`和`runAsync`参数
-   * @returns
-   */
-  service: (params?: Partial<Params>) => Promise<Response>
-
-  /**
-   * 表单的数据模型， ES6的类语法。
-   *
-   * 由于某些组件库属性如果不显示声明未undefined就不会进行校验
-   *
-   * ! 因此请将所有属性都显示的赋值 ( 包括 `undefined` )
-   */
-  Model: new (params?: Params) => Params
-
-  /**
-   * 表单实例，假如不为空，hook内部不会声明这个ref（shallow）
-   *
-   * @default undefined
-   */
-  formRef?: Ref<FormInstance | null> | ShallowRef<FormInstance | null>
-
-  /**
-   * 校验规则
-   *
-   * @default
-   */
-  rules?: Record<keyof Params & keyof { [x: string]: any }, Rule>
-
-  /**
-   * 表单校验函数，在发起请求前调用
-   *
-   * @default ()=>Promise<void>
-   */
-  validate?: () => Promise<void | never>
-
-  /**
-   * 校验失败
-   *
-   * @default ()=>void
-   */
-  onValidateFail?: (...args: unknown[]) => void
-}
-
-export type UseFormInjection<Params = {}, Response = {}> = ReturnType<typeof useForm<Params, Response>>
-
-const UseFormKey: InjectionKey<UseFormInjection> = Symbol('UseFormKey')
+const UseFormKey: InjectionKey<UseFormReturns> = Symbol('UseFormKey')
 
 /**
  * 注入表单的状态、请求函数、检验函数等.
  *
  * 常用于使用了`useForm`的子组件中，获取上层的状态
  */
-export function useFormInject<Params = {}, Response extends Object = {}>(params?: UseFormInjection<Params, Response>) {
-  const injection = inject(UseFormKey, params as object)
+export function useFormInject<Params = {}, Response = {}>(params?: UseFormReturns<Params, Response>) {
+  const injection = inject(UseFormKey, (params || {}) as object)
   if (!injection)
     console.error('[UseForm] 无法注入表单状态，也许上层没有调用 useForm 方法')
 }
 
-function useFormProvide<Params = {}, Response = {}>(
-  params: UseFormInjection<Params, Response>) {
+function useFormProvide<Params = {}, Response = {}>(params: UseFormReturns<Params, Response>) {
   return provide(UseFormKey, params as object)
 }
 
@@ -125,10 +70,11 @@ function useFormProvide<Params = {}, Response = {}>(
  *
  * 如上，子组件通过`inject`获取父元素注入的状态，完成页面的渲染
  */
-export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Partial<Params>, Response>) {
+export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Params, Response>): UseFormReturns<Params, Response> {
   const {
     Model,
     service,
+    // rules = [],
     validate = () => Promise.resolve(),
     onValidateFail = () => {},
   } = options
@@ -136,45 +82,45 @@ export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Part
   const formRef = shallowRef(options.formRef ?? shallowRef<null | FormInstance>(null))
 
   /** 发送请求时使用的参数 */
-  const requestParams = ref<Partial<Params>>(new Model())
+  const requestParams = ref(new Model()) as Ref<Partial<Params>>
   /** 正在编辑的参数，即发送请求前使用的参数 */
-  const formParams = ref<Partial<Params>>(new Model())
+  const formParams = ref(new Model()) as Ref<Partial<Params>>
 
-  const requestData = useRequest(
+  const requestResult = useFormRequest(
     (params?: Partial<Params>) => service({ ...unref(requestParams), ...resolveUnref(params) }),
-    { manual: !!1, ...options },
+    options,
   )
 
-  const submit = async () => {
+  const submit = async (params?: Partial<Params>) => {
     try {
       await validate()
 
       requestParams.value = formParams.value
 
-      return requestData.runAsync()
+      return requestResult.runAsync(params)
     }
     catch (error) {
       onValidateFail(error)
     }
   }
 
-  const reset = async () => {
-    formParams.value = new Model()
+  const reset = (fields?: KeyOf<Params>) => {
+    const bak = fields ? get(formParams.value, fields) ?? {} : {}
+
+    formParams.value = new Model(bak)
+    requestParams.value = formParams.value
   }
 
   const returnVal = {
-    /**
-     * 表单组件实例，如果由传入就复用传入的，没有就创建一个待用
-     */
+    ...requestResult,
+
     formRef,
 
-    formData: formParams,
+    formParams,
 
     submit,
 
     reset,
-
-    ...requestData,
   }
 
   // 向下注入
