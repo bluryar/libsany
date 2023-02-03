@@ -26,6 +26,15 @@ export default defineBuildConfig({
     },
   },
 
-  externals: ['vue-demi', 'vue', 'vitest', 'vue-request', 'async-validator', 'lodash-es', 'type-fest'],
+  externals: [
+    'vue-demi',
+    'vue',
+    'vitest',
+    'vue-request',
+    'async-validator',
+    'lodash-es',
+    'type-fest',
+    '@bluryar/shared',
+  ],
 
 })

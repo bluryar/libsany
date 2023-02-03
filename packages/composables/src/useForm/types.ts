@@ -1,15 +1,24 @@
 import type { Ref, ShallowRef } from 'vue-demi'
 import type { MaybeComputedRef } from '@vueuse/shared'
 import type { LiteralUnion } from 'type-fest'
-import type { UseFormRequestOptions, UseFormRequestReturns } from './useFormRequest'
+import type { UseFormRequestOptions, UseFormRequestReturns } from './_useFormRequest'
+import type { useFormRules } from './_useFormRules'
 
 export interface FormInstance {
   validate: <P extends unknown[]>(...args: P) => Promise<unknown> | void
   [k: string]: any
 }
 export type KeyOf<Params = {}> = LiteralUnion<keyof Params, string>
-type Rule = (val: unknown) => boolean
-type Rules = Rule | Rule[]
+
+/** 规则返回要么是校验通过校验， 要么校验失败显示错误信息 */
+export type Rule<T = unknown> = (val: T) => true | string
+export type NormalizeRule<T = unknown> = (val: T) => {
+  /** 校验通过 */
+  valid: boolean
+  /** 校验失败要显示的信息 */
+  message: string
+}
+export type Rules<T = unknown> = Rule<T> | Rule<T>[]
 
 export interface UseFormOptions<Params = {}, Response = {}> extends UseFormRequestOptions<Params, Response> {
   /**
@@ -29,7 +38,19 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
    */
   Model: new (params?: Partial<Params>) => Params
 
-  default?: MaybeComputedRef<Partial<Params>>
+  /**
+   * 校验规则
+   *
+   * @default {}
+   */
+  rules?: MaybeComputedRef<Record<KeyOf<Params>, Rules>>
+
+  /**
+   * 默认参数，某些情况下，表单会有某些字段需要默认值
+   *
+   * 甚至同一个表单组件在不同状态下会有不同的默认值，因此这样不适合用类声明的默认值来解决这一需求
+   */
+  defaultParams?: MaybeComputedRef<Partial<Params>>
 
   /**
    * 表单实例，假如不为空，hook内部不会声明这个ref（shallow）
@@ -39,30 +60,14 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
   formRef?: Ref<FormInstance | null> | ShallowRef<FormInstance | null>
 
   /**
-   * 校验规则
+   * 规则校验不再实时监听
    *
-   * @default {}
+   * @default false
    */
-  rules?: Record<KeyOf<Params>, Rules>
-
-  /**
-   * 表单校验函数，在发起请求前调用.
-   *
-   * 假如校验失败，请抛出一个异常
-   *
-   * @default ()=>Promise<void>
-   */
-  validate?: () => Promise<void> | never
-
-  /**
-   * 校验失败
-   *
-   * @default ()=>void
-   */
-  onValidateFail?: (...args: unknown[]) => void
+  lazyVerify?: boolean
 }
 
-export interface UseFormReturns<Params = {}, Response = {}> extends UseFormRequestReturns<Params, Response> {
+export interface UseFormReturns<Params = {}, Response = {}> extends UseFormRequestReturns<Params, Response>, ReturnType<typeof useFormRules<Params>> {
   /**
    * 表单组件实例，如果由传入就复用传入的，没有就创建一个待用
    */
@@ -92,4 +97,26 @@ export interface UseFormReturns<Params = {}, Response = {}> extends UseFormReque
    * @returns
    */
   reset: () => void
+}
+
+export interface SubmitOptions {
+  /**
+   * 跳过表单校验
+   *
+   * @default false
+   */
+  skipValid?: boolean
+
+  /**
+   * 需要校验的字段, 默认为空, 为空则校验全部
+   *
+   * @default undefined
+  */
+  fields?: string[]
+}
+
+export interface FormStatus {
+  isDirty: boolean
+  isError: boolean
+  message: string
 }
