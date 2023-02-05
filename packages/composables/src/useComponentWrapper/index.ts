@@ -1,5 +1,6 @@
 import {
   computed, defineComponent, getCurrentInstance, h, mergeProps,
+  readonly,
   shallowRef,
 } from 'vue-demi'
 import type {
@@ -133,9 +134,9 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     Wrapper: UseComponentWrapper,
 
     /**
-     * - 依赖于`getState`创建的计算属性
+     * - 依赖于`getState`创建的只读属性副本
      * */
-    state: wrapperState,
+    state: readonly(wrapperState),
 
     /**
      * 被代理的组件的props，它会合并从代理组件传递过来的props、setState方法传递的props，以及options.state

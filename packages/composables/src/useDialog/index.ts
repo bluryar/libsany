@@ -110,7 +110,7 @@ export const useDialog = <Props extends Record<string, any>>(
     visible,
 
     /**
-     * 【计算属性】弹窗组件原本的props
+     * 【计算属性】弹窗组件原本的props (只读属性副本)
      */
     state: wrapperState,
 

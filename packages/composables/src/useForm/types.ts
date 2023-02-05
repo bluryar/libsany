@@ -10,8 +10,11 @@ export interface FormInstance {
 }
 export type KeyOf<Params = {}> = LiteralUnion<keyof Params, string>
 
+export type AsyncRule<T = unknown> = (val: T) => Promise<true | string>
+export type SyncRule<T = unknown> = (val: T) => true | string
+
 /** 规则返回要么是校验通过校验， 要么校验失败显示错误信息 */
-export type Rule<T = unknown> = (val: T) => true | string
+export type Rule<T = unknown> = SyncRule<T> | AsyncRule<T>
 export type NormalizeRule<T = unknown> = (val: T) => {
   /** 校验通过 */
   valid: boolean
@@ -90,16 +93,16 @@ export interface UseFormReturns<Params = {}, Response = {}> extends UseFormReque
    *
    * @returns 一般不需要使用这个返回值
    */
-  submit: () => Promise<Response | undefined>
+  submit: (params?: Partial<Params>, options?: SubmitOptions) => Promise<Response> | never
 
   /**
    * 重置表单字段
    * @returns
    */
-  reset: () => void
+  reset: (fields?: KeyOf<Params>[]) => void
 }
 
-export interface SubmitOptions {
+export interface SubmitOptions<Params = {}> {
   /**
    * 跳过表单校验
    *
@@ -112,7 +115,7 @@ export interface SubmitOptions {
    *
    * @default undefined
   */
-  fields?: string[]
+  fields?: KeyOf<Params>[]
 }
 
 export interface FormStatus {

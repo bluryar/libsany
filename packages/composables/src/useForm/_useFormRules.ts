@@ -1,10 +1,16 @@
-import { type Ref, computed, reactive, unref, watchEffect } from 'vue'
+import { type Ref, computed, reactive, readonly, unref, watchEffect } from 'vue'
 import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
 import { isArray, isString, isTrue } from '@bluryar/shared'
+import { pick } from 'lodash-es'
 import { normalizeObject, toPathMap } from './_utils'
-import type { Rule, Rules, UseFormOptions } from './types'
+import type { KeyOf, Rule, Rules, UseFormOptions } from './types'
 
-interface StatusItem {
+enum DefaultMessage {
+  Success = '校验成功',
+  Fail = '校验失败',
+}
+
+export interface FormStatusItem {
   /**
    * 表单校验是否通过
    */
@@ -21,11 +27,11 @@ interface StatusItem {
   messages: string[]
 }
 
-function createStatusItem(): StatusItem {
+function createStatusItem(): FormStatusItem {
   return {
     isError: !!0,
     isDirty: !!0,
-    messages: ['校验成功'],
+    messages: [DefaultMessage.Success],
   }
 }
 
@@ -35,79 +41,128 @@ export function useFormRules<Params = {}>(
   options: Pick<UseFormOptions, 'lazyVerify'>,
 ) {
   const {
-    lazyVerify: lazeVerify = false,
+    lazyVerify = false,
   } = options
 
-  const getRules = (): Record<string, Rule[]> => normalizeObject(
-    resolveUnref(rulesTemplate),
-    (val: Rules) => isArray(val) ? val : [val],
+  const status = reactive(new Map(
+    Array.from(getModel()).map(([k]) => [k, createStatusItem()])),
   )
-  const getModel = () => toPathMap(unref(model))
-
-  const status = reactive(new Map<string, StatusItem>(
-    Object.entries(getModel()).map(([k]) => [k, createStatusItem()]),
-  ))
-
-  const isError = () => Object.values(status).some((statusItem: StatusItem) => statusItem.isError)
-  const isDirty = () => Object.values(status).some((statusItem: StatusItem) => statusItem.isDirty)
-
-  let lastModifyModel = getModel()
+  let _lastModifyModel = getModel()
 
   watchEffect(() => {
     const modelMap = getModel()
 
-    !lazeVerify && executeCheckRules(modelMap, getRules, status)
+    !lazyVerify && checkFormRulesAsync(modelMap, getRules, status)
 
-    executeCheckDirty(modelMap, lastModifyModel, status)
+    checkDirty(modelMap, _lastModifyModel, status)
 
-    lastModifyModel = modelMap
+    _lastModifyModel = modelMap
   })
 
-  const verify = (fields?: string[]): boolean => {
+  function getRules(): Record<string, Rule[]> {
+    return normalizeObject(
+      resolveUnref(rulesTemplate),
+      (val: Rules) => isArray(val) ? val : [val],
+    )
+  }
+  function getModel() {
+    return toPathMap(unref(model))
+  }
+
+  function getIsError() {
+    return Array.from(status.values()).some(statusItem => statusItem.isError)
+  }
+  function getIsDirty() {
+    return Array.from(status.values()).some(statusItem => statusItem.isDirty)
+  }
+  function getParamsKeys(type: keyof FormStatusItem) {
+    return Array.from(status.entries())
+      .filter(([_, statusItem]) => statusItem[type])
+      .map(([key, _]) => key)
+      // 剔除可以作为前缀的key
+      .filter(
+        (prefix, _, arr) => !arr.some(toCheckKey => (toCheckKey as string).startsWith((prefix as string))),
+      )
+  }
+  function getErrorParams() {
+    return pick(unref(model), getParamsKeys('isError'))
+  }
+  function getDirtyParams() {
+    return pick(unref(model), getParamsKeys('isDirty'))
+  }
+
+  /**
+   * 校验表单
+   * TODO 异步校验
+   *
+   * @param fields 可以单独校验 **某些** 字段， 为空这校验全部
+   */
+  async function verifyAsync(fields?: KeyOf<Params>[]): Promise<boolean> {
     const modelMap = getModel()
 
-    executeCheckRules(
+    await checkFormRulesAsync(
       fields
         ? new Map(
-          Object.entries(modelMap).filter(([k]) => fields.includes(k)),
+          Array.from(modelMap.entries()).filter(([k]) => fields.includes(k)),
         )
         : modelMap,
       getRules,
       status,
     )
 
-    return isError()
+    return getIsError()
   }
 
-  const setError = (key: string, messages: string[], isError = true) => {
-    const msgs = isError ? messages : ['校验成功']
-    const statusItem = mapGetOrInit(status, key)
+  /**
+   * 手动设置某个字段发生错误状态
+   */
+  function setError(key: KeyOf<Params>, messages: string[], isError = true) {
+    const msgs = isError ? messages : [DefaultMessage.Success]
+    const statusItem = mapGetOrInit(status, key as string)
     statusItem.messages = msgs
     statusItem.isError = isError
-    status.set(key, statusItem)
+    status.set(key as string, statusItem)
   }
 
-  const clearErrors = (keys?: string[]) => {
-    (keys ?? Object.keys(status)).forEach((key) => {
+  /**
+   * 清楚掉所有或者指定字段的错误状态
+   */
+  function clearErrors(keys?: KeyOf<Params>[]) {
+    const _keys = transformKeys(keys) ?? Object.keys(Object.fromEntries(status))
+    _keys.forEach((key) => {
       status.set(key, createStatusItem())
     })
   }
 
   return {
     /**
+     * [响应式]
+     *
      * 表单各项状态
      */
-    status,
+    status: status as Map<KeyOf<Params>, FormStatusItem>,
 
     /**
      * 表单是否存在校验失败的项目
      */
-    isError: computed(isError),
+    isError: readonly(computed(getIsError)),
 
     /**
      * 表单是否存在发送修改的项目
      */
-    isDirty: computed(isDirty),
+    isDirty: readonly(computed(getIsDirty)),
+
+    /**
+     * 校验失败的属性对象
+     */
+    errorParams: readonly(computed(getErrorParams)),
+
+    /**
+     * 发生修改的属性对象
+     *
+     * **用途**： 请求时，可能不希望将所有对象都提交
+     */
+    dirtyParams: readonly(computed(getDirtyParams)),
 
     /**
      * 经过归一化处理的校验规则记录.
@@ -116,21 +171,28 @@ export function useFormRules<Params = {}>(
      */
     rules: computed(getRules),
 
-    verify,
+    verifyAsync,
     setError,
     clearErrors,
   }
 }
+function transformKeys<Params = {}>(keys?: KeyOf<Params>[]) {
+  return keys as unknown as string[]
+}
 
-function mapGetOrInit(status: Map<string, StatusItem>, modelKey: string) {
+function mapGetOrInit(status: Map<string, FormStatusItem>, modelKey: string) {
   let statusItem = status.get(modelKey)
   if (!statusItem)
     statusItem = createStatusItem()
   return statusItem
 }
 
-function executeCheckDirty(modelMap: Map<string, unknown>, lastModifyModel: Map<string, unknown>, status: Map<string, StatusItem>) {
-  for (const [modelKey, modelValue] of Object.entries(modelMap)) {
+function checkDirty(
+  modelMap: Map<string, unknown>,
+  lastModifyModel: Map<string, unknown>,
+  status: Map<string, FormStatusItem>,
+) {
+  for (const [modelKey, modelValue] of modelMap) {
     const lastModelValue = lastModifyModel.get(modelKey)
     let statusItem = status.get(modelKey)
     if (!statusItem)
@@ -141,21 +203,28 @@ function executeCheckDirty(modelMap: Map<string, unknown>, lastModifyModel: Map<
   }
 }
 
-function executeCheckRules(modelMap: Map<string, unknown>, getRules: () => Record<string, Rule[]>, status: Map<string, StatusItem>) {
+async function checkFormRulesAsync(
+  modelMap: Map<string, unknown>,
+  getRules: () => Record<string, Rule[]>,
+  status: Map<string, FormStatusItem>,
+) {
   for (const [modelKey, ruleList] of Object.entries(getRules())) {
     // 初始化了参数Model, 并且有校验规则配置
     if (modelMap.has(modelKey)) {
       const modelValue = modelMap.get(modelKey)
-      const checkResults = ruleList.map(rule => rule(modelValue))
 
-      let statusItem = status.get(modelKey)
-      if (!statusItem)
-        statusItem = createStatusItem()
+      // 归一化处理并执行校验规则
+      const checkResultsAsync = ruleList
+        .map(rule => rule(modelValue))
+        .map(returnValue => Promise.resolve(returnValue))
+      const checkResults = (await Promise.allSettled(checkResultsAsync)).map(normalizeAsyncRulesResult)
 
+      // 设置校验状态
+      const statusItem = mapGetOrInit(status, modelKey)
       if (checkResults.map(isTrue)) {
         // 校验成功
         statusItem.isError = !!0
-        statusItem.messages = ['校验成功']
+        statusItem.messages = [DefaultMessage.Success]
       }
       else {
         // 校验失败
@@ -163,8 +232,19 @@ function executeCheckRules(modelMap: Map<string, unknown>, getRules: () => Recor
         statusItem.isError = !!1
         statusItem.messages = firstErrorMessage
       }
-
       status.set(modelKey, statusItem)
     }
+  }
+}
+
+function normalizeAsyncRulesResult(resolved: PromiseSettledResult<string | true>): string | true {
+  const { status } = resolved
+  // fullfiled 不一定表示校验通过，可能是一部校验器的方法内部抛出的异常导致该规则校验失败了
+  if (status === 'fulfilled') {
+    return resolved.value
+  }
+  else {
+    const { reason } = resolved
+    return `${DefaultMessage.Fail}: ${reason}`
   }
 }
