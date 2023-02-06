@@ -1,11 +1,16 @@
 import {
-  computed, defineComponent, getCurrentInstance, h, mergeProps,
+  computed,
+  defineComponent,
+  getCurrentInstance,
+  h,
+  mergeProps,
   readonly,
   shallowRef,
 } from 'vue-demi'
 import type {
-
-  DefineComponent, ExtractPropTypes,
+  DefineComponent,
+  ExtractPropTypes,
+  ShallowRef,
   // FunctionalComponent,
 } from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
@@ -13,9 +18,11 @@ import type { MaybeComputedRef } from '@vueuse/shared'
 
 import type { DefineLooseProps } from '../types'
 
-export interface UseComponentWrapperOptions<Props extends Record<string, any>> {
+export interface UseComponentWrapperOptions<Props extends Record<string, any>, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
   component: DefineComponent<Props, any, any>
+
+  ref?: ShallowRef<ComponentRef | null>
 
   /** 弹窗的props，一般用于定义一些在非动态获取的props，比如非接口返回值 */
   state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
@@ -70,9 +77,10 @@ export interface UseComponentWrapperOptions<Props extends Record<string, any>> {
  * })
  * ```
  */
-export function useComponentWrapper<Props extends Record<string, any>, ComponentInstance = {}>(options: UseComponentWrapperOptions<Props>) {
+export function useComponentWrapper<Props extends Record<string, any>, ComponentInstance = unknown>(options: UseComponentWrapperOptions<Props, ComponentInstance>) {
   const {
     component,
+    ref = shallowRef(null),
     state = () => ({}),
   } = options
   const vm = getCurrentInstance()
@@ -80,7 +88,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
   if (vm === null)
     console.warn('[useComponentWrapper] 该函数建议在setup作用域内调用')
 
-  const instance = shallowRef<null | ComponentInstance >(null)
+  const instance = shallowRef(ref)
 
   const cmpState = shallowRef<DefineLooseProps<Props>>({})
   const ivkState = shallowRef<DefineLooseProps<Props>>({})

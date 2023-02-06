@@ -35,6 +35,7 @@ export default defineBuildConfig({
     'lodash-es',
     'type-fest',
     '@bluryar/shared',
+    'naive-ui',
   ],
 
 })

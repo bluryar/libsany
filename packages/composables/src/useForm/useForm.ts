@@ -50,7 +50,9 @@ import { useFormProvide } from './useFormProvide'
  *
  * 如上，子组件通过`inject`获取父元素注入的状态，完成页面的渲染
  */
-export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Params, Response>): UseFormReturns<Params, Response> {
+export function useForm<Params = {}, Response = {} >(
+  options: UseFormOptions<Params, Response>,
+): UseFormReturns<Params, Response> {
   const {
     Model, service, defaultParams = () => ({}), rules, formRef: _formRef = shallowRef<null | FormInstance>(null),
   } = options
@@ -75,13 +77,19 @@ export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Para
 
   async function submit(params?: Partial<Params>, options: SubmitOptions = {}) {
     const {
-      skipValid = false, fields,
+      skipValid = false,
+      fields,
+      onBeforeVerify: onBefore,
+      onAfterVerify: onAfter,
     } = options
 
-    !skipValid && await formRules.verifyAsync(fields)
+    if (!skipValid) {
+      await onBefore?.(fields)
+      await formRules.verifyAsync(fields)
+      await onAfter?.(fields)
+    }
 
     _requestParams.value = formParams.value
-
     return await requestResult.runAsync(params)
   }
 

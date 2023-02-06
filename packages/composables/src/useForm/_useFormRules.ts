@@ -1,4 +1,4 @@
-import { type Ref, computed, reactive, readonly, unref, watchEffect } from 'vue'
+import { type Ref, computed, reactive, readonly, unref, watchEffect } from 'vue-demi'
 import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
 import { isArray, isString, isTrue } from '@bluryar/shared'
 import { pick } from 'lodash-es'
@@ -13,16 +13,29 @@ enum DefaultMessage {
 export interface FormStatusItem {
   /**
    * 表单校验是否通过
+   *
+   * @default false
    */
   isError: boolean
 
   /**
    * 表单项是否发送修改
+   *
+   * @default false
    */
   isDirty: boolean
 
   /**
+   * 是否正在校验
+   *
+   * @default false
+   */
+  isVerifying: boolean
+
+  /**
    * 表单校验错误信息, 注意是数组
+   *
+   * @default [DefaultMessage.Success]
    */
   messages: string[]
 }
@@ -31,7 +44,8 @@ function createStatusItem(): FormStatusItem {
   return {
     isError: !!0,
     isDirty: !!0,
-    messages: [DefaultMessage.Success],
+    isVerifying: !!0,
+    messages: ['校验成功'],
   }
 }
 
@@ -59,22 +73,20 @@ export function useFormRules<Params = {}>(
     _lastModifyModel = modelMap
   })
 
-  function getRules(): Record<string, Rule[]> {
+  function getRules(): Record<KeyOf<Params>, Rule[]> {
     return normalizeObject(
       resolveUnref(rulesTemplate),
       (val: Rules) => isArray(val) ? val : [val],
-    )
+    ) as any
   }
   function getModel() {
     return toPathMap(unref(model))
   }
 
-  function getIsError() {
-    return Array.from(status.values()).some(statusItem => statusItem.isError)
+  function getSomeIsStatus(type: keyof FormStatusItem) {
+    return Array.from(status.values()).some(statusItem => statusItem[type])
   }
-  function getIsDirty() {
-    return Array.from(status.values()).some(statusItem => statusItem.isDirty)
-  }
+
   function getParamsKeys(type: keyof FormStatusItem) {
     return Array.from(status.entries())
       .filter(([_, statusItem]) => statusItem[type])
@@ -85,10 +97,10 @@ export function useFormRules<Params = {}>(
       )
   }
   function getErrorParams() {
-    return pick(unref(model), getParamsKeys('isError'))
+    return pick(unref(model) as Params, getParamsKeys('isError'))
   }
   function getDirtyParams() {
-    return pick(unref(model), getParamsKeys('isDirty'))
+    return pick(unref(model) as Params, getParamsKeys('isDirty'))
   }
 
   /**
@@ -100,6 +112,8 @@ export function useFormRules<Params = {}>(
   async function verifyAsync(fields?: KeyOf<Params>[]): Promise<boolean> {
     const modelMap = getModel()
 
+    clearErrors()
+
     await checkFormRulesAsync(
       fields
         ? new Map(
@@ -110,7 +124,7 @@ export function useFormRules<Params = {}>(
       status,
     )
 
-    return getIsError()
+    return getSomeIsStatus('isError')
   }
 
   /**
@@ -143,14 +157,19 @@ export function useFormRules<Params = {}>(
     status: status as Map<KeyOf<Params>, FormStatusItem>,
 
     /**
+     * 表单正在校验
+     */
+    isVerifying: readonly(computed(() => getSomeIsStatus('isVerifying'))),
+
+    /**
      * 表单是否存在校验失败的项目
      */
-    isError: readonly(computed(getIsError)),
+    isError: readonly(computed(() => getSomeIsStatus('isError'))),
 
     /**
      * 表单是否存在发送修改的项目
      */
-    isDirty: readonly(computed(getIsDirty)),
+    isDirty: readonly(computed(() => getSomeIsStatus('isDirty'))),
 
     /**
      * 校验失败的属性对象
@@ -211,16 +230,20 @@ async function checkFormRulesAsync(
   for (const [modelKey, ruleList] of Object.entries(getRules())) {
     // 初始化了参数Model, 并且有校验规则配置
     if (modelMap.has(modelKey)) {
+      // 设置校验状态
+      const statusItem = mapGetOrInit(status, modelKey)
       const modelValue = modelMap.get(modelKey)
 
       // 归一化处理并执行校验规则
       const checkResultsAsync = ruleList
-        .map(rule => rule(modelValue))
-        .map(returnValue => Promise.resolve(returnValue))
-      const checkResults = (await Promise.allSettled(checkResultsAsync)).map(normalizeAsyncRulesResult)
+        .map(rule => Promise.resolve(rule(modelValue)))
 
-      // 设置校验状态
-      const statusItem = mapGetOrInit(status, modelKey)
+      statusItem.isVerifying = !!1
+      const checkResults = (
+        await Promise.allSettled(checkResultsAsync).finally(() => {
+          statusItem.isVerifying = !!0
+        })
+      ).map(normalizeAsyncRulesResult)
       if (checkResults.map(isTrue)) {
         // 校验成功
         statusItem.isError = !!0

@@ -4,8 +4,9 @@ import type { LiteralUnion } from 'type-fest'
 import type { UseFormRequestOptions, UseFormRequestReturns } from './_useFormRequest'
 import type { useFormRules } from './_useFormRules'
 
+export type MaybeShallowRef<T> = Ref<T> | ShallowRef<T>
+
 export interface FormInstance {
-  validate: <P extends unknown[]>(...args: P) => Promise<unknown> | void
   [k: string]: any
 }
 export type KeyOf<Params = {}> = LiteralUnion<keyof Params, string>
@@ -15,12 +16,7 @@ export type SyncRule<T = unknown> = (val: T) => true | string
 
 /** 规则返回要么是校验通过校验， 要么校验失败显示错误信息 */
 export type Rule<T = unknown> = SyncRule<T> | AsyncRule<T>
-export type NormalizeRule<T = unknown> = (val: T) => {
-  /** 校验通过 */
-  valid: boolean
-  /** 校验失败要显示的信息 */
-  message: string
-}
+
 export type Rules<T = unknown> = Rule<T> | Rule<T>[]
 
 export interface UseFormOptions<Params = {}, Response = {}> extends UseFormRequestOptions<Params, Response> {
@@ -60,7 +56,7 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
    *
    * @default undefined
    */
-  formRef?: Ref<FormInstance | null> | ShallowRef<FormInstance | null>
+  formRef?: MaybeShallowRef<FormInstance | null>
 
   /**
    * 规则校验不再实时监听
@@ -116,6 +112,10 @@ export interface SubmitOptions<Params = {}> {
    * @default undefined
   */
   fields?: KeyOf<Params>[]
+
+  onBeforeVerify?: (fields?: KeyOf<Params>[]) => Promise<void>
+
+  onAfterVerify?: (fields?: KeyOf<Params>[]) => Promise<void>
 }
 
 export interface FormStatus {
