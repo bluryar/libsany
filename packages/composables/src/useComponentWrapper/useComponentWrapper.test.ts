@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { defineAsyncComponent, nextTick, ref, unref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { sleep } from '@bluryar/shared'
-import { useComponentWrapper } from '../src'
-import WrapperComponent from './fixtures/components/Wrapper.vue'
+import WrapperComponent from '../../test/fixtures/components/Wrapper.vue'
+import { useComponentWrapper } from './index'
 
 describe('composable: useComponentWrapper', () => {
   it('should return resolved state', async () => {
@@ -110,7 +110,7 @@ describe('composable: useComponentWrapper', () => {
     })
 
     const { Wrapper, getState, setState: invoke, state } = useComponentWrapper({
-      component: defineAsyncComponent(() => import('./fixtures/components/Wrapper.vue')),
+      component: defineAsyncComponent(() => import('../../test/fixtures/components/Wrapper.vue')),
       // 优先级低
       state: () => ({ foo: foo.value, obj: obj.value }),
     })

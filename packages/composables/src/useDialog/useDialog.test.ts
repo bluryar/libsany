@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineAsyncComponent, nextTick, ref, unref } from 'vue'
 import { sleep } from '@bluryar/shared'
-import { useDialog } from '../src/useDialog'
-import StaticDialog from './fixtures/components/Dialog.vue'
+import StaticDialog from '../../test/fixtures/components/Dialog.vue'
+import { useDialog } from './index'
 
 describe('composable: useDialog', () => {
   it('should open/close dialog by function', async () => {
@@ -122,7 +122,7 @@ describe('composable: useDialog', () => {
     })
 
     const { Dialog, openDialog, closeDialog, visible, getState: getDialogState, setState: setDialogState } = useDialog({
-      component: defineAsyncComponent(() => import('./fixtures/components/Dialog.vue')),
+      component: defineAsyncComponent(() => import('../../test/fixtures/components/Dialog.vue')),
       state: () => {
         return {
           'foo': unref(foo),
