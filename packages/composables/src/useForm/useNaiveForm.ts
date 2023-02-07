@@ -3,7 +3,7 @@ import { resolveUnref } from '@vueuse/shared'
 import type { FormInst, FormItemRule } from 'naive-ui'
 import { NForm } from 'naive-ui'
 import { useComponentWrapper } from '../useComponentWrapper'
-import type { KeyOf, MaybeShallowRef, UseFormOptions } from './types'
+import type { KeyOf, MaybeShallowRef, UseFormOptions, UseFormReturns } from './types'
 import { useForm } from './useForm'
 import type { FormStatusItem } from './_useFormRules'
 
@@ -18,7 +18,21 @@ export interface UseNaiveFormOptions<Params = {}, Response = {}> extends Omit<Us
   validate?: Parameters<FormInst['validate']>
 }
 
-export function useNaiveForm<Params = {}, Response = {}>(_options: UseNaiveFormOptions<Params, Response>) {
+export interface useNaiveFormReturns<Params = {}, Response = {}> extends UseFormReturns<Params, Response> {
+  /**
+   * NForm组件的包装组件， 当作NForm使用即可
+   */
+  MFormWrapper: typeof NForm
+
+  /**
+   * NForm 的组件实例
+   */
+  formRef: MaybeShallowRef<FormInst | null>
+}
+
+export function useNaiveForm<Params = {}, Response = {}>(
+  _options: UseNaiveFormOptions<Params, Response>,
+): useNaiveFormReturns<Params, Response> {
   const nFormRef = shallowRef<FormInst | null>(null)
 
   const {
@@ -52,7 +66,7 @@ export function useNaiveForm<Params = {}, Response = {}>(_options: UseNaiveFormO
   }
 
   const submit: (typeof useFormResult)['submit'] = (params, options) => {
-    return submit(params, {
+    return useFormResult.submit(params, {
       ...options,
       onAfterVerify(fields) {
         return nFormRef.value?.validate(
@@ -75,30 +89,36 @@ export function useNaiveForm<Params = {}, Response = {}>(_options: UseNaiveFormO
   return {
     ...useFormResult,
 
-    MFormWrapper,
+    MFormWrapper: MFormWrapper as unknown as typeof NForm,
     formRef: nFormRef,
     submit,
   }
 }
 
-function nFormRulesTransformer<Params = {}>(key: string, status: Map<KeyOf<Params>, FormStatusItem>): (string | FormItemRule)[] {
+function nFormRulesTransformer<Params = {}>(
+  key: string,
+  status: Map<KeyOf<Params>, FormStatusItem>,
+): (string | FormItemRule)[] {
   return [
     key,
     {
       key,
-      trigger: ['blur', 'change'],
+      trigger: ['blur', 'change', 'input'],
       validator() {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<boolean | void>((resolve, reject) => {
           // 将UI组件的校验迟延后
           nextTick().then(() => {
-            const res = status.get(key) || { isError: !!1, messages: ['表单项校验失败'], isVerifying: !!0 }
+            const res = status.get(key) || {
+              isError: !!1,
+              messages: ['表单项校验失败'],
+              isVerifying: !!0,
+            }
             if (res.isVerifying)
               reject(new Error('校验中...'))
-            if (res.isError)
+            else if (res.isError)
               reject(new Error(res.messages[0]))
-
             else
-              resolve()
+              resolve(true)
           })
         })
       },

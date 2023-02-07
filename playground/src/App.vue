@@ -1,28 +1,55 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
-import { useComponentWrapper, useDialog } from '@bluryar/composables'
-import type { DefineComponent, FunctionalComponent } from 'vue'
-import { defineAsyncComponent, h, ref, unref } from 'vue'
-import type { VueTypeValidableDef } from 'vue-types'
+import { useComponentWrapper, useNaiveForm } from '@bluryar/composables'
+import { defineAsyncComponent, ref, unref } from 'vue'
+import { isNumber, isObject, isString } from '@bluryar/shared'
+import { NButton, NDatePicker, NFormItem, NInput, NInputNumber } from 'naive-ui'
 import HelloWorld from './components/HelloWorld.vue'
 
 const foo = ref(10)
 const obj = ref({ test: 1 })
 const Comp = defineAsyncComponent(() => import('@/components/AsyncComponent.vue'))
-const AsyncCmp: FunctionalComponent<{ foo: number }> = () => h('div', '123')
 
-const { Wrapper: AsyncComponent, setState, getState } = useComponentWrapper({
+const { Wrapper: AsyncComponent, setState } = useComponentWrapper({
   component: Comp,
   state: () => ({ foo: unref(foo) }),
 })
 
 setState(() => ({}))
+
+class Outer {
+  foo = 1
+  bar = ''
+  obj = new Inner()
+}
+
+class Inner {
+  startTime = Date.now()
+  endTime = Date.now()
+}
+
+const service = (params?: Partial<Outer>) => Promise.resolve({ success: !!1, data: params })
+
+const {
+  MFormWrapper,
+  formParams,
+  loading,
+  submit,
+  status,
+  errorParams,
+  responseData,
+} = useNaiveForm({
+  Model: Outer,
+  service,
+  rules: ({
+    'foo': val => (isNumber(val) && val > 10) || '该项必须传入大于10的数字',
+    'obj.startTime': val => (isNumber(val) && val > 10) || '该项必须传入大于10的数字',
+  }),
+})
 </script>
 
 <template>
   <header>
-    <AsyncComponent v-model:foo="foo" v-model:obj="obj" @click="() => {}" />
-
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125">
 
     <div class="wrapper">
@@ -40,6 +67,23 @@ setState(() => ({}))
   </header>
 
   <RouterView />
+
+  <AsyncComponent v-model:foo="foo" v-model:obj="obj" @click="() => {}" />
+
+  <MFormWrapper>
+    <NFormItem path="foo">
+      <NInputNumber v-model:value="formParams.foo" />
+    </NFormItem>
+    <NFormItem path="obj.startTime">
+      <NInputNumber v-model:value="formParams.obj!.startTime" />
+    </NFormItem>
+
+    <NFormItem>
+      <NButton type="primary" :loading="loading" @click="() => submit()">
+        提交
+      </NButton>
+    </NFormItem>
+  </MFormWrapper>
 </template>
 
 <style scoped>

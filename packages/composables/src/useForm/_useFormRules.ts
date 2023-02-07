@@ -1,5 +1,5 @@
 import { type Ref, computed, reactive, readonly, unref, watchEffect } from 'vue-demi'
-import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
+import { resolveUnref } from '@vueuse/shared'
 import { isArray, isString, isTrue } from '@bluryar/shared'
 import { pick } from 'lodash-es'
 import { normalizeObject, toPathMap } from './_utils'
@@ -51,7 +51,7 @@ function createStatusItem(): FormStatusItem {
 
 export function useFormRules<Params = {}>(
   model: Ref<Partial<Params>>,
-  rulesTemplate: MaybeComputedRef<Record<string, Rules>> = () => ({}),
+  rulesTemplate: UseFormOptions<Params>['rules'] = () => ({}),
   options: Pick<UseFormOptions, 'lazyVerify'>,
 ) {
   const {
@@ -93,7 +93,7 @@ export function useFormRules<Params = {}>(
       .map(([key, _]) => key)
       // 剔除可以作为前缀的key
       .filter(
-        (prefix, _, arr) => !arr.some(toCheckKey => (toCheckKey as string).startsWith((prefix as string))),
+        (prefix, _, arr) => !arr.some(toCheckKey => (toCheckKey as string).startsWith((prefix as string)) && toCheckKey !== prefix),
       )
   }
   function getErrorParams() {
@@ -244,7 +244,7 @@ async function checkFormRulesAsync(
           statusItem.isVerifying = !!0
         })
       ).map(normalizeAsyncRulesResult)
-      if (checkResults.map(isTrue)) {
+      if (checkResults.every(isTrue)) {
         // 校验成功
         statusItem.isError = !!0
         statusItem.messages = [DefaultMessage.Success]
@@ -260,7 +260,7 @@ async function checkFormRulesAsync(
   }
 }
 
-function normalizeAsyncRulesResult(resolved: PromiseSettledResult<string | true>): string | true {
+function normalizeAsyncRulesResult(resolved: PromiseSettledResult<string | boolean>): string | boolean {
   const { status } = resolved
   // fullfiled 不一定表示校验通过，可能是一部校验器的方法内部抛出的异常导致该规则校验失败了
   if (status === 'fulfilled') {

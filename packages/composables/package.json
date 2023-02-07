@@ -50,8 +50,7 @@
   },
   "peerDependencies": {
     "@vue/composition-api": "^1.0.0-rc.1",
-    "@vueuse/core": "^9.11.1",
-    "@vueuse/shared": "^9.11.1",
+    "naive-ui": "^2.34.3",
     "vue": "^2.0.0 || >=3.0.0"
   },
   "peerDependenciesMeta": {
@@ -60,13 +59,16 @@
     }
   },
   "dependencies": {
+    "@bluryar/shared": "workspace:*",
     "@vueuse/core": "^9.11.1",
     "@vueuse/shared": "^9.11.1",
-    "vue-demi": "latest"
+    "lodash-es": "^4.17.21",
+    "type-fest": "^3.5.4",
+    "vue-request": "2.0.0-rc.4"
   },
   "devDependencies": {
-    "async-validator": "^4.2.5",
+    "naive-ui": "^2.34.3",
     "vue": "^3.2.45",
-    "vue-request": "2.0.0-rc.4"
+    "vue-demi": "latest"
   }
 }

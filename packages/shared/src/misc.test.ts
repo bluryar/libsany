@@ -34,7 +34,7 @@ describe('function: toRawType', () => {
   })
 })
 
-describe('function: misc', () => {
+describe('function: sleep', () => {
   it('should return await 200ms', async () => {
     let foo = 1
     setTimeout(() => {
@@ -43,5 +43,27 @@ describe('function: misc', () => {
     expect(foo).toBe(1)
     await Misc.sleep(200)
     expect(foo).toBe(2)
+  })
+})
+
+describe('function: newClass', () => {
+  it('should merge params when create instance of Clazz', async () => {
+    class Parent {
+      foo = 1
+      bar = 1
+    }
+    class Child extends Parent {
+      far = 1
+    }
+
+    const c1 = new Child()
+    const c2 = Misc.newClass(Child, { foo: 2, bar: 2 })
+
+    expect(c1.foo).toBe(1)
+    expect(c1.bar).toBe(1)
+    expect(c1.far).toBe(1)
+    expect(c2.foo).toBe(2)
+    expect(c2.bar).toBe(2)
+    expect(c2.far).toBe(1)
   })
 })

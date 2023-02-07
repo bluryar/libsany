@@ -1,8 +1,6 @@
-import { fileURLToPath } from 'node:url'
 import { defineBuildConfig } from 'unbuild'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
-const tsConfigPath = fileURLToPath(new URL('../../tsconfig.json', import.meta.url))
 
 export default defineBuildConfig({
   entries: [
@@ -13,29 +11,20 @@ export default defineBuildConfig({
   clean: true,
   rollup: {
     emitCJS: true,
+
     esbuild: {
       define: {
         __DEV__: JSON.stringify(isDevelopment),
       },
     },
-    inlineDependencies: !!1,
 
-    dts: {
-      tsconfig: tsConfigPath,
-      respectExternal: !!1,
-    },
+    inlineDependencies: !!1,
   },
 
   externals: [
     'vue-demi',
     'vue',
     'vitest',
-    'vue-request',
-    'async-validator',
-    'lodash-es',
-    'type-fest',
-    '@bluryar/shared',
     'naive-ui',
   ],
-
 })

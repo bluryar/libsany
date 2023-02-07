@@ -11,8 +11,8 @@ export interface FormInstance {
 }
 export type KeyOf<Params = {}> = LiteralUnion<keyof Params, string>
 
-export type AsyncRule<T = unknown> = (val: T) => Promise<true | string>
-export type SyncRule<T = unknown> = (val: T) => true | string
+export type AsyncRule<T = unknown> = (val: T) => Promise<boolean | string>
+export type SyncRule<T = unknown> = (val: T) => boolean | string
 
 /** 规则返回要么是校验通过校验， 要么校验失败显示错误信息 */
 export type Rule<T = unknown> = SyncRule<T> | AsyncRule<T>
@@ -26,7 +26,7 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
    * @param params 通常情况下你不需要传入这个参数，这个参数会被返回的`run`和`runAsync`参数
    * @returns
    */
-  service: (params?: Partial<Params>) => Promise<Response>
+  service: (params?: Partial<Params> | Params) => Promise<Response>
 
   /**
    * 表单的数据模型， ES6的类语法。
@@ -42,7 +42,7 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
    *
    * @default {}
    */
-  rules?: MaybeComputedRef<Record<KeyOf<Params>, Rules>>
+  rules?: MaybeComputedRef<Partial<Record<KeyOf<Params>, Rules>>>
 
   /**
    * 默认参数，某些情况下，表单会有某些字段需要默认值

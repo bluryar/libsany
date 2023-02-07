@@ -1,6 +1,7 @@
 import { type Ref, ref, shallowRef, unref } from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
 import { get } from 'lodash-es'
+import { newClass } from '@bluryar/shared'
 import { useFormRequest } from './_useFormRequest'
 import type { FormInstance, KeyOf, SubmitOptions, UseFormOptions, UseFormReturns } from './types'
 import { useFormRules } from './_useFormRules'
@@ -57,7 +58,7 @@ export function useForm<Params = {}, Response = {} >(
     Model, service, defaultParams = () => ({}), rules, formRef: _formRef = shallowRef<null | FormInstance>(null),
   } = options
 
-  const _createInitFormData = () => new Model(resolveUnref(defaultParams))
+  const _createInitFormData = () => newClass(Model, resolveUnref(defaultParams))
 
   const formRef = shallowRef(_formRef)
   /** 发送请求时使用的参数 */
