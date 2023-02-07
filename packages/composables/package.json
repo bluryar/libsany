@@ -25,7 +25,7 @@
       "import": "./dist/index.mjs"
     }
   },
-  "main": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "typesVersions": {
@@ -64,6 +64,7 @@
     "@vueuse/shared": "^9.11.1",
     "lodash-es": "^4.17.21",
     "type-fest": "^3.5.4",
+    "vue-demi": "latest",
     "vue-request": "2.0.0-rc.4"
   },
   "devDependencies": {

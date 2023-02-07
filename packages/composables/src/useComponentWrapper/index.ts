@@ -6,14 +6,14 @@ import {
   mergeProps,
   readonly,
   shallowRef,
+  watchEffect,
 } from 'vue-demi'
 import type {
   DefineComponent,
   ExtractPropTypes,
   ShallowRef,
-  // FunctionalComponent,
 } from 'vue-demi'
-import { resolveUnref } from '@vueuse/shared'
+import { resolveUnref, tryOnScopeDispose } from '@vueuse/shared'
 import type { MaybeComputedRef } from '@vueuse/shared'
 
 import type { DefineLooseProps } from '../types'
@@ -92,6 +92,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
 
   const cmpState = shallowRef<DefineLooseProps<Props>>({})
   const ivkState = shallowRef<DefineLooseProps<Props>>({})
+
   const resolveState = () => {
     const _state = resolveUnref(state)
     const _ivkState = resolveUnref(ivkState)
@@ -119,23 +120,36 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     name: 'UseComponentWrapper',
     __name: 'UseComponentWrapper',
     setup(props, ctx) {
-      cmpState.value = mergeProps({}, ctx.attrs, props as any)
-      return () => h(component as DefineComponent, {
-        ...resolveUnref(wrapperState),
-        ref: el => instance.value = el as any,
-      }, ctx.slots)
+      const stopWatch = watchEffect(() => {
+        cmpState.value = mergeProps({}, ctx.attrs, props as any)
+      })
+
+      tryOnScopeDispose(() => {
+        stopWatch()
+        cmpState.value = {}
+      })
+
+      return () => {
+        return h(
+          component as DefineComponent,
+          {
+            ...resolveUnref(wrapperState),
+            ref: el => instance.value = el as any,
+          },
+          ctx.slots,
+        )
+      }
     },
   })
-  // const UseComponentWrapper: FunctionalComponent<ExtractPropTypes<Props>> = (props, ctx) => {
-  //   cmpState.value = mergeProps({}, ctx.attrs, props as any)
-  //   return h(component as Component, resolveUnref(wrapperState), ctx.slots)
-  // }
-  // UseComponentWrapper.__name = 'UseComponentWrapper'
-  // UseComponentWrapper.displayName = 'UseComponentWrapper'
 
   function invoke(_state?: typeof state | MaybeComputedRef<undefined>) {
     ivkState.value = resolveUnref(_state)
   }
+
+  tryOnScopeDispose(() => {
+    cmpState.value = {}
+    ivkState.value = {}
+  })
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */

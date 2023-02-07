@@ -101,6 +101,40 @@ describe('composable: useComponentWrapper', () => {
         },
       }
     `)
+
+    cmp1.unmount()
+
+    await nextTick()
+    await nextTick()
+
+    expect(unref(state)).toMatchInlineSnapshot(`
+      {
+        "foo": 5,
+        "obj": {
+          "test": 5,
+        },
+        "onUpdate:foo": [Function],
+        "onUpdate:obj": [Function],
+      }
+    `)
+    expect(getState()).toMatchInlineSnapshot(`
+      {
+        "foo": 5,
+        "obj": {
+          "test": 5,
+        },
+        "onUpdate:foo": [Function],
+        "onUpdate:obj": [Function],
+      }
+    `)
+    expect({ foo: foo.value, obj: obj.value }).toMatchInlineSnapshot(`
+      {
+        "foo": 5,
+        "obj": {
+          "test": 5,
+        },
+      }
+    `)
   })
 
   it('should mount async component and sync resolved state', async () => {
