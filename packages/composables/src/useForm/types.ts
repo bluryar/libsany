@@ -19,7 +19,8 @@ export type Rule<T = unknown> = SyncRule<T> | AsyncRule<T>
 
 export type Rules<T = unknown> = Rule<T> | Rule<T>[]
 
-export interface UseFormOptions<Params = {}, Response = {}> extends UseFormRequestOptions<Params, Response> {
+export interface UseFormOptions<Params = {}, Response = {}> {
+
   /**
    * 请求函数
    *
@@ -38,18 +39,18 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
   Model: new (params?: Partial<Params>) => Params
 
   /**
-   * 校验规则
-   *
-   * @default {}
-   */
-  rules?: MaybeComputedRef<Partial<Record<KeyOf<Params>, Rules>>>
-
-  /**
    * 默认参数，某些情况下，表单会有某些字段需要默认值
    *
    * 甚至同一个表单组件在不同状态下会有不同的默认值，因此这样不适合用类声明的默认值来解决这一需求
    */
   defaultParams?: MaybeComputedRef<Partial<Params>>
+
+  /**
+   * 校验规则
+   *
+   * @default {}
+   */
+  rules?: MaybeComputedRef<Partial<Record<KeyOf<Params>, Rules>>>
 
   /**
    * 表单实例，假如不为空，hook内部不会声明这个ref（shallow）
@@ -59,6 +60,13 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
   formRef?: MaybeShallowRef<FormInstance | null>
 
   /**
+     * @desc - 网络请求的参数
+     *
+     * [请查看 📄 UseRequest.Options](https://next.cn.attojs.org/api/#options)
+     */
+  formRequest?: UseFormRequestOptions<Params, Response>
+
+  /**
    * 规则校验不再实时监听
    *
    * @default false
@@ -66,7 +74,7 @@ export interface UseFormOptions<Params = {}, Response = {}> extends UseFormReque
   lazyVerify?: boolean
 }
 
-export interface UseFormReturns<Params = {}, Response = {}> extends UseFormRequestReturns<Params, Response>, ReturnType<typeof useFormRules<Params>> {
+export interface UseFormReturns<Params = {}, Response = {}> extends ReturnType<typeof useFormRules<Params>> {
   /**
    * 表单组件实例，如果由传入就复用传入的，没有就创建一个待用
    */
@@ -76,6 +84,13 @@ export interface UseFormReturns<Params = {}, Response = {}> extends UseFormReque
    * 表单参数，用于页面编辑
    */
   formParams: Ref<Partial<Params>>
+
+  /**
+   * @desc - 网络请求的返回值
+   *
+   * [📄 UseRequest.Returns](https://next.cn.attojs.org/api/#return-values)
+   */
+  formRequest: UseFormRequestReturns<Params, Response>
 
   /**
    * @desc 提交表单

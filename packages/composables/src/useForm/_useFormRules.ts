@@ -1,9 +1,9 @@
 import { type Ref, computed, reactive, readonly, unref, watchEffect } from 'vue-demi'
 import { resolveUnref } from '@vueuse/shared'
-import { isArray, isString, isTrue } from '@bluryar/shared'
+import { isArray, isString, isTrue, objectToFlattenMap } from '@bluryar/shared'
 import { pick } from 'lodash-es'
-import { normalizeObject, toPathMap } from './_utils'
 import type { KeyOf, Rule, Rules, UseFormOptions } from './types'
+import { normalizeFormRulesObject } from './_utils'
 
 enum DefaultMessage {
   Success = '校验成功',
@@ -74,13 +74,13 @@ export function useFormRules<Params = {}>(
   })
 
   function getRules(): Record<KeyOf<Params>, Rule[]> {
-    return normalizeObject(
+    return normalizeFormRulesObject(
       resolveUnref(rulesTemplate),
       (val: Rules) => isArray(val) ? val : [val],
     ) as any
   }
   function getModel() {
-    return toPathMap(unref(model))
+    return objectToFlattenMap(unref(model))
   }
 
   function getSomeIsStatus(type: keyof FormStatusItem) {

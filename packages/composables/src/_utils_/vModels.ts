@@ -1,4 +1,4 @@
-import type { Ref, UnwrapRef } from 'vue'
+import type { Ref, UnwrapRef } from 'vue-demi'
 
 export type VModels<P extends Record<string, Ref<unknown>>> = { [Key in keyof P]: UnwrapRef<P[Key]> } & Record<`onUpdate:${Exclude<keyof P, Symbol>}`, (val: UnwrapRef<P[keyof P]>) => any>
 

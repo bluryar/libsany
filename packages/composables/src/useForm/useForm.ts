@@ -71,7 +71,7 @@ export function useForm<Params = {}, Response = {} >(
       ...unref(_requestParams),
       ...resolveUnref(params),
     }),
-    options,
+    options.formRequest,
   )
 
   const formRules = useFormRules<Params>(formParams, rules, options)
@@ -110,8 +110,9 @@ export function useForm<Params = {}, Response = {} >(
   }
 
   const returnVal: UseFormReturns<Params, Response> = {
-    ...requestResult,
     ...formRules,
+
+    formRequest: requestResult,
 
     formRef,
     formParams,

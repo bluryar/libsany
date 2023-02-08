@@ -1,9 +1,11 @@
 import {
   computed,
   defineComponent,
+  effectScope,
   getCurrentInstance,
   h,
   mergeProps,
+  onScopeDispose,
   readonly,
   shallowRef,
   watchEffect,
@@ -13,7 +15,7 @@ import type {
   ExtractPropTypes,
   ShallowRef,
 } from 'vue-demi'
-import { resolveUnref, tryOnScopeDispose } from '@vueuse/shared'
+import { resolveUnref } from '@vueuse/shared'
 import type { MaybeComputedRef } from '@vueuse/shared'
 
 import type { DefineLooseProps } from '../types'
@@ -84,6 +86,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     state = () => ({}),
   } = options
   const vm = getCurrentInstance()
+  const scope = effectScope()
 
   if (vm === null)
     console.warn('[useComponentWrapper] 该函数建议在setup作用域内调用')
@@ -103,14 +106,16 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
 
     const checkList = [_state ?? {}, _ivkState ?? {}, _cmpState ?? {}]
 
-    // 检查是否重复设置状态，重复设置不利于维护
-    Object.keys(obj).forEach((k) => {
-      const exitsCount = checkList.filter((s) => {
-        return Object.prototype.hasOwnProperty.call(s, k)
+    if (__DEV__) {
+      // 检查是否重复设置状态，重复设置不利于维护
+      Object.keys(obj).forEach((k) => {
+        const exitsCount = checkList.filter((s) => {
+          return Object.prototype.hasOwnProperty.call(s, k)
+        })
+        if (exitsCount.length > 1)
+          console.warn('[useComponentWrapper] 建议用户不要将同一个属性从不同地方多次传入')
       })
-      if (exitsCount.length > 1)
-        console.warn('[useComponentWrapper] 建议用户不要将同一个属性从不同地方多次传入')
-    })
+    }
 
     return obj as Partial<ExtractPropTypes<Props>>
   }
@@ -120,13 +125,14 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     name: 'UseComponentWrapper',
     __name: 'UseComponentWrapper',
     setup(props, ctx) {
-      const stopWatch = watchEffect(() => {
-        cmpState.value = mergeProps({}, ctx.attrs, props as any)
+      scope.run(() => {
+        watchEffect(() => {
+          cmpState.value = mergeProps({}, ctx.attrs, props as any)
+        })
       })
 
-      tryOnScopeDispose(() => {
-        stopWatch()
-        cmpState.value = {}
+      onScopeDispose(() => {
+        cmpState.value = undefined
       })
 
       return () => {
@@ -146,9 +152,10 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     ivkState.value = resolveUnref(_state)
   }
 
-  tryOnScopeDispose(() => {
-    cmpState.value = {}
-    ivkState.value = {}
+  onScopeDispose(() => {
+    cmpState.value = undefined
+    ivkState.value = undefined
+    scope.stop()
   })
 
   return {
