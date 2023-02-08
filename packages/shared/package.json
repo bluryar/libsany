@@ -1,6 +1,6 @@
 {
   "name": "@bluryar/shared",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": false,
   "description": "⚙️ `web` 和 `node` 公用的同一套工具代码",
   "author": "bluryar <bluryarl@gmail.com>",
@@ -44,13 +44,16 @@
   ],
   "scripts": {
     "build": "cross-env NODE_ENV=production unbuild",
-    "stub": "unbuild --stub",
-    "bump:patch": "npx bumpp patch --no-commit --no-tag --no-push --yes",
-    "bump:minor": "npx bumpp minor --no-commit --no-tag --no-push --yes",
     "bump:major": "npx bumpp major --no-commit --no-tag --no-push --yes",
-    "release": "npm publish"
+    "bump:minor": "npx bumpp minor --no-commit --no-tag --no-push --yes",
+    "bump:patch": "npx bumpp patch --no-commit --no-tag --no-push --yes",
+    "release": "npm publish",
+    "stub": "unbuild --stub"
   },
   "devDependencies": {
     "lodash-es": "^4.17.21"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
