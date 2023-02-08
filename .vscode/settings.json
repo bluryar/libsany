@@ -51,6 +51,13 @@
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
   "git.untrackedChanges": "separate",
+  "GitCommitPlugin.Templates": [
+    {
+      "templateName": "Angular",
+      "templateContent": "<type>(<scope>):<space><icon><space><subject><enter><body><enter><footer>",
+      "default": true
+    }
+  ],
   "terminal.integrated.cursorBlinking": true,
   "terminal.integrated.cursorStyle": "line",
   "terminal.integrated.fontWeight": "300",

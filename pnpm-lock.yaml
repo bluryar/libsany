@@ -5,10 +5,10 @@ importers:
   .:
     specifiers:
       '@antfu/ni': ^0.19.0
-      '@bluryar/commitlint-config': ^1.0.5
-      '@bluryar/eslint-config-vue': ^1.0.5
+      '@bluryar/commitlint-config': ^1.0.6
+      '@bluryar/eslint-config-vue': ^1.0.6
       '@bluryar/shared': workspace:*
-      '@bluryar/tsconfig': ^1.0.5
+      '@bluryar/tsconfig': ^1.0.6
       '@commitlint/config-conventional': ^17.4.2
       '@rushstack/eslint-patch': ^1.2.0
       '@types/jsdom': ^20.0.1
@@ -41,10 +41,10 @@ importers:
       vue-types: ^5.0.2
     devDependencies:
       '@antfu/ni': 0.19.0
-      '@bluryar/commitlint-config': 1.0.5
-      '@bluryar/eslint-config-vue': 1.0.5_l36yidrw337hwf2rtnamh77lgq
+      '@bluryar/commitlint-config': 1.0.6
+      '@bluryar/eslint-config-vue': 1.0.6_l36yidrw337hwf2rtnamh77lgq
       '@bluryar/shared': link:packages/shared
-      '@bluryar/tsconfig': 1.0.5_@types+node@18.11.18
+      '@bluryar/tsconfig': 1.0.6_@types+node@18.11.18
       '@commitlint/config-conventional': 17.4.2
       '@rushstack/eslint-patch': 1.2.0
       '@types/jsdom': 20.0.1
@@ -93,11 +93,11 @@ importers:
       '@vueuse/shared': 9.12.0_vue@3.2.45
       lodash-es: 4.17.21
       type-fest: 3.5.4
+      vue-demi: 0.13.11_vue@3.2.45
       vue-request: 2.0.0-rc.4_vue@3.2.45
     devDependencies:
       naive-ui: 2.34.3_vue@3.2.45
       vue: 3.2.45
-      vue-demi: 0.13.11_vue@3.2.45
 
   packages/shared:
     specifiers: {}
@@ -535,14 +535,14 @@ packages:
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
 
-  /@bluryar/commitlint-config/1.0.5:
-    resolution: {integrity: sha512-qU1AENjtJjVVRahJBTjSosDwf5pzUd6uMre3iCIlnsl8EWlD+f+QKz6Cr5WmGEG985TOtb8P4w0uzxhgJkfvsg==}
+  /@bluryar/commitlint-config/1.0.6:
+    resolution: {integrity: sha512-cDMato9zNBBUqzjkmBDg1C4FFXf7PbjNAN3eAFa28AwpMs9zn9Lynr39ZCWzZgITbcyX7e4CFVzMNE9soGL8Sw==}
     dependencies:
       '@commitlint/config-conventional': 17.4.2
     dev: true
 
-  /@bluryar/eslint-config-vue/1.0.5_l36yidrw337hwf2rtnamh77lgq:
-    resolution: {integrity: sha512-oXNnHjcFW/Pw6lu3+JJwULOlrCFEH+tUXDSDIkiJJH1rljtwvqNrrPCmruYeblDHvqtFL33nSy7gCha4XeFcWQ==}
+  /@bluryar/eslint-config-vue/1.0.6_l36yidrw337hwf2rtnamh77lgq:
+    resolution: {integrity: sha512-m8QdQVfYq/QZg4TeJ+zvUiZORaulZhpHoosa7XRgSda6hJBupRl0oEusU0twSuS9yTsw0dHPEe6YCUl1Ki+wYA==}
     dependencies:
       '@antfu/eslint-config': 0.34.1_l36yidrw337hwf2rtnamh77lgq
     transitivePeerDependencies:
@@ -554,8 +554,8 @@ packages:
       - typescript
     dev: true
 
-  /@bluryar/tsconfig/1.0.5_@types+node@18.11.18:
-    resolution: {integrity: sha512-+VAS+m9NqOCpKO4zklwUC/KxxtVwhVXV4ROVqNeYhQUBguggDs0PbNrXpnlXmJfiFDD875RaetsMstvBoTLL+A==}
+  /@bluryar/tsconfig/1.0.6_@types+node@18.11.18:
+    resolution: {integrity: sha512-6ZMb7M2QdgCX7vvlk9ikwGwT3Vqbx3BdWFqVTpenzsnoNy6WYSZLYLJE3d7W3MEeIJFg/C9xHYAupKEy9S2e3w==}
     dependencies:
       '@vue/tsconfig': 0.1.3_@types+node@18.11.18
     transitivePeerDependencies:
@@ -6980,6 +6980,7 @@ packages:
         optional: true
     dependencies:
       vue: 3.2.45
+    dev: false
 
   /vue-eslint-parser/9.1.0_eslint@8.33.0:
     resolution: {integrity: sha512-NGn/iQy8/Wb7RrRa4aRkokyCZfOUWk19OP5HP6JEozQFX5AoS/t+Z0ZN7FY4LlmWc4FNI922V7cvX28zctN8dQ==}
