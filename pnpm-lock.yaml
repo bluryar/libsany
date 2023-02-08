@@ -100,7 +100,10 @@ importers:
       vue: 3.2.45
 
   packages/shared:
-    specifiers: {}
+    specifiers:
+      lodash-es: ^4.17.21
+    devDependencies:
+      lodash-es: 4.17.21
 
   playground:
     specifiers:

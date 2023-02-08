@@ -48,5 +48,8 @@
     "bump:minor": "npx bumpp minor --no-commit --no-tag --no-push --yes",
     "bump:major": "npx bumpp major --no-commit --no-tag --no-push --yes",
     "release": "npm publish"
+  },
+  "devDependencies": {
+    "lodash-es": "^4.17.21"
   }
 }
