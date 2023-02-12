@@ -26,5 +26,6 @@ export default defineBuildConfig({
     'vue',
     'vitest',
     'naive-ui',
+    'lodash-es',
   ],
 })

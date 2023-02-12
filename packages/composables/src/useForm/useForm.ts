@@ -1,127 +1,170 @@
-import { type Ref, ref, shallowRef, unref } from 'vue-demi'
+import { cloneDeep, get, intersection, set } from 'lodash-es'
+import { type Ref, computed, ref, shallowRef, unref, watchEffect } from 'vue-demi'
+import { flattenMapToObject } from '@bluryar/shared'
 import { resolveUnref } from '@vueuse/shared'
-import { get } from 'lodash-es'
-import { newClass } from '@bluryar/shared'
-import { useFormRequest } from './_useFormRequest'
-import type { FormInstance, KeyOf, SubmitOptions, UseFormOptions, UseFormReturns } from './types'
-import { useFormRules } from './_useFormRules'
+import { type Service, useFormRequest } from './_useFormRequest'
+import { FormItemChecker } from './FormItemChecker'
+import type { FormStatus, KeyOf, UseFormOptions } from './types'
 import { useFormProvide } from './useFormProvide'
+import { type FormItemStatus, StatusVerifyDefaultMessage } from './FormItemStatus'
 
-/**
- * @desc **Features**: 表单状态管理、网络请求以及规则校验函数
- *
- * @examples
- * _Parent_
- * ```html
- * <script setup lang="ts">
- * import Child from './Child'
- *
- * const {
- *   submit, reset, verify, clearErrors, formParams
- * } = useForm()
- *
- * // 其他逻辑
- * </script>
- *
- * <template>
- *   <div>
- *     <Child></Child>
- *   </div>
- * </template>
- * ```
- *
- * 如上，父组件管理者表单请求和表单校验、参数重置等操作，这些操作可以由其他元素的事件触发
- *
- * _Child_
- * ```html
- * <script setup lang="ts">
- * const {
- *   submit, reset, verify, clearErrors, formParams
- * } = useForm()
- *
- * // 其他逻辑
- * </script>
- *
- * <template>
- *   <div>
- *     <!-- 表单模板 -->
- *   </div>
- * </template>
- * ```
- *
- * 如上，子组件通过`inject`获取父元素注入的状态，完成页面的渲染
- */
-export function useForm<Params = {}, Response = {} >(
-  options: UseFormOptions<Params, Response>,
-): UseFormReturns<Params, Response> {
+export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Params, Response>) {
   const {
-    Model, service, defaultParams = () => ({}), rules, formRef: _formRef = shallowRef<null | FormInstance>(null),
+    service, defaultParams, formRequestOptions, rules = {}, formRef: _formRef = shallowRef(null),
   } = options
 
-  const _createInitFormData = () => newClass(Model, resolveUnref(defaultParams))
+  const _defaultParams = cloneDeep(defaultParams)
+  const getInitParams = () => cloneDeep(_defaultParams)
 
   const formRef = shallowRef(_formRef)
-  /** 发送请求时使用的参数 */
-  const _requestParams = ref(_createInitFormData()) as Ref<Partial<Params>>
-  /** 正在编辑的参数，即发送请求前使用的参数 */
-  const formParams = ref(_createInitFormData()) as Ref<Partial<Params>>
 
-  const requestResult = useFormRequest(
-    (params?: Partial<Params>) => service({
-      ...unref(_requestParams),
-      ...resolveUnref(params),
-    }),
-    options.formRequest,
-  )
+  const { formParams, formRequestReturns, syncParams } = useFormRequestion()
 
-  const formRules = useFormRules<Params>(formParams, rules, options)
+  const formCheckerReturns = useFormChecker()
 
-  async function submit(params?: Partial<Params>, options: SubmitOptions = {}) {
-    const {
-      skipValid = false,
-      fields,
-      onBeforeVerify: onBefore,
-      onAfterVerify: onAfter,
-    } = options
+  const {
+    validate,
+  } = formCheckerReturns
 
-    if (!skipValid) {
-      await onBefore?.(fields)
-      await formRules.verifyAsync(fields)
-      await onAfter?.(fields)
+  const submit = async (fields?: KeyOf<Partial<Params>>[]) => {
+    const res = await validate(fields)
+
+    if (!res)
+      throw new Error('校验失败')
+
+    syncParams()
+
+    return formRequestReturns.runAsync()
+  }
+
+  const reset = (fields?: KeyOf<Partial<Params>>[]) => {
+    const initParams = getInitParams()
+
+    if (fields?.length) {
+      fields?.forEach((key) => {
+        set(formParams.value, key, get(initParams, key))
+      })
     }
-
-    _requestParams.value = formParams.value
-    return await requestResult.runAsync(params)
+    else { formParams.value = initParams }
   }
 
-  /**
-   * @param fields 需要重置的字段，如果为空则重置所有
-   */
-  async function reset(fields?: KeyOf<Params>[]) {
-    // 备份需要不重置的字段
-    const bak = fields
-      ? get(formParams.value, fields) ?? {}
-      : formParams.value
-
-    formParams.value = { ..._createInitFormData(), ...bak }
-    _requestParams.value = formParams.value
-
-    formRules.clearErrors(fields)
-  }
-
-  const returnVal: UseFormReturns<Params, Response> = {
-    ...formRules,
-
-    formRequest: requestResult,
-
+  return useFormProvide({
     formRef,
     formParams,
+
+    formRequestReturns,
+
     submit,
     reset,
+
+    ...formCheckerReturns,
+  })
+
+  function useFormChecker(): {
+    formChecker: FormItemChecker<Params>
+    formStatus: FormStatus<Params>
+    formItemsStatus: Ref<Map<KeyOf<Partial<Params>>, FormItemStatus>>
+    validate: (fields?: KeyOf<Partial<Params>>[]) => Promise<boolean>
+    clearErrors: (fields?: KeyOf<Partial<Params>>[]) => void
+  } {
+    const formChecker = new FormItemChecker(formParams, getInitParams(), rules)
+    const { formItemsStatus } = formChecker
+
+    const getStatusArrayByBool = (type: keyof FormItemStatus) => Array.from(unref(formItemsStatus)).filter(([, status]) => status[type])
+    const errorsMap = computed(() => new Map(getStatusArrayByBool('isError')))
+    const dirtyMap = computed(() => new Map(getStatusArrayByBool('isDirty')))
+    const verifyingMap = computed(() => new Map(getStatusArrayByBool('isVerifying')))
+
+    const isError = computed(() => !!resolveUnref(errorsMap).size)
+    const isDirty = computed(() => !!resolveUnref(dirtyMap).size)
+    const isVerifying = computed(() => !!resolveUnref(verifyingMap).size)
+
+    const dirtyParams = computed(() => flattenMapToObject(resolveUnref(dirtyMap) as any) as Partial<Params>)
+
+    const errorKeys = computed(() => Array.from((resolveUnref(errorsMap)).keys()))
+    const dirtyKeys = computed(() => Array.from((resolveUnref(dirtyMap)).keys()))
+    const verifyingKeys = computed(() => Array.from((resolveUnref(dirtyMap)).keys()))
+
+    const checkForm = async () => {
+      // 先同步表单数据
+      formChecker.updateParamsPathMap()
+
+      // 开启检查
+      formChecker.checkDirty()
+      // 开启校验
+      await formChecker.checkVerify()
+    }
+    watchEffect(checkForm)
+
+    const getErrorsByFields = (fields?: KeyOf<Partial<Params>>[]) => {
+      const _errorKeys = resolveUnref(errorKeys)
+      const errors = fields?.length ? intersection(_errorKeys, fields) : _errorKeys
+
+      return new Map(
+        Array
+          .from(formItemsStatus.value)
+          .filter(([key]) => errors.includes(key)),
+      )
+    }
+
+    const validate = async (fields?: KeyOf<Partial<Params>>[]) => {
+      await checkForm()
+      const errors = getErrorsByFields(fields)
+      return !!errors.size
+    }
+
+    const clearErrors = (fields?: KeyOf<Partial<Params>>[]) => {
+      const errors = getErrorsByFields(fields)
+
+      for (const [key, status] of formItemsStatus.value) {
+        if (errors.has(key)) {
+          status.isError = false
+          status.messages = [StatusVerifyDefaultMessage.Success]
+        }
+      }
+    }
+
+    const formStatus: FormStatus<Params> = {
+      errorsMap,
+      dirtyMap,
+      verifyingMap,
+
+      isError,
+      isDirty,
+      isVerifying,
+
+      errorKeys,
+      dirtyKeys,
+      verifyingKeys,
+
+      dirtyParams,
+    }
+
+    return {
+      formChecker,
+
+      formStatus,
+
+      formItemsStatus,
+
+      validate,
+
+      clearErrors,
+    }
   }
 
-  // 向下注入
-  useFormProvide(returnVal)
+  function useFormRequestion() {
+    const _requestParams = ref(getInitParams()) as Ref<Partial<Params>>
+    const formParams = ref(getInitParams()) as Ref<Partial<Params>>
 
-  return returnVal
+    const formService: Service<Params, Response> = (params?: Partial<Params>) => service({ ...unref(_requestParams), ...params })
+
+    const formRequestReturns = useFormRequest(formService, formRequestOptions)
+
+    const syncParams = () => {
+      _requestParams.value = formParams.value
+    }
+
+    return { formParams, formRequestReturns, syncParams }
+  }
 }

@@ -15,4 +15,6 @@ export function useFormInject<Params = {}, Response = {}>(params?: UseFormReturn
 
 export function useFormProvide<Params = {}, Response = {}>(params: UseFormReturns<Params, Response>) {
   provide(UseFormKey, params as object)
+
+  return params
 }

@@ -46,7 +46,7 @@ describe('function: sleep', () => {
   })
 })
 
-describe('function: newClass', () => {
+describe('function: newClassWithParams', () => {
   it('should merge params when create instance of Clazz', async () => {
     class Parent {
       foo = 1
@@ -57,7 +57,7 @@ describe('function: newClass', () => {
     }
 
     const c1 = new Child()
-    const c2 = Misc.newClass(Child, { foo: 2, bar: 2 })
+    const c2 = Misc.newClassWithParams(Child, { foo: 2, bar: 2 })
 
     expect(c1.foo).toBe(1)
     expect(c1.bar).toBe(1)

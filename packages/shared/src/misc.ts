@@ -26,6 +26,8 @@ export const sleep = (ms: number) => {
 }
 
 /**
+ * @todo RENAME 避免歧义
+ *
  * 创建实例对象， 进行对象的合并
  *
  * @param Clazz 类构造器
@@ -42,7 +44,7 @@ export const sleep = (ms: number) => {
  * newClass(Model, { foo: 2 }) // => { foo: 2, bar: 2 }
  * ```
  */
-export const newClass = <Params = {}>(
+export const newClassWithParams = <Params = {}>(
   Clazz: (new (p?: Partial<Params>) => Params) | (new () => Params),
   p?: Partial<Params>,
 ) => {

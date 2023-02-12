@@ -17,5 +17,5 @@ export default defineBuildConfig({
     },
     inlineDependencies: !!1,
   },
-
+  externals: ['lodash-es'],
 })
