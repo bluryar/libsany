@@ -41,6 +41,13 @@ export interface UseFormOptions<Params = {}, Response = {}> {
   rules?: MaybeComputedRef<RulesRecord<Params>>
 
   /**
+   * 不需要深层监听的key, 对于一些大数据对象, 我们只关心它存在与否, 可以标记他们不需要深层的监听
+   *
+   * @default []
+   */
+  shallowKeys?: MaybeComputedRef<KeyOf<Params>[]>
+
+  /**
    * @description - 表单实例
    *
    * 假如不为空，hook内部不会声明这个ref（shallow）
@@ -56,7 +63,7 @@ export interface UseFormOptions<Params = {}, Response = {}> {
    *
    * [请查看 📄 UseRequest.Options](https://next.cn.attojs.org/api/#options)
    */
-  formRequestOptions: UseFormRequestOptions<Params, Response>
+  formRequestOptions?: UseFormRequestOptions<Params, Response>
 }
 
 export interface FormStatus<Params = {}> {

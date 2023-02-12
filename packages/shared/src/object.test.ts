@@ -31,7 +31,7 @@ describe('function: normalizeKey', () => {
 
 describe('function: objectToFlattenMap', () => {
   it('should transform nested object to map', () => {
-    const target = objectToFlattenMap(source)
+    const target = objectToFlattenMap({ source })
 
     expect(target).toMatchInlineSnapshot(`
       Map {
@@ -67,11 +67,23 @@ describe('function: objectToFlattenMap', () => {
       }
     `)
   })
+
+  it('should skip the keys of options.ignores params', () => {
+    const target = objectToFlattenMap({
+      source: { ...source, ...{ plgs: Array.from({ length: 100000 }).map((_, idx) => ({ foo: idx })) } },
+      shallowKeys: [
+        'plgs',
+      ],
+    })
+    expect(target.get('plgs')).not.toBeUndefined()
+    expect(target.get('plgs.0')).toBeUndefined()
+    expect(target.get('plgs.99999')).toBeUndefined()
+  })
 })
 
 describe('function: filterFlattenMap', () => {
   it('should remove non leaf node', () => {
-    const target = filterFlattenMap(objectToFlattenMap(source))
+    const target = filterFlattenMap(objectToFlattenMap({ source }))
 
     expect(target).toMatchInlineSnapshot(`
       Map {
@@ -86,7 +98,7 @@ describe('function: filterFlattenMap', () => {
 
 describe('function: flattenMapToObject', () => {
   it('should', () => {
-    const target = flattenMapToObject(filterFlattenMap(objectToFlattenMap(source)))
+    const target = flattenMapToObject(filterFlattenMap(objectToFlattenMap({ source })))
     expect(target).toMatchInlineSnapshot(`
       {
         "arr": [

@@ -8,6 +8,24 @@ export function normalizeKey(k: string) {
   return toPath(k).join('.')
 }
 
+interface ObjectToFlattenMapOptions {
+  source: object
+
+  prefix?: string
+  map?: Map<any, any>
+  depth?: number
+
+  /**
+   * @default 10
+   */
+  maxDepth?: number
+
+  /**
+   * 不进行深层遍历的key
+   */
+  shallowKeys?: string[]
+}
+
 /**
  * @desc 将JS对象转换为扁平的键值对
  *
@@ -22,21 +40,23 @@ export function normalizeKey(k: string) {
  *
  * ```
  */
-export function objectToFlattenMap(params: object, prefix?: string, map = new Map(), depth = 0, maxDepth = 10): Map<string, unknown> {
+export function objectToFlattenMap(options: ObjectToFlattenMapOptions): Map<string, unknown> {
+  const { source: params, prefix, map = new Map(), depth = 0, maxDepth = 10, shallowKeys = [] } = options
+
   for (const [k, v] of Object.entries(params)) {
     const key = prefix ? `${prefix}.${k}` : k
 
+    if (depth >= maxDepth)
+      return map
+
     map.set(key, v)
 
-    if (depth >= maxDepth) {
-      console.warn('[toPathMap] 递归深度太深, 提前退出...')
-
+    if (shallowKeys.includes(key))
       return map
-    }
 
     // 数组和普通对象
     if (isArray(v) || isPlainObject(v))
-      objectToFlattenMap(v, key, map, depth + 1)
+      objectToFlattenMap({ source: v, prefix: key, map, depth: depth + 1, shallowKeys })
   }
   return map
 }

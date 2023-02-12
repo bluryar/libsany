@@ -1,9 +1,10 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
-import { useComponentWrapper, useNaiveForm } from '@bluryar/composables'
-import { defineAsyncComponent, ref, unref } from 'vue'
+import { useComponentWrapper, useForm } from '@bluryar/composables'
+import { defineAsyncComponent, ref, unref, watch } from 'vue'
 import { isNumber, isObject, isString } from '@bluryar/shared'
 import { NButton, NDatePicker, NFormItem, NInput, NInputNumber } from 'naive-ui'
+import * as turf from '@turf/turf'
 import HelloWorld from './components/HelloWorld.vue'
 
 const foo = ref(10)
@@ -21,6 +22,7 @@ class Outer {
   foo = 1
   bar = ''
   obj = new Inner()
+  plgs = { polygons: turf.randomPolygon(20000, { bbox: [-180, -90, 180, 90] }) }
 }
 
 class Inner {
@@ -31,21 +33,22 @@ class Inner {
 const service = (params?: Partial<Outer>) => Promise.resolve({ success: !!1, data: params })
 
 const {
-  MFormWrapper,
   formParams,
-  loading,
+  formStatus,
+  formItemsStatus,
+  formRequestReturns,
   submit,
-  status,
-  errorParams,
-  responseData,
-} = useNaiveForm({
-  Model: Outer,
+  reset,
+} = useForm({
   service,
+  defaultParams: new Outer(),
+  shallowKeys: ['plgs'],
   rules: ({
     'foo': val => (isNumber(val) && val > 10) || '该项必须传入大于10的数字',
     'obj.startTime': val => (isNumber(val) && val > 10) || '该项必须传入大于10的数字',
   }),
 })
+const { loading } = formRequestReturns
 </script>
 
 <template>
@@ -70,7 +73,7 @@ const {
 
   <AsyncComponent v-model:foo="foo" v-model:obj="obj" @click="() => {}" />
 
-  <MFormWrapper>
+  <MForm :model="formParams">
     <NFormItem path="foo">
       <NInputNumber v-model:value="formParams.foo" />
     </NFormItem>
@@ -82,8 +85,13 @@ const {
       <NButton type="primary" :loading="loading" @click="() => submit()">
         提交
       </NButton>
+      <NButton type="primary" @click="() => reset()">
+        重置
+      </NButton>
+
+      {{ formStatus }}
     </NFormItem>
-  </MFormWrapper>
+  </MForm>
 </template>
 
 <style scoped>

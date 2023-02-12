@@ -11,6 +11,7 @@ export class FormItemChecker<Params = {}> {
 
   private params: MaybeComputedRef<Partial<Params>>
   private paramsPathMap = new Map<KeyOf<Params>, unknown>()
+  private shallowKeys: MaybeComputedRef<KeyOf<Params>[]> = () => []
 
   /** 用于检查字段是否更改 */
   private INIT_PARAMS: Partial<Params>
@@ -18,11 +19,12 @@ export class FormItemChecker<Params = {}> {
 
   private _rules: MaybeComputedRef<RulesRecord<Params>>
 
-  constructor(params: MaybeComputedRef<Partial<Params>>, INIT_PARAMS: Partial<Params>, rules: MaybeComputedRef<RulesRecord<Params>>) {
+  constructor(params: MaybeComputedRef<Partial<Params>>, INIT_PARAMS: Partial<Params>, rules: MaybeComputedRef<RulesRecord<Params>>, shallowKeys: MaybeComputedRef<KeyOf<Params>[]>) {
     // 1. 同步
     this._rules = rules
     this.params = params
     this.INIT_PARAMS = INIT_PARAMS
+    this.shallowKeys = shallowKeys
 
     // 2. 转换
     this.INIT_PARAMS_PATH_MAP = this.createParamsPathMap(this.INIT_PARAMS)
@@ -37,7 +39,7 @@ export class FormItemChecker<Params = {}> {
   }
 
   createParamsPathMap(_params: MaybeComputedRef<Partial<Params>>) {
-    return objectToFlattenMap(resolveUnref(_params)) as Map<KeyOf<Params>, unknown>
+    return objectToFlattenMap({ source: resolveUnref(_params), shallowKeys: resolveUnref(this.shallowKeys) as any }) as Map<KeyOf<Params>, unknown>
   }
 
   getRules(): Record<KeyOf<Params>, Rule[]> {
@@ -75,7 +77,7 @@ export class FormItemChecker<Params = {}> {
       const initVal = INIT_PARAMS_PATH_MAP.get(key)
       // 修改
       if (inCurrent && inInit) {
-        status.isDirty = isEqual(currentVal, initVal)
+        status.isDirty = !isEqual(currentVal, initVal)
         if (status.isDirty)
           status.dirtyStatus = StatusDirty.Modify
 
@@ -121,9 +123,7 @@ export class FormItemChecker<Params = {}> {
         status.isVerifying = !!1
         const rulesExecuteList = rulesList.map(rule => Promise.resolve(rule(modelValue)))
         const checkPromise = await Promise.allSettled(rulesExecuteList).finally(() => {
-          if (!status)
-            status = createFormItemStatus()
-          status.isVerifying = !!0
+          status!.isVerifying = !!0
         })
         const verifyResult = checkPromise.map((res) => {
           if (res.status === 'fulfilled') {
@@ -139,7 +139,7 @@ export class FormItemChecker<Params = {}> {
         })
 
         const failList = verifyResult.filter(isString)
-        status.isError = failList.length === 0
+        status.isError = failList.length !== 0
         status.messages = failList.length ? failList : [StatusVerifyDefaultMessage.Success]
         status.isVerifying = !!0
 

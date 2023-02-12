@@ -1,5 +1,5 @@
 import { cloneDeep, get, intersection, set } from 'lodash-es'
-import { type Ref, computed, ref, shallowRef, unref, watchEffect } from 'vue-demi'
+import { type Ref, computed, ref, shallowReactive, shallowRef, unref, watchEffect } from 'vue-demi'
 import { flattenMapToObject } from '@bluryar/shared'
 import { resolveUnref } from '@vueuse/shared'
 import { type Service, useFormRequest } from './_useFormRequest'
@@ -10,11 +10,25 @@ import { type FormItemStatus, StatusVerifyDefaultMessage } from './FormItemStatu
 
 export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Params, Response>) {
   const {
-    service, defaultParams, formRequestOptions, rules = {}, formRef: _formRef = shallowRef(null),
+    service,
+    defaultParams,
+    formRequestOptions,
+    rules = {},
+    formRef: _formRef = shallowRef(null),
+    shallowKeys = [],
   } = options
 
   const _defaultParams = cloneDeep(defaultParams)
-  const getInitParams = () => cloneDeep(_defaultParams)
+  const getInitParams = () => {
+    const raw = cloneDeep(_defaultParams)
+
+    resolveUnref(shallowKeys).forEach((key) => {
+      const val = get(raw, key)
+      set(raw as object, key, shallowReactive(val))
+    })
+
+    return raw
+  }
 
   const formRef = shallowRef(_formRef)
 
@@ -67,7 +81,7 @@ export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Para
     validate: (fields?: KeyOf<Partial<Params>>[]) => Promise<boolean>
     clearErrors: (fields?: KeyOf<Partial<Params>>[]) => void
   } {
-    const formChecker = new FormItemChecker(formParams, getInitParams(), rules)
+    const formChecker = new FormItemChecker(formParams, getInitParams(), rules, shallowKeys)
     const { formItemsStatus } = formChecker
 
     const getStatusArrayByBool = (type: keyof FormItemStatus) => Array.from(unref(formItemsStatus)).filter(([, status]) => status[type])
