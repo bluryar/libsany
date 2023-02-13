@@ -10,13 +10,16 @@
       "@bluryar/shared": ["./packages/shared/index.ts"],
       "@bluryar/shared/*": ["./packages/shared/*"],
       "@bluryar/composables": ["./packages/composables/index.ts"],
-      "@bluryar/composables/*": ["./packages/composables/*"]
+      "@bluryar/composables/*": ["./packages/composables/*"],
+      "@bluryar/composables-naive-ui": ["./packages/composables-naive-ui/index.ts"],
+      "@bluryar/composables-naive-ui/*": ["./packages/composables-naive-ui/*"]
     }
   },
 
   "include": [
     "packages",
-    "packages/**/*.vue"
+    "packages/**/*.vue",
+    "packages/**/*.tsx"
   ],
 
   "exclude": [

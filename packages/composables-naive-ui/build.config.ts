@@ -28,5 +28,7 @@ export default defineBuildConfig({
     'vitest',
     'naive-ui',
     'lodash-es',
+    'async-validator',
+    'naive-ui',
   ],
 })

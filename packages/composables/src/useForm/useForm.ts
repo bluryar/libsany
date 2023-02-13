@@ -1,6 +1,6 @@
 import { cloneDeep, get, intersection, set } from 'lodash-es'
-import { type Ref, computed, ref, shallowReactive, shallowRef, unref, watchEffect } from 'vue-demi'
-import { flattenMapToObject } from '@bluryar/shared'
+import { type Ref, computed, markRaw, ref, shallowRef, unref, watchEffect } from 'vue-demi'
+import { flattenMapToObject, isArray, isObject } from '@bluryar/shared'
 import { resolveUnref } from '@vueuse/shared'
 import { type Service, useFormRequest } from './_useFormRequest'
 import { FormItemChecker } from './FormItemChecker'
@@ -24,7 +24,19 @@ export function useForm<Params = {}, Response = {}>(options: UseFormOptions<Para
 
     resolveUnref(shallowKeys).forEach((key) => {
       const val = get(raw, key)
-      set(raw as object, key, shallowReactive(val))
+
+      if (isObject(val)) {
+        Object.keys(val).forEach((innerKey) => {
+          const innerVal = get(val, innerKey)
+          set(raw as object, innerKey, markRaw(innerVal))
+        })
+      }
+      else if (isArray(val)) {
+        val.forEach((innerKey) => {
+          const innerVal = get(val, innerKey)
+          set(raw as object, innerKey, markRaw(innerVal))
+        })
+      }
     })
 
     return raw

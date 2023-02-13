@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
 import { useComponentWrapper, useForm } from '@bluryar/composables'
+import { useNaiveForm } from '@bluryar/composables-naive-ui'
 import { defineAsyncComponent, ref, unref, watch } from 'vue'
 import { isNumber, isObject, isString } from '@bluryar/shared'
 import { NButton, NDatePicker, NFormItem, NInput, NInputNumber } from 'naive-ui'
@@ -22,7 +23,7 @@ class Outer {
   foo = 1
   bar = ''
   obj = new Inner()
-  plgs = { polygons: turf.randomPolygon(20000, { bbox: [-180, -90, 180, 90] }) }
+  plgs = { polygons: turf.randomPolygon(200, { bbox: [-180, -90, 180, 90] }) }
 }
 
 class Inner {
@@ -39,7 +40,7 @@ const {
   formRequestReturns,
   submit,
   reset,
-} = useForm({
+} = useNaiveForm({
   service,
   defaultParams: new Outer(),
   shallowKeys: ['plgs'],

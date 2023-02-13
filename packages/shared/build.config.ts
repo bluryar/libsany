@@ -11,6 +11,7 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
     esbuild: {
+      sourceMap: !!1,
       define: {
         __DEV__: JSON.stringify(isDevelopment),
       },

@@ -7,6 +7,8 @@
       "@/*": ["./src/*"],
       "@bluryar/composables": ["../packages/composables"],
       "@bluryar/composables/*": ["../packages/composables/*"],
+      "@bluryar/composables-naive-ui": ["../packages/composables-naive-ui"],
+      "@bluryar/composables-naive-ui/*": ["../packages/composables-naive-ui/*"],
       "@bluryar/shared": ["../packages/shared"],
       "@bluryar/shared/*": ["../packages/shared/*"]
     }
