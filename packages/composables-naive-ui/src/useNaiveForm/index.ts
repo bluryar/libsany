@@ -1,21 +1,23 @@
 import 'vue-demi'
 import 'vue'
 import '@vueuse/core'
-import '@bluryar/shared'
 import '@vue/runtime-core'
 
 import { useComponentWrapper, useForm } from '@bluryar/composables'
-import type { KeyOf, Rule as RawRule, UseFormOptions } from '@bluryar/composables'
+import type { KeyOf, AsyncRule as SimpleAsyncRule, UseFormOptions } from '@bluryar/composables'
 import type { FormItemRule } from 'naive-ui'
 import { NForm } from 'naive-ui'
 import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
-import Schema from 'async-validator'
+import type { RuleItem } from 'async-validator'
 import { omit } from 'lodash-es'
-import type { FormInst, FormItemRuleValidatorParams } from 'naive-ui/es/form/src/interface'
-import { type ExtractPropTypes, shallowRef } from 'vue-demi'
+import type { FormInst } from 'naive-ui/es/form/src/interface'
+import { type ExtractPropTypes, ref, shallowRef } from 'vue-demi'
+import { isTrue, isUndef } from '@bluryar/shared'
 
 const OmittedUseFormKeys = ['rules'] as const
-type NaiveFormRulesRecord<Params = {}> = Record<KeyOf<Params>, FormItemRule | FormItemRule[]>
+type NaiveFormRulesRecord<Params = {}> = { [P in KeyOf<Partial<Params>>]: FormItemRule | FormItemRule[]; }
+type AsyncValidatorRulesRecord<Params = {}> = { [P in KeyOf<Partial<Params>>]: RuleItem[]; }
+type SimpleRulesRecord<Params = {}> = { [K in KeyOf<Partial<Params>>]: SimpleAsyncRule[] }
 type NFormProps = ExtractPropTypes<InstanceType<typeof NForm>['$props']>
 
 function _toArray<T>(val: T | T[]): T[] {
@@ -29,87 +31,76 @@ export interface UseNaiveFormOptions<Params = {}, Response = {}> extends Omit<Us
   rules?: MaybeComputedRef<NaiveFormRulesRecord<Params>>
 }
 
-function resolveRules<Params = {}>(inputRules: MaybeComputedRef<NaiveFormRulesRecord<Params>>): MaybeComputedRef<Record<KeyOf<Params>, RawRule[]>> {
-  function toUseFormRule(key: KeyOf<Params>, rules: FormItemRule[]): RawRule[] {
-    const normalizeRules = rules.map((rule) => {
-      const { validator, asyncValidator } = rule
-      const cleanRule = omit(rule,
-        [
-          'key',
-          'trigger',
-          'renderMessage',
-          'validator',
-          'asyncValidator',
-        ] as const,
-      )
-      if (validator) {
-        return {
-          ...cleanRule,
-          asyncValidator: async (...args: FormItemRuleValidatorParams) => await validator(...args),
-        }
-      }
-      if (asyncValidator) {
-        return {
-          ...cleanRule,
-          asyncValidator: async (...args: FormItemRuleValidatorParams) => await asyncValidator(...args),
-        }
-      }
-      return cleanRule
-    })
-
-    return normalizeRules
-      .map(
-        rule =>
-          (val: unknown) =>
-            new Schema({ [key]: rule as any })
-              .validate({ [key]: val })
-              .then(() => !!1)
-              .catch(err => err),
-      )
-  }
-
-  return () => Object.fromEntries(
-    new Map(
-      Object
-        .entries(resolveUnref(inputRules))
-        .map(([key, rule]) => [key as KeyOf<Params>, _toArray(rule)] as const)
-        .map(([key, rule]) => [key as KeyOf<Params>, toUseFormRule(key, rule)] as const),
-    ),
-  ) as Record<KeyOf<Params>, RawRule[]>
-}
+const OmittedRuleKeys = ['key', 'trigger', 'validator', 'asyncValidator', 'renderMessage'] as const
 
 export function useNaiveForm<Params = {}, Response = {}>(options: UseNaiveFormOptions<Params, Response>) {
-  const {
-    rules = () => ({}),
-  } = options
+  const simpleRulesMap = ref(new Map<KeyOf<Partial<Params>>, SimpleAsyncRule[]>(new Map([])))
 
   const nFormRef = shallowRef<FormInst | null>(null)
+  const {
+    rules = () => ({} as any),
+  } = options
 
-  const useComponentWrapperReturns = useComponentWrapper({
-    component: NForm,
+  const formWrapperReturns = useComponentWrapper({
     ref: nFormRef,
+    component: NForm,
     state: getFormState,
   })
-
-  const getRules = () => resolveRules(rules as any)
-
   const useFormReturns = useForm({
     ...options,
-    rules: () => getRules() as any,
+    formRef: nFormRef,
+    rules: () => getUseFormRules(),
   })
-
-  const { Wrapper: NFromWrapper } = useComponentWrapperReturns
 
   function getFormState(): NFormProps {
     return {
       model: useFormReturns.formParams.value,
-      rules: rules as any,
+      rules: resolveUnref(rules),
     }
   }
 
+  function getUseFormRules(): SimpleRulesRecord<Params> {
+    const res = Object.fromEntries(simpleRulesMap.value) as SimpleRulesRecord<Params>
+    return res
+  }
   return {
     ...useFormReturns,
-    ...useComponentWrapperReturns,
-    NFromWrapper,
+    ...formWrapperReturns,
+    NFromWrapper: formWrapperReturns.Wrapper,
   }
+}
+
+export function getAsyncValidatorRules<Params = {}>(nFormRules: NaiveFormRulesRecord<Params>): AsyncValidatorRulesRecord<Params> {
+  const nFormRulesMap = new Map(Object.entries(nFormRules))
+  const asyncRulesMap = Array.from(nFormRulesMap, ([key, rules]) => {
+    const aRules = _toArray(rules).map((rule) => {
+      const { validator, asyncValidator, message } = rule
+
+      const getTransformValidator = async (...args: Parameters<NonNullable<RuleItem['asyncValidator']>>) => {
+        const [rule, value, callback, source, options] = args
+        const res = await validator!(rule as any, value, callback, source, options)
+        // boolean | Error | Error[] | Promise<void> | undefined;
+        const isPass = isUndef(res) || isTrue(res)
+        if (isPass)
+          return undefined
+
+        else
+          throw res || new Error(resolveUnref(message))
+      }
+      const getTransformAsyncValidator = async (...args: Parameters<NonNullable<RuleItem['asyncValidator']>>) => {
+        const [rule, value, callback, source, options] = args
+        await asyncValidator!(rule as any, value, callback, source, options)
+      }
+
+      const tRule: RuleItem = {
+        ...omit(rule, OmittedRuleKeys),
+        asyncValidator: (...args) => !isUndef(validator) ? getTransformValidator(...args) : !isUndef(asyncValidator) ? getTransformAsyncValidator(...args) : undefined,
+      }
+      return tRule
+    })
+
+    return [key, aRules]
+  })
+  // TODO
+  return Object.fromEntries(asyncRulesMap)
 }

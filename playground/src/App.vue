@@ -1,11 +1,11 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
 import { useComponentWrapper, useForm } from '@bluryar/composables'
-import { useNaiveForm } from '@bluryar/composables-naive-ui'
 import { defineAsyncComponent, ref, unref, watch } from 'vue'
 import { isNumber, isObject, isString } from '@bluryar/shared'
 import { NButton, NDatePicker, NFormItem, NInput, NInputNumber } from 'naive-ui'
 import * as turf from '@turf/turf'
+import { useNaiveForm } from '../../packages/composables-naive-ui/src/useNaiveForm'
 import HelloWorld from './components/HelloWorld.vue'
 
 const foo = ref(10)
@@ -44,9 +44,23 @@ const {
   service,
   defaultParams: new Outer(),
   shallowKeys: ['plgs'],
-  rules: ({
-    'foo': val => (isNumber(val) && val > 10) || '该项必须传入大于10的数字',
-    'obj.startTime': val => (isNumber(val) && val > 10) || '该项必须传入大于10的数字',
+  rules: () => ({
+    'foo': [
+      {
+        message: '该项必须传入大于10的数字',
+        validator(_, val) {
+          return isNumber(val) && val > 10
+        },
+      },
+    ],
+    'obj.startTime': [
+      {
+        message: '该项必须传入大于10的数字',
+        validator(_, val) {
+          return isNumber(val) && val > 10
+        },
+      },
+    ],
   }),
 })
 const { loading } = formRequestReturns

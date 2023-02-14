@@ -2,6 +2,7 @@
   "extends": "@bluryar/tsconfig/tsconfig.web.json",
 
   "compilerOptions": {
+    "baseUrl": ".",
     "jsx": "preserve",
     "lib": [
       "ES2022", "DOM", "DOM.Iterable"
