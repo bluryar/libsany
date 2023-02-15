@@ -1,6 +1,6 @@
 {
   "name": "@bluryar/composables-naive-ui",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": false,
   "description": "⚡ Vue3组合式API - 与 naive-ui 强相关",
   "author": "bluryar <bluryarl@gmail.com>",
