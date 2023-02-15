@@ -1,21 +1,22 @@
 import {
   computed,
-  defineComponent,
   effectScope,
   getCurrentInstance,
   h,
   mergeProps,
-  onScopeDispose,
   readonly,
   shallowRef,
   watchEffect,
 } from 'vue-demi'
 import type {
+
   DefineComponent,
   ExtractPropTypes,
+  FunctionalComponent,
+
   ShallowRef,
 } from 'vue-demi'
-import { resolveUnref } from '@vueuse/shared'
+import { resolveUnref, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/shared'
 import type { MaybeComputedRef } from '@vueuse/shared'
 
 import type { DefineLooseProps } from '../types'
@@ -121,42 +122,35 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
   }
   const wrapperState = computed(resolveState)
 
-  const UseComponentWrapper: DefineComponent<Props> = defineComponent({
-    name: 'UseComponentWrapper',
-    __name: 'UseComponentWrapper',
-    setup(props, ctx) {
-      scope.run(() => {
-        watchEffect(() => {
-          cmpState.value = mergeProps({}, ctx.attrs, props as any)
-        })
+  const _func: FunctionalComponent<Props> = (props, ctx) => {
+    scope.run(() => {
+      watchEffect(() => {
+        cmpState.value = mergeProps({}, ctx.attrs, props as any)
       })
+    })
 
-      onScopeDispose(() => {
-        cmpState.value = undefined
-      })
-
-      return () => {
-        return h(
-          component as DefineComponent,
-          {
-            ...resolveUnref(wrapperState),
-            ref: el => instance.value = el as any,
-          },
-          ctx.slots,
-        )
-      }
-    },
-  })
+    return h(
+      component as DefineComponent,
+      {
+        ...resolveUnref(wrapperState),
+        ref: el => instance.value = el as any,
+      },
+      ctx.slots,
+    )
+  }
+  const UseComponentWrapper = _func as unknown as DefineComponent<Props>
 
   function invoke(_state?: typeof state | MaybeComputedRef<undefined>) {
     ivkState.value = resolveUnref(_state)
   }
 
-  onScopeDispose(() => {
+  function _stop() {
     cmpState.value = undefined
     ivkState.value = undefined
     scope.stop()
-  })
+  }
+  tryOnBeforeUnmount(_stop)
+  tryOnScopeDispose(_stop)
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
