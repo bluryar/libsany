@@ -9,11 +9,10 @@ import {
   watchEffect,
 } from 'vue-demi'
 import type {
-
   DefineComponent,
   ExtractPropTypes,
   FunctionalComponent,
-
+  Plugin,
   ShallowRef,
 } from 'vue-demi'
 import { resolveUnref, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/shared'
@@ -21,9 +20,11 @@ import type { MaybeComputedRef } from '@vueuse/shared'
 
 import type { DefineLooseProps } from '../types'
 
+export declare type SFCWithInstall<T> = (T & Plugin) | T
+
 export interface UseComponentWrapperOptions<Props extends Record<string, any>, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
-  component: DefineComponent<Props, any, any>
+  component: SFCWithInstall<DefineComponent<Props, any, any>>
 
   ref?: ShallowRef<ComponentRef | null>
 
