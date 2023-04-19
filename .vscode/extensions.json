@@ -1,10 +1,7 @@
 {
   "recommendations": [
-    "antfu.browse-lite",
     "antfu.iconify",
-    "antfu.slidev",
     "antfu.unocss",
-    "antfu.vite",
     "antfu.where-am-i",
     "lokalise.i18n-ally",
     "antfu.icons-carbon",
@@ -24,14 +21,13 @@
     "naumovs.color-highlight",
     "richie5um2.vscode-sort-json",
     "unional.vscode-sort-package-json",
-    "voorjaar.windicss-intellisense",
     "wakatime.vscode-wakatime",
-    "znck.grammarly",
-    "vivaxy.vscode-conventional-commits",
     "zjffun.snippetsmanager",
     "wmaurer.change-case",
     "zixuanchen.vitest-explorer",
-    "johnsoncodehk.vscode-tsconfig-helper"
+    "johnsoncodehk.vscode-tsconfig-helper",
+    "yoavbls.pretty-ts-errors",
+    "redjue.git-commit-plugin"
   ],
   "unwantedRecommendations": [
     "octref.vetur",
