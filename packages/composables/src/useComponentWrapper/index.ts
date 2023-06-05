@@ -1,3 +1,4 @@
+import { get, set } from 'lodash-es'
 import {
   computed,
   effectScope,
@@ -7,16 +8,16 @@ import {
   readonly,
   shallowRef,
   watchEffect,
-} from 'vue-demi'
+} from 'vue'
 import type {
   DefineComponent,
   ExtractPropTypes,
   FunctionalComponent,
   Plugin,
   ShallowRef,
-} from 'vue-demi'
-import { resolveUnref, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/shared'
-import type { MaybeComputedRef } from '@vueuse/shared'
+} from 'vue'
+import { toValue, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/shared'
+import type { MaybeRefOrGetter } from '@vueuse/shared'
 
 import type { DefineLooseProps } from '../types'
 
@@ -28,8 +29,15 @@ export interface UseComponentWrapperOptions<Props extends Record<string, any>, C
 
   ref?: ShallowRef<ComponentRef | null>
 
-  /** 弹窗的props，一般用于定义一些在非动态获取的props，比如非接口返回值 */
-  state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
+  /**
+   * 组件的props，被代理的组件的props可以通过三种方式修改
+   *
+   * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
+   */
+  state?: MaybeRefOrGetter<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
+
+  /** 单独指定某个属性的合并策略， 基于 `lodash` 的 `get` 和 `set` 函数实现 */
+  stateMerge?: Record<string, (val: any, ivkState:any, cmpState:any) => any>
 }
 
 /**
@@ -40,52 +48,13 @@ export interface UseComponentWrapperOptions<Props extends Record<string, any>, C
  * 1. 在模板或者JSX或者h函数中传递的Props
  * 2. 通过 `setState` 传递参数
  * 3. 通过 `useComponentWrapper` 传递的参数
- *
- * ---
- *
- * **1. 一般用法**
- *
- * @example
- * ```ts
- * import { useComponentWrapper } from '@bluryar/composables'
- * import { defineComponent, h } from 'vue'
- *
- * const { Wrapper, getState, setState } = useComponentWrapper({
- *   component: defineComponent({
- *     name: 'Test',
- *     props: {
- *       foo: { type: Number, default: 1 }
- *     }
- *   }),
- *   state: () => ({ foo: 2 })
- * })
- *
- * // 此时foo === 3
- * h(Wrapper, { foo: 3 })
- *
- * // 1s后foo=4
- * setTimeout(() => { setState(() => ({ foo:4 })) }, 1000)
- * ```
- *
- * ---
- *
- * **2. 异步组件**
- *
- * @example
- * ```ts
- * import { useComponentWrapper } from '@bluryar/composables'
- * import { defineAsyncComponent } from 'vue'
- *
- * const { Wrapper, getState, setState } = useComponentWrapper({
- *   component: defineAsyncComponent(() => import('path/to/your/component'))
- * })
- * ```
  */
 export function useComponentWrapper<Props extends Record<string, any>, ComponentInstance = unknown>(options: UseComponentWrapperOptions<Props, ComponentInstance>) {
   const {
     component,
     ref = shallowRef(null),
     state = () => ({}),
+    stateMerge = undefined,
   } = options
   const vm = getCurrentInstance()
   const scope = effectScope()
@@ -99,26 +68,24 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
   const ivkState = shallowRef<DefineLooseProps<Props>>({})
 
   const resolveState = () => {
-    const _state = resolveUnref(state)
-    const _ivkState = resolveUnref(ivkState)
-    const _cmpState = resolveUnref(cmpState)
+    const _state = toValue(state) ?? {}
+    const _ivkState = toValue(ivkState) ?? {}
+    const _cmpState = toValue(cmpState) ?? {}
 
     // 检查属性是否重复，为了避免出现无法调试的BUG，建议用户不要将同一个属性从不同地方多次传入
-    const obj = ({ ...{}, ...(_state), ...(_ivkState), ...(_cmpState) })
+    const obj = mergeProps(_state, _ivkState, _cmpState)
 
-    const checkList = [_state ?? {}, _ivkState ?? {}, _cmpState ?? {}]
+    if (stateMerge && Object.keys(stateMerge).length) {
+      for (const [key, fn] of Object.entries(stateMerge)) {
+        if (!obj[key]) {
+          console.warn(`[useComponentWrapper] ${key} 需要先声明`)
+          continue
+        }
 
-    if (__DEV__) {
-      // 检查是否重复设置状态，重复设置不利于维护
-      Object.keys(obj).forEach((k) => {
-        const exitsCount = checkList.filter((s) => {
-          return Object.prototype.hasOwnProperty.call(s, k)
-        })
-        if (exitsCount.length > 1)
-          console.warn('[useComponentWrapper] 建议用户不要将同一个属性从不同地方多次传入')
-      })
+        const val = fn(get(_state, key), get(_ivkState, key), get(_cmpState, key))
+        set(obj, key, val)
+      }
     }
-
     return obj as Partial<ExtractPropTypes<Props>>
   }
   const wrapperState = computed(resolveState)
@@ -130,19 +97,21 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
       })
     })
 
+    tryOnScopeDispose(scope.stop)
+
     return h(
       component as DefineComponent,
       {
-        ...resolveUnref(wrapperState),
-        ref: el => instance.value = el as any,
+        ...toValue(wrapperState),
+        ref: (el) => { instance.value = el as any },
       },
       ctx.slots,
     )
   }
   const UseComponentWrapper = _func as unknown as DefineComponent<Props>
 
-  function invoke(_state?: typeof state | MaybeComputedRef<undefined>) {
-    ivkState.value = resolveUnref(_state)
+  function invoke(_state?: typeof state) {
+    ivkState.value = toValue(_state)
   }
 
   function _stop() {

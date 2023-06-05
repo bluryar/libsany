@@ -13,17 +13,13 @@ export default defineBuildConfig({
     emitCJS: true,
 
     esbuild: {
-      sourceMap: !!1,
       define: {
         __DEV__: JSON.stringify(isDevelopment),
       },
     },
-
-    inlineDependencies: !!1,
   },
 
   externals: [
-    'vue-demi',
     'vue',
     'vitest',
     'naive-ui',

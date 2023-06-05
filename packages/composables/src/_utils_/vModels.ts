@@ -1,4 +1,4 @@
-import type { Ref, UnwrapRef } from 'vue-demi'
+import type { Ref, UnwrapRef } from 'vue'
 
 export type VModels<P extends Record<string, Ref<unknown>>> = { [Key in keyof P]: UnwrapRef<P[Key]> } & Record<`onUpdate:${Exclude<keyof P, Symbol>}`, (val: UnwrapRef<P[keyof P]>) => any>
 
@@ -17,10 +17,10 @@ export type VModels<P extends Record<string, Ref<unknown>>> = { [Key in keyof P]
  * vModels({ bar: foo }) // => { bar: Ref<number>, 'onUpdate:bar': (v: number) => void }
  * ```
  */
-export const vModels = <P extends Record<string, Ref<unknown>>>(input: P): VModels<P> => {
+export function vModels <P extends Record<string, Ref<unknown>>>(input: P): VModels<P> {
   return Object.entries(input).reduce((obj, [k, v]) => {
     obj[k] = v.value
-    obj[`onUpdate:${k}`] = (val: unknown) => v.value = val
+    obj[`onUpdate:${k}`] = (val: unknown) => { v.value = val }
     return obj
   }, {} as any)
 }

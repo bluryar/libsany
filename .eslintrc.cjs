@@ -8,4 +8,7 @@ module.exports = {
   extends: [
     '@bluryar/vue',
   ],
+  globals: {
+    __DEV__: true,
+  },
 }

@@ -1,5 +1,5 @@
 {
-  "extends": "@bluryar/tsconfig/tsconfig.web.json",
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
 
   "compilerOptions": {
     "baseUrl": ".",
@@ -12,8 +12,6 @@
       "@bluryar/shared/*": ["./packages/shared/*"],
       "@bluryar/composables": ["./packages/composables/index.ts"],
       "@bluryar/composables/*": ["./packages/composables/*"],
-      "@bluryar/composables-naive-ui": ["./packages/composables-naive-ui/index.ts"],
-      "@bluryar/composables-naive-ui/*": ["./packages/composables-naive-ui/*"]
     }
   },
 

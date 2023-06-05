@@ -2,7 +2,7 @@ import type {
   AllowedComponentProps, Events,
   ExtractPropTypes,
   VNodeProps,
-} from 'vue-demi'
+} from 'vue'
 
 type DefineProps<Props = Record<string, any>> = AllowedComponentProps & VNodeProps & Events & ExtractPropTypes<Props>
 export type DefineLooseProps<Props = Record<string, any>> = Partial<DefineProps<Props>>

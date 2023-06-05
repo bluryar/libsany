@@ -1,5 +1,6 @@
+/* eslint-disable vue/no-ref-object-destructure */
 import { describe, expect, it } from 'vitest'
-import { defineAsyncComponent, nextTick, ref, unref } from 'vue'
+import { defineAsyncComponent, defineComponent, nextTick, ref, unref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { sleep } from '@bluryar/shared'
 import WrapperComponent from '../../test/fixtures/components/Wrapper.vue'
@@ -14,7 +15,7 @@ describe('composable: useComponentWrapper', () => {
 
     const { Wrapper, getState, setState: invoke, state } = useComponentWrapper({
       component: WrapperComponent,
-      state: () => ({ 'foo': foo.value, 'obj': obj.value, 'onUpdate:obj': (val: any) => obj.value = val }),
+      state: () => ({ 'foo': foo.value, 'obj': obj.value, 'onUpdate:obj': (val: any) => { obj.value = val } }),
     })
 
     const cmp1 = mount(Wrapper, {
@@ -39,7 +40,7 @@ describe('composable: useComponentWrapper', () => {
     expect(foo.value).toEqual(2)
 
     invoke(() => ({
-      'onUpdate:foo': (val: number) => foo.value = val,
+      'onUpdate:foo': (val: number) => { foo.value = val },
     }))
 
     await nextTick()
@@ -153,8 +154,8 @@ describe('composable: useComponentWrapper', () => {
       // 优先级最高
       props: {
         'foo': 100,
-        'onUpdate:foo': (val: any) => foo.value = val,
-        'onUpdate:obj': (val: any) => obj.value = val,
+        'onUpdate:foo': (val: any) => { foo.value = val },
+        'onUpdate:obj': (val: any) => { obj.value = val },
       },
     })
 
@@ -204,6 +205,84 @@ describe('composable: useComponentWrapper', () => {
         "onUpdate:foo": [Function],
         "onUpdate:obj": [Function],
       }
+    `)
+  })
+
+  it('should allow merging state with stateMerge', async () => {
+    const TestComponent = defineComponent({
+      props: {
+        foo: String,
+        bar: Number,
+        formItems: Array,
+      },
+      template: '<div>{{ foo }} {{ bar }} {{ formItems }}</div>',
+    })
+
+    const foo = ref('hello')
+    const bar = ref(42)
+
+    interface FormItem {type: 'input'| 'select'| 'radio'}
+
+    const setFormItems = (val: FormItem[], ivkState: FormItem[], cmpState: FormItem[]) => {
+      return [...(val || []), ...(ivkState || []), ...(cmpState || [])]
+    }
+    const { Wrapper, getState, setState, state } = useComponentWrapper({
+      component: TestComponent,
+      state: () => ({
+        foo: foo.value,
+        bar: bar.value,
+        formItems: [{
+          type: 'select',
+        }],
+      }),
+      stateMerge: {
+        formItems: setFormItems,
+      },
+    })
+
+    const wrapper = mount(Wrapper, {
+      props: {
+        formItems: [
+          { type: 'input' },
+        ],
+      },
+    })
+
+    await nextTick()
+
+    expect(wrapper.text()).toMatchInlineSnapshot(`
+      "hello 42 [
+        {
+          \\"type\\": \\"select\\"
+        },
+        {
+          \\"type\\": \\"input\\"
+        }
+      ]"
+    `)
+
+    setState({
+      formItems: [
+        { type: 'radio' },
+      ],
+    })
+
+    await nextTick()
+
+    // 合并顺序
+    /* select radio input */
+    expect(wrapper.text()).toMatchInlineSnapshot(`
+      "hello 42 [
+        {
+          \\"type\\": \\"select\\"
+        },
+        {
+          \\"type\\": \\"radio\\"
+        },
+        {
+          \\"type\\": \\"input\\"
+        }
+      ]"
     `)
   })
 })

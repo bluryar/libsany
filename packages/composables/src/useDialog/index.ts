@@ -1,6 +1,6 @@
-import { type MaybeComputedRef, resolveUnref } from '@vueuse/shared'
-import { ref } from 'vue-demi'
-import type { DefineComponent, ExtractPropTypes } from 'vue-demi'
+import { type MaybeRefOrGetter, toValue } from '@vueuse/shared'
+import { ref } from 'vue'
+import type { DefineComponent, ExtractPropTypes } from 'vue'
 import { useComponentWrapper } from '../useComponentWrapper'
 import { vModels } from '../_utils_'
 
@@ -14,7 +14,7 @@ export interface UseDialogOptions<Props extends Record<string, any>> {
   component: DefineComponent<Props, any, any>
 
   /** 弹窗的props，一般用于定义一些在非动态获取的props，比如非接口返回值 */
-  state?: MaybeComputedRef<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
+  state?: MaybeRefOrGetter<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
 
   /**
    * 弹出双向绑定的key `<Dialog v-model:visible="bool"></Dialog>`
@@ -68,17 +68,15 @@ export interface UseDialogOptions<Props extends Record<string, any>> {
  * closeDialog()
  * ```
  */
-export const useDialog = <Props extends Record<string, any>>(
-  {
-    component,
-    state = () => ({}),
-    visibleKey = 'visible',
-  }: UseDialogOptions<Props>,
-) => {
+export function useDialog <Props extends Record<string, any>>({
+  component,
+  state = () => ({}),
+  visibleKey = 'visible',
+}: UseDialogOptions<Props>) {
   const visible = ref(!!0)
 
   const resolveState = () => ({
-    ...resolveUnref(state),
+    ...toValue(state),
     ...vModels({
       [visibleKey]: visible,
     }),
@@ -89,9 +87,9 @@ export const useDialog = <Props extends Record<string, any>>(
     state: resolveState,
   })
 
-  const toggleDialogVisible = (_visible: boolean, _state?: typeof state) => {
+  const toggleDialogVisible = (_visible: boolean, _state?: UseDialogOptions<Props>['state']) => {
     visible.value = _visible
-    const state = () => resolveUnref(_state) as any
+    const state = () => toValue(_state) as any
     invoke(state)
   }
 
