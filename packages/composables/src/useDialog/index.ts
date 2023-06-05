@@ -82,7 +82,7 @@ export function useDialog <Props extends Record<string, any>>({
     }),
   })
 
-  const { Wrapper, getState, setState: invoke, state: wrapperState } = useComponentWrapper({
+  const { Wrapper, getState, setState: invoke, state: wrapperState, instance } = useComponentWrapper({
     component,
     state: resolveState,
   })
@@ -127,5 +127,7 @@ export function useDialog <Props extends Record<string, any>>({
 
     /** 关闭弹窗， 可以同时调用`setState` */
     closeDialog,
+
+    instance,
   }
 }
