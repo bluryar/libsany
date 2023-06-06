@@ -16,7 +16,7 @@ import type {
   Plugin,
   ShallowRef,
 } from 'vue'
-import { toValue, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/core'
+import { toValue, tryOnScopeDispose } from '@vueuse/core'
 import type { MaybeRefOrGetter } from '@vueuse/core'
 
 import type { DefineLooseProps } from '../types'
@@ -114,13 +114,13 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
     ivkState.value = toValue(_state)
   }
 
-  function _stop() {
-    cmpState.value = undefined
-    ivkState.value = undefined
-    scope.stop()
-  }
-  tryOnBeforeUnmount(_stop)
-  tryOnScopeDispose(_stop)
+  // function _stop() {
+  //   cmpState.value = undefined
+  //   ivkState.value = undefined
+  //   scope.stop()
+  // }
+  // tryOnBeforeUnmount(scope.stop)
+  tryOnScopeDispose(scope.stop)
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
