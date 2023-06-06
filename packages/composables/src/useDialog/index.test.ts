@@ -1,3 +1,4 @@
+/* eslint-disable vue/no-ref-object-destructure */
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineAsyncComponent, nextTick, ref, unref } from 'vue'
@@ -18,8 +19,8 @@ describe('composable: useDialog', () => {
         return {
           'foo': unref(foo),
           'obj': unref(obj),
-          'onUpdate:foo': (val: any) => foo.value = val,
-          'onUpdate:obj': (val: any) => obj.value = val,
+          'onUpdate:foo': (val: any) => { foo.value = val },
+          'onUpdate:obj': (val: any) => { obj.value = val },
         }
       },
     })
@@ -127,8 +128,8 @@ describe('composable: useDialog', () => {
         return {
           'foo': unref(foo),
           'obj': unref(obj),
-          'onUpdate:foo': (val: any) => foo.value = val,
-          'onUpdate:obj': (val: any) => obj.value = val,
+          'onUpdate:foo': (val: any) => { foo.value = val },
+          'onUpdate:obj': (val: any) => { obj.value = val },
         }
       },
     })

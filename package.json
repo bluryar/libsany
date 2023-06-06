@@ -21,12 +21,13 @@
     "utils"
   ],
   "scripts": {
-    "dev": "nr -F playground dev",
+    "dev": "concurrently \"npm:dev:vue-ts\"",
+    "dev:vue-ts": "nr -F ./playgrounds/vue-ts dev",
     "build": "nr -r build",
     "stub": "nr -r stub",
     "test": "vitest",
     "check:types": "tsc --noEmit",
-    "clear:modules": "rimraf ./packages/*/node_modules && rimraf ./playground/node_modules && rimraf ./node_modules",
+    "clear:modules": "rimraf --glob ./{packages, playgrounds}/*/node_modules && rimraf ./node_modules",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "bump:patch": "nr -r bump:patch && npx bumpp patch --all --yes",
@@ -55,6 +56,7 @@
     "bumpp": "^9.1.1",
     "commitizen": "^4.3.0",
     "commitlint": "^17.6.5",
+    "concurrently": "^8.1.0",
     "cross-env": "^7.0.3",
     "cz-git": "^1.6.1",
     "eslint": "^8.42.0",
