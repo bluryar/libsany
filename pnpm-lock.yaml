@@ -122,9 +122,6 @@ importers:
 
   packages/composables:
     dependencies:
-      '@bluryar/shared':
-        specifier: ^0.1.1
-        version: link:../shared
       type-fest:
         specifier: ^3.11.1
         version: 3.11.1

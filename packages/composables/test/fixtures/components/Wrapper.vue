@@ -9,7 +9,7 @@ const props = defineProps({
 
 const { foo, obj } = useVModels(props, undefined, { passive: !!1, deep: !!1 })
 
-const onClick = () => {
+function onClick() {
   foo.value += 1
   obj.value.test += 1
 }
