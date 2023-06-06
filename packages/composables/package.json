@@ -59,7 +59,7 @@
     }
   },
   "dependencies": {
-    "@bluryar/shared": "workspace:latest",
+    "@bluryar/shared": "^0.1.1",
     "type-fest": "^3.11.1"
   },
   "devDependencies": {
