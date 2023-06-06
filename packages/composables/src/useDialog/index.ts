@@ -1,7 +1,7 @@
-import { type MaybeRefOrGetter, toValue } from '@vueuse/shared'
-import { ref } from 'vue'
+import { type MaybeRefOrGetter, toValue } from '@vueuse/core'
+import { ref, shallowRef } from 'vue'
 import type { DefineComponent, ExtractPropTypes } from 'vue'
-import { useComponentWrapper } from '../useComponentWrapper'
+import { createHOC, type createHOCOptions } from '../createHOC'
 import { vModels } from '../_utils_'
 
 const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const
@@ -9,7 +9,7 @@ const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const
 /**
  * @todo provide/inject注入配置
  */
-export interface UseDialogOptions<Props extends Record<string, any>> {
+export interface UseDialogOptions<Props extends Record<string, any>> extends createHOCOptions<Props>{
   /** 【必传】需要处理的组件 */
   component: DefineComponent<Props, any, any>
 
@@ -72,6 +72,8 @@ export function useDialog <Props extends Record<string, any>>({
   component,
   state = () => ({}),
   visibleKey = 'visible',
+  ref: instRef = shallowRef(null),
+  stateMerge = undefined,
 }: UseDialogOptions<Props>) {
   const visible = ref(!!0)
 
@@ -82,9 +84,11 @@ export function useDialog <Props extends Record<string, any>>({
     }),
   })
 
-  const { Wrapper, getState, setState: invoke, state: wrapperState, instance } = useComponentWrapper({
+  const { Wrapper, getState, setState: invoke, state: resolvedState, ref: resolvedInstRef } = createHOC({
     component,
     state: resolveState,
+    ref: instRef,
+    stateMerge,
   })
 
   const toggleDialogVisible = (_visible: boolean, _state?: UseDialogOptions<Props>['state']) => {
@@ -110,7 +114,7 @@ export function useDialog <Props extends Record<string, any>>({
     /**
      * 【计算属性】弹窗组件原本的props (只读属性副本)
      */
-    state: wrapperState,
+    state: resolvedState,
 
     /**
      * 获取弹窗的props，合并顺序：组件props > setState > useDialog({state})
@@ -128,6 +132,7 @@ export function useDialog <Props extends Record<string, any>>({
     /** 关闭弹窗， 可以同时调用`setState` */
     closeDialog,
 
-    instance,
+    /** 传入的组件的ref，你可以手动传入，也可以由hook创建 */
+    ref: resolvedInstRef,
   }
 }

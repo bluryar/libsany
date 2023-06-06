@@ -1,2 +1,2 @@
-export * from './useComponentWrapper'
+export * from './createHOC'
 export * from './useDialog'

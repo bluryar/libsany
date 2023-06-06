@@ -22,29 +22,36 @@ export const isFalse = (val: unknown): val is false => isBoolean(val) && val ===
 
 export const isTrue = (val: unknown): val is true => isBoolean(val) && val === true
 
-export const isObject = <Type extends Record<any, any> = Record<any, any>>(val: unknown): val is Type =>
-  val !== null && typeof val === 'object'
+export function isObject <Type extends Record<any, any> = Record<any, any>>(val: unknown): val is Type {
+  return val !== null && typeof val === 'object'
+}
 
-export const isPlainObject = (val: unknown): val is object =>
-  toTypeString(val) === '[object Object]'
+export function isPlainObject(val: unknown): val is object {
+  return toTypeString(val) === '[object Object]'
+}
 
-export const isFunction = (val: unknown): val is Function =>
-  typeof val === 'function'
+export function isFunction(val: unknown): val is Function {
+  return typeof val === 'function'
+}
 
 export const isArray = <T = any >(val: unknown): val is T[] => Array.isArray(val)
 
-export const isMap = <K = any, V = any>(val: unknown): val is Map<K, V> =>
-  toTypeString(val) === '[object Map]'
+export function isMap <K = any, V = any>(val: unknown): val is Map<K, V> {
+  return toTypeString(val) === '[object Map]'
+}
 
-export const isSet = <V = any>(val: unknown): val is Set<V> =>
-  toTypeString(val) === '[object Set]'
+export function isSet <V = any>(val: unknown): val is Set<V> {
+  return toTypeString(val) === '[object Set]'
+}
 
-export const isDate = (val: unknown): val is Date =>
-  toTypeString(val) === '[object Date]'
+export function isDate(val: unknown): val is Date {
+  return toTypeString(val) === '[object Date]'
+}
 
-export const isRegExp = (val: unknown): val is RegExp =>
-  toTypeString(val) === '[object RegExp]'
+export function isRegExp(val: unknown): val is RegExp {
+  return toTypeString(val) === '[object RegExp]'
+}
 
-export const isPromise = <T = any>(val: unknown): val is Promise<T> => {
+export function isPromise <T = any>(val: unknown): val is Promise<T> {
   return isObject(val) && isFunction(val.then) && isFunction(val.catch)
 }

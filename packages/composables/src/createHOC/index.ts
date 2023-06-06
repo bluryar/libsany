@@ -16,14 +16,14 @@ import type {
   Plugin,
   ShallowRef,
 } from 'vue'
-import { toValue, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/shared'
-import type { MaybeRefOrGetter } from '@vueuse/shared'
+import { toValue, tryOnBeforeUnmount, tryOnScopeDispose } from '@vueuse/core'
+import type { MaybeRefOrGetter } from '@vueuse/core'
 
 import type { DefineLooseProps } from '../types'
 
 export declare type SFCWithInstall<T> = (T & Plugin) | T
 
-export interface UseComponentWrapperOptions<Props extends Record<string, any>, ComponentRef = unknown> {
+export interface createHOCOptions<Props extends Record<string, any>, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
   component: SFCWithInstall<DefineComponent<Props, any, any>>
 
@@ -47,9 +47,9 @@ export interface UseComponentWrapperOptions<Props extends Record<string, any>, C
  *
  * 1. 在模板或者JSX或者h函数中传递的Props
  * 2. 通过 `setState` 传递参数
- * 3. 通过 `useComponentWrapper` 传递的参数
+ * 3. 通过 `createHOC` 传递的参数
  */
-export function useComponentWrapper<Props extends Record<string, any>, ComponentInstance = unknown>(options: UseComponentWrapperOptions<Props, ComponentInstance>) {
+export function createHOC<Props extends Record<string, any>, ComponentInstance = unknown>(options: createHOCOptions<Props, ComponentInstance>) {
   const {
     component,
     ref = shallowRef(null),
@@ -60,7 +60,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
   const scope = effectScope()
 
   if (vm === null)
-    console.warn('[useComponentWrapper] 该函数建议在setup作用域内调用')
+    console.warn('[createHOC] 该函数建议在setup作用域内调用')
 
   const instance = shallowRef(ref)
 
@@ -78,7 +78,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     if (stateMerge && Object.keys(stateMerge).length) {
       for (const [key, fn] of Object.entries(stateMerge)) {
         if (!obj[key]) {
-          console.warn(`[useComponentWrapper] ${key} 需要先声明`)
+          console.warn(`[createHOC] ${key} 需要先声明`)
           continue
         }
 
@@ -108,7 +108,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
       ctx.slots,
     )
   }
-  const UseComponentWrapper = _func as unknown as DefineComponent<Props>
+  const createHOC = _func as unknown as DefineComponent<Props>
 
   function invoke(_state?: typeof state) {
     ivkState.value = toValue(_state)
@@ -124,7 +124,7 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
-    Wrapper: UseComponentWrapper,
+    Wrapper: createHOC,
 
     /**
      * - 依赖于`getState`创建的只读属性副本
@@ -144,6 +144,6 @@ export function useComponentWrapper<Props extends Record<string, any>, Component
     setState: invoke,
 
     /** 内部组件的实例 */
-    instance,
+    ref: instance,
   }
 }

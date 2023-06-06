@@ -4,16 +4,16 @@ import { defineAsyncComponent, defineComponent, nextTick, ref, unref } from 'vue
 import { mount } from '@vue/test-utils'
 import { sleep } from '@bluryar/shared'
 import WrapperComponent from '../../test/fixtures/components/Wrapper.vue'
-import { useComponentWrapper } from './index'
+import { createHOC } from './index'
 
-describe('composable: useComponentWrapper', () => {
+describe('composable: createHOC', () => {
   it('should return resolved state', async () => {
     const foo = ref(1)
     const obj = ref({
       test: 1,
     })
 
-    const { Wrapper, getState, setState: invoke, state } = useComponentWrapper({
+    const { Wrapper, getState, setState: invoke, state } = createHOC({
       component: WrapperComponent,
       state: () => ({ 'foo': foo.value, 'obj': obj.value, 'onUpdate:obj': (val: any) => { obj.value = val } }),
     })
@@ -144,7 +144,7 @@ describe('composable: useComponentWrapper', () => {
       test: 1,
     })
 
-    const { Wrapper, getState, setState: invoke, state } = useComponentWrapper({
+    const { Wrapper, getState, setState: invoke, state } = createHOC({
       component: defineAsyncComponent(() => import('../../test/fixtures/components/Wrapper.vue')),
       // 优先级低
       state: () => ({ foo: foo.value, obj: obj.value }),
@@ -226,7 +226,7 @@ describe('composable: useComponentWrapper', () => {
     const setFormItems = (val: FormItem[], ivkState: FormItem[], cmpState: FormItem[]) => {
       return [...(val || []), ...(ivkState || []), ...(cmpState || [])]
     }
-    const { Wrapper, getState, setState, state } = useComponentWrapper({
+    const { Wrapper, getState, setState, state } = createHOC({
       component: TestComponent,
       state: () => ({
         foo: foo.value,
