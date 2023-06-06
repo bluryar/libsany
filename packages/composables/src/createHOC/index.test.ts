@@ -13,12 +13,12 @@ describe('composable: createHOC', () => {
       test: 1,
     })
 
-    const { Wrapper, getState, setState: invoke, state } = createHOC({
+    const { HOC: Wrapper, getState, setState: invoke, state } = createHOC({
       component: WrapperComponent,
       state: () => ({ 'foo': foo.value, 'obj': obj.value, 'onUpdate:obj': (val: any) => { obj.value = val } }),
     })
 
-    const cmp1 = mount(Wrapper, {
+    const cmp1 = mount(Wrapper as any, {
       props: {},
     })
 
@@ -144,13 +144,13 @@ describe('composable: createHOC', () => {
       test: 1,
     })
 
-    const { Wrapper, getState, setState: invoke, state } = createHOC({
+    const { HOC: Wrapper, getState, setState: invoke, state } = createHOC({
       component: defineAsyncComponent(() => import('../../test/fixtures/components/Wrapper.vue')),
       // 优先级低
       state: () => ({ foo: foo.value, obj: obj.value }),
     })
 
-    const cmp1 = mount(Wrapper, {
+    const cmp1 = mount(Wrapper as any, {
       // 优先级最高
       props: {
         'foo': 100,
@@ -226,7 +226,7 @@ describe('composable: createHOC', () => {
     const setFormItems = (val: FormItem[], ivkState: FormItem[], cmpState: FormItem[]) => {
       return [...(val || []), ...(ivkState || []), ...(cmpState || [])]
     }
-    const { Wrapper, getState, setState, state } = createHOC({
+    const { HOC: Wrapper, getState, setState, state } = createHOC({
       component: TestComponent,
       state: () => ({
         foo: foo.value,
@@ -240,7 +240,7 @@ describe('composable: createHOC', () => {
       },
     })
 
-    const wrapper = mount(Wrapper, {
+    const wrapper = mount(Wrapper as any, {
       props: {
         formItems: [
           { type: 'input' },

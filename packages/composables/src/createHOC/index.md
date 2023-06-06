@@ -51,7 +51,7 @@ doSomething(() => {
   <div>
     <!-- #1 foo: ok & bar: bar-->
     <!-- #2 foo: ok x 2 & bar: bar -->
-    <DemoHOC.Wrapper bar="bar"></DemoHOC.Wrapper>
+    <DemoHOC.HOC bar="bar"></DemoHOC.HOC>
   </div>
 </template>
 ```

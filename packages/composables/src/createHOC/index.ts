@@ -13,19 +13,15 @@ import type {
   DefineComponent,
   ExtractPropTypes,
   FunctionalComponent,
-  Plugin,
   ShallowRef,
 } from 'vue'
 import { toValue, tryOnScopeDispose } from '@vueuse/core'
-import type { MaybeRefOrGetter } from '@vueuse/core'
 
-import type { DefineLooseProps } from '../types'
-
-export declare type SFCWithInstall<T> = (T & Plugin) | T
+import type { Component, ComponentProps, DefineLooseProps, SFCWithInstall } from '../types'
 
 export interface createHOCOptions<Props extends Record<string, any>, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
-  component: SFCWithInstall<DefineComponent<Props, any, any>>
+  component: SFCWithInstall<Component<Props>>
 
   ref?: ShallowRef<ComponentRef | null>
 
@@ -34,7 +30,7 @@ export interface createHOCOptions<Props extends Record<string, any>, ComponentRe
    *
    * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
    */
-  state?: MaybeRefOrGetter<Partial<ExtractPropTypes<Props>> & { [key: string]: any }>
+  state?: ComponentProps<Props>
 
   /** 单独指定某个属性的合并策略， 基于 `lodash` 的 `get` 和 `set` 函数实现 */
   stateMerge?: Record<string, (val: any, ivkState:any, cmpState:any) => any>
@@ -108,23 +104,16 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
       ctx.slots,
     )
   }
-  const createHOC = _func as unknown as DefineComponent<Props>
 
   function invoke(_state?: typeof state) {
     ivkState.value = toValue(_state)
   }
 
-  // function _stop() {
-  //   cmpState.value = undefined
-  //   ivkState.value = undefined
-  //   scope.stop()
-  // }
-  // tryOnBeforeUnmount(scope.stop)
   tryOnScopeDispose(scope.stop)
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
-    Wrapper: createHOC,
+    HOC: _func,
 
     /**
      * - 依赖于`getState`创建的只读属性副本
