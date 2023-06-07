@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { bool, number, object } from 'vue-types'
 import { useVModel, useVModels } from '@vueuse/core'
-import { defineComponent, ref, unref, watch } from 'vue'
+import { defineComponent } from 'vue'
 
 const props = defineProps({
   visible: bool().def(!!0),
@@ -23,10 +23,10 @@ const FakeDialog = defineComponent({
       {
         visible.value
           ? (
-              <div class="fake-dialog-content">
-                {slots?.default?.()}
-              </div>
-            )
+            <div class="fake-dialog-content">
+              {slots?.default?.()}
+            </div>
+          )
           : <div class="fake-dialog-empty"></div>
       }
 
@@ -41,7 +41,7 @@ const {
   obj,
 } = useVModels(props, undefined, { passive: !!1, deep: !!1 })
 
-const onClick = () => {
+function onClick() {
   foo.value += 1
   obj.value.test += 1
 }

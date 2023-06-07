@@ -17,12 +17,14 @@ export default defineBuildConfig({
         __DEV__: JSON.stringify(isDevelopment),
       },
     },
+
+    inlineDependencies: !!1,
   },
 
   externals: [
     'vue',
-    'vitest',
-    'naive-ui',
-    'lodash-es',
+    // 'vitest',
+    // 'naive-ui',
+    // 'lodash-es',
   ],
 })
