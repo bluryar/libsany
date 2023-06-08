@@ -8,7 +8,6 @@ import {
   createVNode,
   defineComponent,
   effectScope,
-  getCurrentInstance,
   mergeProps, readonly, shallowRef, watchEffect,
 } from 'vue'
 import { toValue, tryOnScopeDispose } from '@vueuse/core'
@@ -54,11 +53,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   type Props = ComponentExternalProps<typeof component>
   type ParametersProps = MaybeRefOrGetter<Partial<Props>>
 
-  const vm = getCurrentInstance()
   const scope = effectScope()
-
-  if (vm === null)
-    console.warn('[createHOC] 该函数建议在setup作用域内调用')
 
   const instance = shallowRef(ref)
 

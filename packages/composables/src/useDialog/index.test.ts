@@ -287,13 +287,15 @@ describe('composable: useDialog', () => {
       },
     })
 
-    const { closeDialog, openDialog, display, dom } = useDialog({
+    const { closeDialog, openDialog, destroy, dom, mounted } = useDialog({
       component: MyComponent,
       auto: true,
     })
 
     openDialog()
     await nextTick()
+    expect(mounted.value).toBe(true)
+
     expect(dom.value).toMatchInlineSnapshot(`
       <div
         class="my-component"
@@ -362,8 +364,11 @@ describe('composable: useDialog', () => {
       </div>
     `)
 
-    display.value = !!0
+    destroy()
+
     await nextTick()
     expect(document.body.querySelector('.my-component')).toBe(null)
+    expect(dom.value).toBe(null)
+    expect(mounted.value).toBe(false)
   })
 })
