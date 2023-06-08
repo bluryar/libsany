@@ -10,17 +10,21 @@
     "../../packages/composables/index.ts"
   ],
   "exclude": [
-    "src/**/__tests__/*"
+    "src/**/__tests__/*",
+    "../../packages/**/test/**/*"
   ],
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",
     "jsx": "preserve",
+    "moduleResolution": "node",
     "rootDir": "../../",
     // "rootDir": "./src",
     "rootDirs": [
-      "../../",
-      "../../packages"
+      "../../packages/shared/index.ts",
+      "../../packages/shared/src",
+      "../../packages/composables/index.ts",
+      "../../packages/composables/src"
     ],
     "types": [
       "vite/client"

@@ -23,8 +23,9 @@ export default defineBuildConfig({
 
   externals: [
     'vue',
+    'lodash-es',
+    '@vueuse/core',
     // 'vitest',
     // 'naive-ui',
-    // 'lodash-es',
   ],
 })
