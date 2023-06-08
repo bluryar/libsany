@@ -1,8 +1,10 @@
 /* eslint-disable vue/no-ref-object-destructure */
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineAsyncComponent, nextTick, ref, unref } from 'vue'
+import { defineAsyncComponent, defineComponent, h, nextTick, ref, unref } from 'vue'
 import { sleep } from '@bluryar/shared'
+import { bool, number } from 'vue-types'
+import { useVModel } from '@vueuse/core'
 import StaticDialog from '../../test/fixtures/components/Dialog.vue'
 import { useDialog } from './index'
 
@@ -13,14 +15,25 @@ describe('composable: useDialog', () => {
       test: 0,
     })
 
-    const { Dialog, openDialog, closeDialog, visible, getState: getDialogState, setState: setDialogState } = useDialog({
+    const {
+      Dialog,
+      openDialog,
+      closeDialog,
+      visible,
+      getState: getDialogState,
+      setState: setDialogState,
+    } = useDialog({
       component: StaticDialog,
       state: () => {
         return {
           'foo': unref(foo),
           'obj': unref(obj),
-          'onUpdate:foo': (val: any) => { foo.value = val },
-          'onUpdate:obj': (val: any) => { obj.value = val },
+          'onUpdate:foo': (val: any) => {
+            foo.value = val
+          },
+          'onUpdate:obj': (val: any) => {
+            obj.value = val
+          },
         }
       },
     })
@@ -122,14 +135,25 @@ describe('composable: useDialog', () => {
       test: 0,
     })
 
-    const { Dialog, openDialog, closeDialog, visible, getState: getDialogState, setState: setDialogState } = useDialog({
+    const {
+      Dialog,
+      openDialog,
+      closeDialog,
+      visible,
+      getState: getDialogState,
+      setState: setDialogState,
+    } = useDialog({
       component: defineAsyncComponent(() => import('../../test/fixtures/components/Dialog.vue')),
       state: () => {
         return {
           'foo': unref(foo),
           'obj': unref(obj),
-          'onUpdate:foo': (val: any) => { foo.value = val },
-          'onUpdate:obj': (val: any) => { obj.value = val },
+          'onUpdate:foo': (val: any) => {
+            foo.value = val
+          },
+          'onUpdate:obj': (val: any) => {
+            obj.value = val
+          },
         }
       },
     })
@@ -224,5 +248,122 @@ describe('composable: useDialog', () => {
         "visible": true,
       }
     `)
+  })
+
+  it('auto mounts and unmounts the component', async () => {
+    const MyComponent = defineComponent({
+      // template: '<div class="my-component">dialog</div>',
+
+      props: {
+        visible: bool().def(false),
+        value: number().def(0),
+      },
+
+      setup(props) {
+        const value = useVModel(props, 'value', undefined, { passive: !!1 })
+        const visible = useVModel(props, 'visible', undefined, { passive: !!1 })
+
+        return () =>
+          h(
+            'div',
+            {
+              class: 'my-component',
+              visible: visible.value,
+              onClick: () => {
+                value.value = value.value + 1
+              },
+            },
+            h(
+              'div',
+              {
+                class: 'inner',
+                onClick: () => {
+                  value.value = value.value + 1
+                },
+              },
+              value.value,
+            ),
+          )
+      },
+    })
+
+    const { closeDialog, openDialog, display, dom } = useDialog({
+      component: MyComponent,
+      auto: true,
+    })
+
+    openDialog()
+    await nextTick()
+    expect(dom.value).toMatchInlineSnapshot(`
+      <div
+        class="my-component"
+        visible="true"
+      >
+        <div
+          class="inner"
+        >
+          0
+        </div>
+      </div>
+    `)
+
+    await nextTick()
+    expect(document.body.querySelector('.my-component')?.isEqualNode(dom.value)).toBe(true)
+
+    dom.value?.click()
+    await nextTick()
+    expect(dom.value).toMatchInlineSnapshot(`
+      <div
+        class="my-component"
+        visible="true"
+      >
+        <div
+          class="inner"
+        >
+          1
+        </div>
+      </div>
+    `)
+
+    const innerDOM = dom.value?.querySelector('.inner')
+    // 会事件冒泡
+    if (innerDOM)
+      (innerDOM as HTMLElement).click()
+
+    await nextTick()
+    expect(document.body.querySelector('.my-component')?.isEqualNode(dom.value)).toBe(true)
+
+    await nextTick()
+    expect(dom.value).toMatchInlineSnapshot(`
+      <div
+        class="my-component"
+        visible="true"
+      >
+        <div
+          class="inner"
+        >
+          3
+        </div>
+      </div>
+    `)
+
+    closeDialog(() => ({ value: 100 }))
+    await nextTick()
+    expect(dom.value).toMatchInlineSnapshot(`
+      <div
+        class="my-component"
+        visible="false"
+      >
+        <div
+          class="inner"
+        >
+          100
+        </div>
+      </div>
+    `)
+
+    display.value = !!0
+    await nextTick()
+    expect(document.body.querySelector('.my-component')).toBe(null)
   })
 })

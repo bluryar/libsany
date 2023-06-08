@@ -1,16 +1,16 @@
 import { get, set } from 'lodash-es'
 import {
+  type DefineComponent,
+  type MaybeRefOrGetter,
+  type ShallowRef,
+  type Slots,
   computed,
+  createVNode,
   defineComponent,
   effectScope,
   getCurrentInstance,
-  h,
-  mergeProps,
-  readonly,
-  shallowRef,
-  watchEffect,
+  mergeProps, readonly, shallowRef, watchEffect,
 } from 'vue'
-import type { DefineComponent, MaybeRefOrGetter, ShallowRef } from 'vue'
 import { toValue, tryOnScopeDispose } from '@vueuse/core'
 import type { ComponentExternalProps, ComponentType } from '../types'
 
@@ -26,6 +26,13 @@ export interface createHOCOptions<Com extends ComponentType, ComponentRef = unkn
    * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
    */
   state?: MaybeRefOrGetter<Partial<ComponentExternalProps<Com>>>
+
+  /**
+   * 代理插槽， 大部分情况下你都不应传入
+   *
+   * 当你尝试编写 useDialog 时， 也许你会希望自动挂载弹窗组件，这时候，你可以将插槽代理
+   */
+  slots?: Slots,
 
   /** 单独指定某个属性的合并策略， 基于 `lodash` 的 `get` 和 `set` 函数实现 */
   stateMerge?: Record<string, (val: any, ivkState: any, cmpState: any) => any>;
@@ -43,7 +50,7 @@ export interface createHOCOptions<Com extends ComponentType, ComponentRef = unkn
 export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   options: createHOCOptions<Com, ComponentRef>,
 ) {
-  const { component, ref = shallowRef(null), state = () => ({}), stateMerge = undefined } = options
+  const { component, ref = shallowRef(null), state = () => ({}), stateMerge = undefined, slots } = options
   type Props = ComponentExternalProps<typeof component>
   type ParametersProps = MaybeRefOrGetter<Partial<Props>>
 
@@ -88,6 +95,12 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
       const setInst = (el: any) => {
         instance.value = el
       }
+
+      const getSlots = () => ({
+        ...toValue(slots),
+        ...ctx.slots,
+      })
+
       scope.run(() => {
         watchEffect(() => {
           cmpState.value = mergeProps({}, ctx.attrs, props as any)
@@ -97,13 +110,13 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
       tryOnScopeDispose(scope.stop)
 
       return () =>
-        h(
+        createVNode(
           component as DefineComponent,
           {
             ...toValue(wrapperState),
             ref: setInst,
           },
-          ctx.slots,
+          getSlots(),
         )
     },
   }) as typeof component
@@ -137,5 +150,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
 
     /** 内部组件的实例 */
     ref: instance,
+
+    scope,
   }
 }

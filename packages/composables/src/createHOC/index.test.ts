@@ -1,6 +1,7 @@
+/* eslint-disable vue/one-component-per-file */
 /* eslint-disable vue/no-ref-object-destructure */
 import { describe, expect, it } from 'vitest'
-import { defineAsyncComponent, defineComponent, nextTick, ref, unref } from 'vue'
+import { defineAsyncComponent, defineComponent, h, nextTick, ref, unref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { sleep } from '@bluryar/shared'
 import WrapperComponent from '../../test/fixtures/components/Wrapper.vue'
@@ -284,5 +285,32 @@ describe('composable: createHOC', () => {
         }
       ]"
     `)
+  })
+
+  it('renders slot content', async () => {
+    const MyComponent = defineComponent({
+      template: '<div class="my-slot"><slot name="my-slot"></slot></div>',
+    })
+
+    const content = ref('Slot content')
+
+    const { HOC } = createHOC({
+      component: MyComponent,
+      slots: {
+        'my-slot': () => [h('div', { class: 'my-slot' }, unref(content))],
+      },
+    })
+
+    const wrapper = mount(HOC)
+
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toMatchInlineSnapshot('"Slot content"')
+
+    content.value = 'update Slot content'
+
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toBe('update Slot content')
   })
 })
