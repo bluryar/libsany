@@ -12,7 +12,6 @@ import {
 } from 'vue'
 import type { DefineComponent, MaybeRefOrGetter, ShallowRef } from 'vue'
 import { toValue, tryOnScopeDispose } from '@vueuse/core'
-
 import type { ComponentExternalProps, ComponentType } from '../types'
 
 export interface createHOCOptions<Com extends ComponentType, ComponentRef = unknown> {
@@ -82,7 +81,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   }
   const wrapperState = computed(resolveState)
 
-  const HOC = defineComponent<Props, any, any>({
+  const HOC = defineComponent({
     name: 'HOC',
     inheritAttrs: !!0,
     setup(props, ctx) {
@@ -107,7 +106,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
           ctx.slots,
         )
     },
-  })
+  }) as typeof component
 
   function invoke(_state?: ParametersProps) {
     ivkState.value = toValue(_state)

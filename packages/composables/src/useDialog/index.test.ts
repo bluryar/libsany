@@ -25,7 +25,7 @@ describe('composable: useDialog', () => {
       },
     })
 
-    const dialog = mount(Dialog)
+    const dialog = mount(Dialog as any)
 
     await nextTick()
 
@@ -134,7 +134,7 @@ describe('composable: useDialog', () => {
       },
     })
 
-    const dialog = mount(Dialog)
+    const dialog = mount(Dialog as any)
 
     await nextTick()
     await sleep(10)

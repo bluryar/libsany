@@ -43,12 +43,12 @@ export type WithSlotDefineComponent<Props> = DefineComponent<Props, any, any> & 
   $slots: any
 })
 
-export type ComponentType =
+export type SFCWithInstall<T> = (T & Plugin) | T;
+export type ComponentTypeRaw =
   | ComponentConstructor
   | WithSlotDefineComponent<any>
   | FunctionalComponent<any, any, any>
-
-export type SFCWithInstall<T> = (T & Plugin) | T;
+export type ComponentType = SFCWithInstall<ComponentTypeRaw>
 
 // type DefineComponent<
 //   PropsOrPropOptions = {},
