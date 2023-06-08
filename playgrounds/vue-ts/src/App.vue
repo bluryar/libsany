@@ -1,6 +1,20 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
+import { createHOC } from '@bluryar/composables'
+import { h } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
+
+const { HOC, setState } = createHOC({
+  component: HelloWorld,
+  state() {
+    return {
+      msg: 'Hello World',
+    }
+  },
+})
+
+const Hi = () => h(HOC, { msg: 'testing' })
+
 </script>
 
 <template>
@@ -9,6 +23,8 @@ import HelloWorld from './components/HelloWorld.vue'
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
+
+      <Hi></Hi>
 
       <nav>
         <RouterLink to="/">Home</RouterLink>

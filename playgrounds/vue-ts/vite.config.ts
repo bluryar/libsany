@@ -10,6 +10,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@bluryar/shared': fileURLToPath(new URL('../../packages/shared/index.ts', import.meta.url)),
+      '@bluryar/composables': fileURLToPath(new URL('../../packages/composables/index.ts', import.meta.url)),
     },
   },
 })

@@ -1,12 +1,46 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
-  "exclude": ["src/**/__tests__/*"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "../../packages/shared/src",
+    "../../packages/composables/src",
+    "../../packages/shared/index.ts",
+    "../../packages/composables/index.ts"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",
+    "jsx": "preserve",
+    "rootDir": "../../",
+    // "rootDir": "./src",
+    "rootDirs": [
+      "../../",
+      "../../packages"
+    ],
+    "types": [
+      "vite/client"
+    ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@bluryar/shared": [
+        "../../packages/shared/index.ts"
+      ],
+      "@bluryar/shared/*": [
+        "../../packages/shared/src/*"
+      ],
+      "@bluryar/composables": [
+        "../../packages/composables/index.ts"
+      ],
+      "@bluryar/composables/*": [
+        "../../packages/composables/src/*"
+      ]
     }
   }
 }

@@ -26,7 +26,7 @@
     "**/dist/**",
     "**/node_modules/**",
     "**/client/**",
-    "**/playground/**",
+    "**/playgrounds/**",
     "**/examples/**",
     "**/interactive/**",
     "**/test/dts/**"

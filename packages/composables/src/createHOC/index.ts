@@ -1,6 +1,7 @@
 import { get, set } from 'lodash-es'
 import {
   computed,
+  defineComponent,
   effectScope,
   getCurrentInstance,
   h,
@@ -9,31 +10,26 @@ import {
   shallowRef,
   watchEffect,
 } from 'vue'
-import type {
-  DefineComponent,
-  ExtractPropTypes,
-  FunctionalComponent,
-  ShallowRef,
-} from 'vue'
+import type { DefineComponent, ExtractPropTypes, ShallowRef } from 'vue'
 import { toValue, tryOnScopeDispose } from '@vueuse/core'
 
 import type { Component, ComponentProps, DefineLooseProps, SFCWithInstall } from '../types'
 
 export interface createHOCOptions<Props extends Record<string, any>, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
-  component: SFCWithInstall<Component<Props>>
+  component: SFCWithInstall<Component<ExtractPropTypes<Props>>>;
 
-  ref?: ShallowRef<ComponentRef | null>
+  ref?: ShallowRef<ComponentRef | null>;
 
   /**
    * 组件的props，被代理的组件的props可以通过三种方式修改
    *
    * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
    */
-  state?: ComponentProps<Props>
+  state?: ComponentProps<Props>;
 
   /** 单独指定某个属性的合并策略， 基于 `lodash` 的 `get` 和 `set` 函数实现 */
-  stateMerge?: Record<string, (val: any, ivkState:any, cmpState:any) => any>
+  stateMerge?: Record<string, (val: any, ivkState: any, cmpState: any) => any>;
 }
 
 /**
@@ -45,13 +41,10 @@ export interface createHOCOptions<Props extends Record<string, any>, ComponentRe
  * 2. 通过 `setState` 传递参数
  * 3. 通过 `createHOC` 传递的参数
  */
-export function createHOC<Props extends Record<string, any>, ComponentInstance = unknown>(options: createHOCOptions<Props, ComponentInstance>) {
-  const {
-    component,
-    ref = shallowRef(null),
-    state = () => ({}),
-    stateMerge = undefined,
-  } = options
+export function createHOC<Props extends Record<string, any>, ComponentInstance = unknown>(
+  options: createHOCOptions<Props, ComponentInstance>,
+) {
+  const { component, ref = shallowRef(null), state = () => ({}), stateMerge = undefined } = options
   const vm = getCurrentInstance()
   const scope = effectScope()
 
@@ -86,24 +79,32 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
   }
   const wrapperState = computed(resolveState)
 
-  const _func: FunctionalComponent<Props> = (props, ctx) => {
-    scope.run(() => {
-      watchEffect(() => {
-        cmpState.value = mergeProps({}, ctx.attrs, props as any)
+  const HOC = defineComponent<ExtractPropTypes<Props>, any, any, any, any>({
+    name: 'HOC',
+    inheritAttrs: !!0,
+    setup(props, ctx) {
+      const setInst = (el: any) => {
+        instance.value = el
+      }
+      scope.run(() => {
+        watchEffect(() => {
+          cmpState.value = mergeProps({}, ctx.attrs, props as any)
+        })
       })
-    })
 
-    tryOnScopeDispose(scope.stop)
+      tryOnScopeDispose(scope.stop)
 
-    return h(
-      component as DefineComponent,
-      {
-        ...toValue(wrapperState),
-        ref: (el) => { instance.value = el as any },
-      },
-      ctx.slots,
-    )
-  }
+      return () =>
+        h(
+          component as DefineComponent,
+          {
+            ...toValue(wrapperState),
+            ref: setInst,
+          },
+          ctx.slots,
+        )
+    },
+  })
 
   function invoke(_state?: typeof state) {
     ivkState.value = toValue(_state)
@@ -113,7 +114,7 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
-    HOC: _func,
+    HOC: HOC,
 
     /**
      * - 依赖于`getState`创建的只读属性副本
