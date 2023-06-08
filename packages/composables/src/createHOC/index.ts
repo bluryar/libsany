@@ -10,14 +10,14 @@ import {
   shallowRef,
   watchEffect,
 } from 'vue'
-import type { DefineComponent, ExtractPropTypes, ShallowRef } from 'vue'
+import type { DefineComponent, MaybeRefOrGetter, ShallowRef } from 'vue'
 import { toValue, tryOnScopeDispose } from '@vueuse/core'
 
-import type { Component, ComponentProps, DefineLooseProps, SFCWithInstall } from '../types'
+import type { ComponentExternalProps, ComponentType } from '../types'
 
-export interface createHOCOptions<Props extends Record<string, any>, ComponentRef = unknown> {
+export interface createHOCOptions<Com extends ComponentType, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
-  component: SFCWithInstall<Component<ExtractPropTypes<Props>>>;
+  component: Com;
 
   ref?: ShallowRef<ComponentRef | null>;
 
@@ -26,7 +26,7 @@ export interface createHOCOptions<Props extends Record<string, any>, ComponentRe
    *
    * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
    */
-  state?: ComponentProps<Props>;
+  state?: MaybeRefOrGetter<Partial<ComponentExternalProps<Com>>>
 
   /** 单独指定某个属性的合并策略， 基于 `lodash` 的 `get` 和 `set` 函数实现 */
   stateMerge?: Record<string, (val: any, ivkState: any, cmpState: any) => any>;
@@ -41,10 +41,13 @@ export interface createHOCOptions<Props extends Record<string, any>, ComponentRe
  * 2. 通过 `setState` 传递参数
  * 3. 通过 `createHOC` 传递的参数
  */
-export function createHOC<Props extends Record<string, any>, ComponentInstance = unknown>(
-  options: createHOCOptions<Props, ComponentInstance>,
+export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
+  options: createHOCOptions<Com, ComponentRef>,
 ) {
   const { component, ref = shallowRef(null), state = () => ({}), stateMerge = undefined } = options
+  type Props = ComponentExternalProps<typeof component>
+  type ParametersProps = MaybeRefOrGetter<Partial<Props>>
+
   const vm = getCurrentInstance()
   const scope = effectScope()
 
@@ -53,8 +56,8 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
 
   const instance = shallowRef(ref)
 
-  const cmpState = shallowRef<DefineLooseProps<Props>>({})
-  const ivkState = shallowRef<DefineLooseProps<Props>>({})
+  const cmpState = shallowRef<Partial<Props>>({})
+  const ivkState = shallowRef<Partial<Props>>({})
 
   const resolveState = () => {
     const _state = toValue(state) ?? {}
@@ -75,11 +78,11 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
         set(obj, key, val)
       }
     }
-    return obj as Partial<ExtractPropTypes<Props>>
+    return obj as Props
   }
   const wrapperState = computed(resolveState)
 
-  const HOC = defineComponent<ExtractPropTypes<Props>, any, any, any, any>({
+  const HOC = defineComponent<Props, any, any>({
     name: 'HOC',
     inheritAttrs: !!0,
     setup(props, ctx) {
@@ -106,7 +109,7 @@ export function createHOC<Props extends Record<string, any>, ComponentInstance =
     },
   })
 
-  function invoke(_state?: typeof state) {
+  function invoke(_state?: ParametersProps) {
     ivkState.value = toValue(_state)
   }
 

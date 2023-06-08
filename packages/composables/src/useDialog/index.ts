@@ -1,11 +1,13 @@
 import { toValue } from '@vueuse/core'
 import { ref, shallowRef } from 'vue'
+import {} from '@vue/compiler-sfc'
 import { createHOC, type createHOCOptions } from '../createHOC'
 import { vModels } from '../_utils_'
+import type { ComponentType } from '../types'
 
 const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const
 
-export interface UseDialogOptions<Props extends Record<string, any>> extends createHOCOptions<Props>{
+export interface UseDialogOptions<Com extends ComponentType, ComponentRef = unknown> extends createHOCOptions<Com, ComponentRef>{
   /**
    * 弹出双向绑定的key `<Dialog v-model:visible="bool"></Dialog>`
    * @default 'visible'
@@ -25,13 +27,13 @@ export interface UseDialogOptions<Props extends Record<string, any>> extends cre
  * 定义:
  * - 弹窗组件 -- 二次封装组件库的 `<Dialog> | <Modal>` 组件
  */
-export function useDialog <Props extends Record<string, any>>({
+export function useDialog<Com extends ComponentType, ComponentRef = unknown>({
   component,
   state = () => ({}),
   visibleKey = 'visible',
   ref: instRef = shallowRef(null),
   stateMerge = undefined,
-}: UseDialogOptions<Props>) {
+}: UseDialogOptions<Com, ComponentRef>) {
   const visible = ref(!!0)
 
   const resolveState = () => ({
@@ -41,14 +43,14 @@ export function useDialog <Props extends Record<string, any>>({
     }),
   })
 
-  const { HOC: DialogHOC, getState, setState: invoke, state: resolvedState, ref: resolvedInstRef } = createHOC({
+  const { HOC: DialogHOC, getState, setState: invoke, state: resolvedState, ref: resolvedInstRef } = createHOC<Com, ComponentRef>({
     component,
     state: resolveState,
     ref: instRef,
     stateMerge,
   })
 
-  const toggleDialogVisible = (_visible: boolean, _state?: UseDialogOptions<Props>['state']) => {
+  const toggleDialogVisible = (_visible: boolean, _state?: typeof state) => {
     visible.value = _visible
     const state = () => toValue(_state) as any
     invoke(state)

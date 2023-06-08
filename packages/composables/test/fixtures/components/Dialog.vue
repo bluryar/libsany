@@ -9,6 +9,10 @@ const props = defineProps({
   obj: object<{ test: number }>().def({ test: 0 }),
 })
 
+defineSlots<{
+  default: any
+}>()
+
 const FakeDialog = defineComponent({
   props: {
     visible: bool().def(!!0),

@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
-import { createHOC } from '@bluryar/composables'
+import { createHOC, useDialog } from '@bluryar/composables'
 import { h } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
 
@@ -12,9 +12,17 @@ const { HOC, setState } = createHOC({
     }
   },
 })
+const Dialog = useDialog({
+  component: HelloWorld,
+  state() {
+    return {
+      msg: 'Hello World',
+    }
+  },
+})
 
 const Hi = () => h(HOC, { msg: 'testing' })
-
+const HiDialog = () => h(Dialog.Dialog, { msg: 'testing' })
 </script>
 
 <template>

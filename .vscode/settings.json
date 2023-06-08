@@ -1,7 +1,6 @@
 {
   "editor.fontFamily": "Fira Code",
   "editor.fontLigatures": "'ss01', 'ss02', 'ss03', 'ss06', 'zero'",
-
   // Editor
   "editor.accessibilitySupport": "off",
   "editor.cursorSmoothCaretAnimation": "on",
@@ -15,6 +14,7 @@
   "editor.tabSize": 2,
   "editor.unicodeHighlight.invisibleCharacters": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": false,
     "source.fixAll.eslint": true, // this allows ESLint to auto fix on save
@@ -29,7 +29,6 @@
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
   "git.untrackedChanges": "separate",
-
   "scm.diffDecorationsGutterWidth": 2,
   "debug.onTaskErrors": "debugAnyway",
   "diffEditor.ignoreTrimWhitespace": false,
@@ -51,7 +50,6 @@
     "**/tmp": true,
     "**/yarn.lock": true
   },
-
   // Extension configs
   "emmet.showSuggestionsAsSnippets": true,
   "emmet.triggerExpansionOnTab": false,
@@ -143,7 +141,6 @@
   "i18n-ally.ignoredLocales": [],
   "iconify.annotations": true,
   "iconify.inplace": true,
-
   "GitCommitPlugin.Templates": [
     {
       "templateName": "Angular",
@@ -157,7 +154,6 @@
     "bumpp",
     "commitlintrc"
   ],
-
   "volar.takeOverMode.extension": "Vue.volar",
   "vue.complete.normalizeComponentImportName": true,
   "vue.codeActions.savingTimeLimit": 2000,
