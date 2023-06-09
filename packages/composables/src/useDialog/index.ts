@@ -1,18 +1,17 @@
-import { unref } from 'vue'
-
-/* eslint-disable no-inner-declarations */
-import { toValue } from '@vueuse/core'
 import {
-  type DefineComponent,
-  computed,
-  createCommentVNode,
+  computed, createCommentVNode,
   createVNode,
+  effectScope,
   getCurrentInstance,
   ref,
   render,
   shallowRef,
+  unref,
   watch,
 } from 'vue'
+
+/* eslint-disable no-inner-declarations */
+import { toValue } from '@vueuse/core'
 import { isTrue } from '@bluryar/shared'
 import { omit } from 'lodash-es'
 import { createHOC } from '../createHOC'
@@ -35,8 +34,9 @@ export type {
   UseDialogReturn,
   UseDialogReturnAuto,
   UseDialogReturnManual,
-} from './types'
+}
 
+// override
 export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
   options: UseDialogOptionsAuto<Com, ComponentRef>,
 ): UseDialogReturnAuto<Com, ComponentRef>;
@@ -45,13 +45,15 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
   options: UseDialogOptionsManual<Com, ComponentRef>,
 ): UseDialogReturnManual<Com, ComponentRef>;
 
+// implement
 export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
   options: UseDialogOptions<Com, ComponentRef>,
 ): UseDialogReturn<Com, ComponentRef> {
-  const { auto = false, state: defaultState, visibleKey = 'visible' } = options
+  const { auto = false, initState: defaultState, visibleKey = 'visible' } = options
 
   const visible = ref(!!0)
   const vm = getCurrentInstance()
+  const scope = effectScope()
 
   const resolveState = () => ({
     ...toValue(defaultState),
@@ -60,16 +62,25 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
     }),
   })
 
-  const createHOCReturns = createHOC<Com, ComponentRef>({
-    ...options,
-    state: resolveState as any,
-  })
-  const { HOC: DialogHOC, setState: invoke, scope } = createHOCReturns
+  const createHOCReturns = createHOC<Com, ComponentRef>(
+    {
+      ...options,
+      initState: resolveState as any,
+    },
+    {
+      scope,
+    },
+  )
+  const { HOC: DialogHOC, state } = createHOCReturns
 
   const toggleDialogVisible = (_visible: boolean, _state?: typeof defaultState) => {
     visible.value = _visible
-    const state = () => toValue(_state) as any
-    invoke(state)
+    // const state = () => toValue(_state) as any
+    // invoke(state)
+    state.value = {
+      ...state.value,
+      ...toValue(_state),
+    }
   }
 
   const openDialog = (_state?: typeof defaultState) => toggleDialogVisible(!!1, _state)
@@ -86,9 +97,7 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
       watch(
         display,
         (val) => {
-          if (val)
-            _mount()
-          else _desroy()
+          val ? _mount() : _desroy()
         },
         { immediate: !!1 },
       )
@@ -97,7 +106,7 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
     function _mount() {
       // create
       container.value = document.createDocumentFragment()
-      vnode.value = createVNode(DialogHOC as DefineComponent)
+      vnode.value = createVNode(DialogHOC)
       vnode.value.appContext = appContext || vm?.appContext || vnode.value.appContext
       render(vnode.value, container.value as unknown as HTMLElement)
 
@@ -131,7 +140,17 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
       closeDialog,
 
       destroy() {
+        if (!display.value)
+          return
+
         display.value = !!0
+      },
+
+      remount() {
+        if (display.value)
+          return
+
+        _mount()
       },
 
       mounted: computed(() => !!unref(display)),

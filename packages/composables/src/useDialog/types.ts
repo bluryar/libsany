@@ -1,11 +1,12 @@
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
-import { createHOC, type createHOCOptions } from '../createHOC'
+import { createHOC } from '../createHOC'
+import type { CreateHOCOptions } from '../createHOC/types'
 import type { ComponentExternalProps, ComponentType } from '../types'
 
 const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const
 type UseDialogVisibleKey = (typeof UseDialogVisibleKeys)[number];
 interface UseDialogOptionsBase<Com extends ComponentType, ComponentRef = unknown>
-  extends createHOCOptions<Com, ComponentRef> {
+  extends CreateHOCOptions<Com, ComponentRef> {
   /**
    * 弹出双向绑定的key `<Dialog v-model:visible="bool"></Dialog>`
    * @default 'visible'
@@ -63,6 +64,11 @@ export interface UseDialogReturnAuto<Com extends ComponentType, ComponentRef = u
    * 销毁组件
    */
   destroy: () => void;
+
+  /**
+   * 重新挂载组件
+   */
+  remount: () => void;
 
   /**
    * 组件的 DOM 元素

@@ -1,9 +1,21 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig({
-  plugins: [vue(), vueJsx()],
+  plugins: [
+    vue(),
+    vueJsx(),
+    AutoImport({
+      imports: ['vitest'],
+      eslintrc: {
+        enabled: !!1,
+        filepath: './auto-eslintrc.json',
+      },
+      dts: true, // generate TypeScript declaration
+    }),
+  ],
   define: {
     __DEV__: JSON.stringify('false'),
   },
@@ -16,6 +28,8 @@ export default defineConfig({
     },
   },
   test: {
+    globals: !!1,
+    includeSource: ['src/**/*.{js,tsx,jsx,tsx,vue}'],
     environment: 'jsdom',
   },
 })

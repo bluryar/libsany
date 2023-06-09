@@ -8,6 +8,10 @@
     "lib": [
       "ES2022", "DOM", "DOM.Iterable"
     ],
+    "types": [
+      "./auto-imports.d.ts",
+      "vitest/importMeta"
+    ],
     "paths": {
       "@bluryar/shared": ["./packages/shared/index.ts"],
       "@bluryar/shared/*": ["./packages/shared/*"],

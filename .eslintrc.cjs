@@ -7,6 +7,7 @@
 module.exports = {
   extends: [
     '@bluryar/vue',
+    './auto-eslintrc.json',
   ],
   globals: {
     __DEV__: true,

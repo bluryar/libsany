@@ -11,10 +11,18 @@ export default defineBuildConfig({
     'src/index',
   ],
 
+  replace: {
+    'import.meta.vitest': 'undefined',
+    '__DEV__': JSON.stringify(isDevelopment),
+  },
+
   declaration: !!1,
+
   clean: true,
+
   rollup: {
     emitCJS: true,
+
     alias: {
       entries: {
         '@bluryar/shared': resolve(__dirname, '../shared/index.ts'),
@@ -22,20 +30,13 @@ export default defineBuildConfig({
     },
 
     esbuild: {
-
-      define: {
-        __DEV__: JSON.stringify(isDevelopment),
-      },
+      jsx: 'automatic',
     },
-
-    inlineDependencies: !!1,
   },
 
   externals: [
     'vue',
     'lodash-es',
     '@vueuse/core',
-    // 'vitest',
-    // 'naive-ui',
   ],
 })

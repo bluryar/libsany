@@ -6,6 +6,9 @@ export default defineBuildConfig({
   entries: [
     'src/index',
   ],
+  replace: {
+    'import.meta.vitest': 'undefined',
+  },
   declaration: true,
   clean: true,
   rollup: {
