@@ -23,6 +23,8 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
 
+    inlineDependencies: !!1,
+
     alias: {
       entries: {
         '@bluryar/shared': resolve(__dirname, '../shared/index.ts'),

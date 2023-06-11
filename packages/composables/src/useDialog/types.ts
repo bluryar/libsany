@@ -1,4 +1,4 @@
-import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
+import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import { createHOC } from '../createHOC'
 import type { CreateHOCOptions } from '../createHOC/types'
 import type { ComponentExternalProps, ComponentType } from '../types'
@@ -39,8 +39,15 @@ export interface UseDialogOptionsManual<Com extends ComponentType, ComponentRef 
 export type UseDialogOptions<Com extends ComponentType, ComponentRef = unknown> =
   | UseDialogOptionsAuto<Com, ComponentRef>
   | UseDialogOptionsManual<Com, ComponentRef>;
-interface UseDialogReturnBase<Com extends ComponentType, ComponentRef = unknown>
-  extends Omit<ReturnType<typeof createHOC<Com, ComponentRef>>, 'HOC' | 'scope'> {
+
+export interface SetState<Com extends ComponentType> {
+  <Key extends string>(key: Key, value: unknown): void;
+  <Key extends keyof Partial<ComponentExternalProps<Com>>>(key: Key, value: Partial<ComponentExternalProps<Com>>[Key]): void;
+  (state?: Partial<ComponentExternalProps<Com>>): void;
+}
+
+export interface UseDialogReturnBase<Com extends ComponentType, ComponentRef = unknown>
+  extends Omit<ReturnType<typeof createHOC<Com, ComponentRef>>, 'HOC'> {
   /**
    * 是否显示组件
    */
@@ -49,11 +56,12 @@ interface UseDialogReturnBase<Com extends ComponentType, ComponentRef = unknown>
   /**
    * 打开弹窗
    */
-  openDialog: (state?: MaybeRefOrGetter<Partial<ComponentExternalProps<Com>>>) => void;
+  openDialog: SetState<Com>;
+
   /**
    * 关闭弹窗
    */
-  closeDialog: (state?: MaybeRefOrGetter<Partial<ComponentExternalProps<Com>>>) => void;
+  closeDialog: SetState<Com>;
 }
 export interface UseDialogReturnAuto<Com extends ComponentType, ComponentRef = unknown>
   extends UseDialogReturnBase<Com, ComponentRef> {
@@ -80,7 +88,7 @@ export interface UseDialogReturnManual<Com extends ComponentType, ComponentRef =
   /**
    * 弹窗组件
    */
-  Dialog: Pick<ReturnType<typeof createHOC<Com, ComponentRef>>, 'HOC'>;
+  Dialog: ReturnType<typeof createHOC<Com, ComponentRef>>['HOC'];
 }
 export type UseDialogReturn<Com extends ComponentType, ComponentRef = unknown> = UseDialogReturnAuto<
   Com,

@@ -152,7 +152,8 @@
     "antfu",
     "bluryar",
     "bumpp",
-    "commitlintrc"
+    "commitlintrc",
+    "vnode"
   ],
   "volar.takeOverMode.extension": "Vue.volar",
   "vue.complete.normalizeComponentImportName": true,

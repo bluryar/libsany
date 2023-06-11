@@ -3,13 +3,13 @@
 
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "jsx": "preserve",
     "moduleResolution": "node",
     "lib": [
       "ES2022", "DOM", "DOM.Iterable"
     ],
     "types": [
-      "./auto-imports.d.ts",
       "vitest/importMeta"
     ],
     "paths": {
@@ -21,9 +21,10 @@
   },
 
   "include": [
+    "auto-imports.d.ts",
     "packages",
     "packages/**/*.vue",
-    "packages/**/*.tsx"
+    "playgrounds"
   ],
 
   "exclude": [
