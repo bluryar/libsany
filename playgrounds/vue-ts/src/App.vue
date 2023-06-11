@@ -1,32 +1,47 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router'
-import { createHOC, useDialog } from '@bluryar/composables'
-import { h } from 'vue'
+import { NButton, NModal } from 'naive-ui'
+import { useDialog } from '@bluryar/composables'
+import { ref } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
 
-const { HOC, setState } = createHOC({
-  component: HelloWorld,
-  state() {
-    return {
-      msg: 'Hello World',
-    }
+const val = ref(1)
+const DialogReturn = useDialog({
+  component: NModal,
+  initState: () =>
+    ({
+      preset: 'dialog',
+      title: '提示',
+      content: '这是一个弹窗',
+      val: 1,
+    } as const),
+  slots: {
+    default: () => [
+      <div>
+        <div>val: {val.value}</div>
+        <div>DialogReturn.getState(): {JSON.stringify(DialogReturn.getState())}</div>
+        <div
+          onClick={() => {
+            DialogReturn.setState('val', DialogReturn.getState().val + 1)
+          }}
+        >
+          Click Me +1: {DialogReturn.getState().val}
+        </div>
+      </div>,
+    ],
   },
-})
-const Dialog = useDialog({
-  component: HelloWorld,
-  state() {
-    return {
-      msg: 'Hello World',
-    }
-  },
+  visibleKey: 'show',
+  auto: !!1,
 })
 
-const Hi = () => h(HOC, { msg: 'testing' })
-const HiDialog = () => h(Dialog.Dialog, { msg: 'testing' })
+setInterval(() => {
+  val.value++
+}, 1000)
 </script>
 
 <template>
   <header>
+    <NButton @click="DialogReturn.openDialog">打开弹窗</NButton>
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">

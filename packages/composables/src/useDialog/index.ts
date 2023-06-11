@@ -52,7 +52,7 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
 export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
   options: UseDialogOptions<Com, ComponentRef>,
 ): UseDialogReturn<Com, ComponentRef> {
-  type Props = Partial<ComponentExternalProps<Com>>;
+  type Props = Partial<ComponentExternalProps<Com> & { [key: string]: any }>;
 
   const { auto = false, initState = () => ({}), visibleKey = 'visible' } = options
 

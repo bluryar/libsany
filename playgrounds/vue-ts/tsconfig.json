@@ -1,0 +1,20 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "paths": {
+      "@bluryar/shared": ["../../packages/shared/index.ts"],
+      "@bluryar/shared/*": ["../../packages/shared/*"],
+      "@bluryar/composables": ["../../packages/composables/index.ts"],
+      "@bluryar/composables/*": ["../../packages/composables/*"]
+    }
+  },
+  "include": [
+    "./",
+    "./**/*.vue"
+  ],
+  "vueCompilerOptions": {
+    "target": 3.3
+  }
+}

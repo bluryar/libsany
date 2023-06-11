@@ -16,7 +16,7 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
    *
    * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
    */
-  initState?: () => Partial<Prettify<ComponentExternalProps<Com>>>;
+  initState?: () => Partial<Prettify<ComponentExternalProps<Com>>> & { [key: string]: any };
 
   /**
    * 代理插槽， 大部分情况下你都不应传入

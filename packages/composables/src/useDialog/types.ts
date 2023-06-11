@@ -16,7 +16,7 @@ interface UseDialogOptionsBase<Com extends ComponentType, ComponentRef = unknown
 export interface UseDialogOptionsAuto<Com extends ComponentType, ComponentRef = unknown>
   extends UseDialogOptionsBase<Com, ComponentRef> {
   /**
-   * 是否自动挂载组件，由于 vue 不提供
+   * 是否自动挂载组件，由于 vue 不提供获取injectionKey的缘故, 建议当你需要使用外部注入的内容时, 设置为false
    */
   auto: true;
   /**
@@ -32,7 +32,7 @@ export interface UseDialogOptionsAuto<Com extends ComponentType, ComponentRef = 
 export interface UseDialogOptionsManual<Com extends ComponentType, ComponentRef = unknown>
   extends UseDialogOptionsBase<Com, ComponentRef> {
   /**
-   * 是否自动挂载组件，由于 vue 不提供
+   * 是否自动挂载组件，由于 vue 不提供获取injectionKey的缘故, 建议当你需要使用外部注入的内容时, 设置为false
    */
   auto?: false;
 }

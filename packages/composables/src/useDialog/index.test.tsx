@@ -22,7 +22,11 @@ describe('useDialog', () => {
     },
     render() {
       const res = (
-        <div onClick={() => { this.visibleRef = !this.visibleRef }}>
+        <div
+          onClick={() => {
+            this.visibleRef = !this.visibleRef
+          }}
+        >
           <div>{this.visibleRef}</div>
           {this.formItems?.map((item) => {
             return <div>{JSON.stringify(item)}</div>
@@ -90,7 +94,9 @@ describe('useDialog', () => {
     // 打开对话框并传入新的formItems
     openDialog('formItems.2', [
       {
-        key: 'index', type: 'input', prop: { val: 1 },
+        key: 'index',
+        type: 'input',
+        prop: { val: 1 },
       },
     ])
 
@@ -108,7 +114,18 @@ describe('useDialog', () => {
   })
 
   it('should create a dialog instance, and auto mount it', async () => {
-    const { visible, openDialog, closeDialog, dom, getState, restoreState, destroy, mounted, remount, ref: refInst } = useDialog({
+    const {
+      visible,
+      openDialog,
+      closeDialog,
+      dom,
+      getState,
+      restoreState,
+      destroy,
+      mounted,
+      remount,
+      ref: refInst,
+    } = useDialog({
       component: VDialog,
       initState: () => ({
         formItems: [{ key: 'index', type: 'input', prop: { val: 1 } } as const],
@@ -138,6 +155,7 @@ describe('useDialog', () => {
         "visible": false,
       }
     `)
+    expect(refInst.value).toBeDefined()
 
     // 打开对话框
     openDialog()
@@ -160,7 +178,9 @@ describe('useDialog', () => {
     // 打开对话框并传入新的formItems
     openDialog('formItems.2', [
       {
-        key: 'index', type: 'input', prop: { val: 1 },
+        key: 'index',
+        type: 'input',
+        prop: { val: 1 },
       },
     ])
     await nextTick()

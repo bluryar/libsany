@@ -159,5 +159,8 @@
   "vue.complete.normalizeComponentImportName": true,
   "vue.codeActions.savingTimeLimit": 2000,
   "vue.updateImportsOnFileMove.enabled": true,
-  "references.preferredLocation": "peek"
+  "references.preferredLocation": "peek",
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

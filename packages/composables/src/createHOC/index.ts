@@ -1,4 +1,15 @@
-import { type DefineComponent, defineComponent, effectScope, h, nextTick, reactive, readonly, shallowReadonly, shallowRef, toValue } from 'vue'
+import {
+  type DefineComponent,
+  defineComponent,
+  effectScope,
+  h,
+  nextTick,
+  reactive,
+  readonly,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+} from 'vue'
 import { tryOnScopeDispose } from '@vueuse/core'
 import { set } from 'lodash-es'
 import { isUndef } from '@bluryar/shared'
@@ -20,7 +31,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
 ) {
   let { component, ref = shallowRef(null), initState = () => ({}), slots } = options
   const { scope = effectScope() } = devOptions || {}
-  type Props = Partial<ComponentExternalProps<typeof component>>;
+  type Props = Partial<ComponentExternalProps<typeof component> & { [key: string]: any }>;
 
   let mergedState = reactive<Props>(toValue(initState))
   const Empty = () => null
@@ -77,12 +88,12 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   }
 
   // overload
-  function setState<Key extends string>(key: Key, val: unknown):void
-  function setState<Key extends keyof Props>(key: Key, val: Props[Key]):void
-  function setState(_state: Partial<Props>):void
+  function setState<Key extends keyof Props>(key: Key, val: Props[Key]): void;
+  function setState<Key extends string>(key: Key, val: unknown): void;
+  function setState(_state: Partial<Props>): void;
 
   // implementation
-  function setState(...args: any[]):void {
+  function setState(...args: any[]): void {
     if (!args?.length)
       return
 
@@ -90,8 +101,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
       if (isUndef(args[0]))
         return
 
-      for (const [k, v] of Object.entries(args[0]))
-        set(mergedState, k, v)
+      for (const [k, v] of Object.entries(args[0])) set(mergedState, k, v)
     }
     else if (args.length === 2) {
       set(mergedState, args[0], args[1])
@@ -119,12 +129,11 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
    *
    * @param _state - 传入一个函数，它会在每次调用 `restoreState` 时执行，它的返回值会被作为新的state
    */
-  function restoreState(_state?: () => Props):void {
+  function restoreState(_state?: () => Props): void {
     if (!isUndef(_state))
       initState = _state
 
-    for (const k of Object.keys(mergedState))
-      delete mergedState[k]
+    for (const k of Object.keys(mergedState)) delete mergedState[k]
 
     Object.assign(mergedState, toValue(initState))
   }

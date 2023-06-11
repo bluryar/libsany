@@ -1,63 +1,76 @@
----
-category: Component
----
-
 # createHOC
 
-创建一个高阶组件，用于包装一个组件，调整其接收参数的方式。这不是一个通用的方法，它有特定的使用场景。
-
-## Usage
-
-```vue
-<script setup lang="tsx">
-import { defineComponent } from 'vue'
-import { string } from 'vue-types'
-import { createHOC } from '@bluryar/composables'
-
-const Demo = defineComponent({
-  props: {
-    foo: string().def('init'),
-    bar: string().def('init'),
+```typescript
+createHOC<Com extends ComponentType, ComponentRef = unknown>(
+  options: CreateHOCOptions<Com, ComponentRef>,
+  devOptions?: CreateHOCDevOptions,
+): {
+  HOC: ShallowRef<typeof Empty | Com>,
+  ref: ShallowRef<ComponentRef | null>,
+  getState: (mode?: 'shallowReadonly' | 'readonly' | 'reactive') => any,
+  setState: {
+    (key: keyof Partial<Prettify<ComponentExternalProps<Com>>>, val: any): void,
+    (key: string, val: any): void,
+    (state: Partial<Prettify<ComponentExternalProps<Com>>>): void,
   },
-  setup(props) {
-    return () => <div>foo: { props.foo } & bar: { props.bar }</div>
-  },
-})
-
-const DemoHOC = createHOC({
-  component: Demo,
-  state() {
-    return {
-      foo: 'ok',
-    }
-  },
-})
-
-// ... 某些情况下，我们需要在外部修改组件的 props
-
-const doSomething = (fn: Function) => {
-  setTimeout(() => {
-    fn()
-  }, 1000)
+  restoreState: (state?: () => Partial<Prettify<ComponentExternalProps<Com>>>) => void,
 }
-doSomething(() => {
-  DemoHOC.invoke(() => ({
-    foo: 'ok x 2',
-  }))
-})
-</script>
-
-<template>
-  <div>
-    <!-- #1 foo: ok & bar: bar-->
-    <!-- #2 foo: ok x 2 & bar: bar -->
-    <DemoHOC.HOC bar="bar"></DemoHOC.HOC>
-  </div>
-</template>
 ```
 
-### 说明
+## 说明
 
-- 优先级：component props > invoke > state
-- 参数合并基于 [mergeprops](https://cn.vuejs.org/api/render-function.html#mergeprops) 实现， 该函数的表现类似于 `Object.assign`， 也即优先级高的参数会覆盖优先级低的参数， 为了调整这一行为， 你可以使用 `stateMerge` 配置项调整。
-- 不建议统一参数在多个位置传入。
+该函数用于创建一个高阶组件，可以对被包裹的组件进行状态管理。
+
+### 参数
+
+- `options`: 高阶组件的选项对象，包含以下属性：
+  - `component`: 需要处理的组件，必需。
+  - `ref`: 组件的引用，可选，默认为 `null`。
+  - `initState`: 初始化状态的函数，可选。默认为一个返回空对象的函数。
+  - `slots`: 代理插槽，可选。默认为 `undefined`。
+- `devOptions`: 开发选项对象，包含以下属性：
+  - `scope`: 作用域对象，可选。
+
+### 返回值
+
+一个对象，包含以下属性和方法：
+
+- `HOC`: 组件的浅响应引用。
+- `ref`: 组件的引用。
+- `getState`: 获取只读代理对象的方法，可以传入读取模式，默认为 `'readonly'`。
+- `setState`: 设置属性的方法，可以传入属性键和属性值，也可以传入一个对象。
+- `restoreState`: 重置组件状态的方法，可以传入一个重置函数。
+
+## 用法示例
+
+```typescript
+import { createHOC } from './index';
+
+const {
+  HOC,
+  ref,
+  getState,
+  setState,
+  restoreState,
+} = createHOC({
+  component: MyComponent,
+  ref: shallowRef(null),
+  initState: () => ({ msg: 'Hello, world!', obj: { val: 1 } }),
+});
+
+// 获取组件的引用
+console.log(ref.value);
+
+// 获取组件的状态
+console.log(getState());
+
+// 设置组件的属性
+setState('msg', 'Foo, Bar!');
+setState({ obj: { val: 2 } });
+
+// 重置组件状态
+restoreState();
+
+// 重置组件状态并传入新的状态
+restoreState(() => ({ msg: 'Hi, world!' }));
+```

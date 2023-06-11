@@ -39,17 +39,6 @@ export type EmitsToProps<T extends EmitsOptions> = T extends string[]
 
 export type ComponentConstructor = abstract new (...args: any) => any;
 
-export type WithSlotDefineComponent<Props> = DefineComponent<Props, any, any> & (new() =>{
-  $slots: any
-})
-
-export type SFCWithInstall<T> = (T & Plugin) | T;
-export type ComponentTypeRaw =
-  | ComponentConstructor
-  | WithSlotDefineComponent<any>
-  | FunctionalComponent<any, any, any>
-export type ComponentType = SFCWithInstall<ComponentTypeRaw>
-
 // type DefineComponent<
 //   PropsOrPropOptions = {},
 //   RawBindings = {},
@@ -65,6 +54,30 @@ export type ComponentType = SFCWithInstall<ComponentTypeRaw>
 //   Defaults = ExtractDefaultPropTypes<PropsOrPropOptions>,
 //   S extends SlotsType = {}
 // >;
+
+export type WithSlotDefineComponent<
+  Props,
+  Emits extends EmitsOptions = {},
+  Slots extends Record<string, any> = any,
+> = DefineComponent<Props, any, any, any, any, any, any, Emits, any, any, any, any, Slots> &
+  (new () => {
+    $slots: any;
+  });
+
+export type SFCWithInstall<T> = (T & Plugin) | T;
+export type ComponentTypeRaw = ComponentConstructor | WithSlotDefineComponent<any> | FunctionalComponent<any, any, any>;
+export type ComponentType = SFCWithInstall<ComponentTypeRaw>;
+
+/**
+ * 从组件处获取props的类型
+ */
+export type GetComponentProps<Com extends ComponentType> = Com extends DefineComponent<infer Props, any, any>
+  ? ExtractPropTypes<Props>
+  : Com extends FunctionalComponent<infer Props>
+  ? Props
+  : Com extends WithSlotDefineComponent<infer Props>
+  ? ExtractPropTypes<Props>
+  : never;
 
 /**
  * 从组件处获取emits的类型
@@ -87,17 +100,6 @@ export type GetComponentEmits<Com extends ComponentType> = Com extends DefineCom
   ? EmitsToProps<Emits>
   : Com extends FunctionalComponent<any, infer Emits>
   ? EmitsToProps<Emits>
-  : never;
-
-/**
- * 从组件处获取props的类型
- */
-export type GetComponentProps<Com extends ComponentType> = Com extends DefineComponent<infer Props, any, any>
-  ? ExtractPropTypes<Props>
-  : Com extends FunctionalComponent<infer Props>
-  ? Props
-  : Com extends WithSlotDefineComponent<infer Props>
-  ? ExtractPropTypes<Props>
   : never;
 
 /**
