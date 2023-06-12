@@ -38,8 +38,8 @@
   },
   "devDependencies": {
     "@antfu/ni": "^0.21.3",
-    "@bluryar/commitlint-config": "^1.1.0",
-    "@bluryar/eslint-config-vue": "^1.1.0",
+    "@bluryar/commitlint-config": "^1.1.2",
+    "@bluryar/eslint-config-vue": "^1.1.2",
     "@bluryar/shared": "workspace:*",
     "@commitlint/config-conventional": "^17.6.5",
     "@rushstack/eslint-patch": "^1.3.0",

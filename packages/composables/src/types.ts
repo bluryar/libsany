@@ -61,7 +61,7 @@ export type WithSlotDefineComponent<
   Slots extends Record<string, any> = any,
 > = DefineComponent<Props, any, any, any, any, any, any, Emits, any, any, any, any, Slots> &
   (new () => {
-    $slots: any;
+    $slots: Slots;
   });
 
 export type SFCWithInstall<T> = (T & Plugin) | T;
@@ -69,7 +69,7 @@ export type ComponentTypeRaw = ComponentConstructor | WithSlotDefineComponent<an
 export type ComponentType = SFCWithInstall<ComponentTypeRaw>;
 
 /**
- * 从组件处获取props的类型
+ * 从组件定义获取props的类型
  */
 export type GetComponentProps<Com extends ComponentType> = Com extends DefineComponent<infer Props, any, any>
   ? ExtractPropTypes<Props>
@@ -80,7 +80,12 @@ export type GetComponentProps<Com extends ComponentType> = Com extends DefineCom
   : never;
 
 /**
- * 从组件处获取emits的类型
+ * 从组件处获取props的类型，不严格要求props必须存在
+ */
+export type GetComponentLooseProps<Com extends ComponentType> = Partial<GetComponentProps<Com>> & { [key: string]: any }
+
+/**
+ * 从组件定义获取emits的类型
  */
 export type GetComponentEmits<Com extends ComponentType> = Com extends DefineComponent<
   any,
@@ -100,10 +105,12 @@ export type GetComponentEmits<Com extends ComponentType> = Com extends DefineCom
   ? EmitsToProps<Emits>
   : Com extends FunctionalComponent<any, infer Emits>
   ? EmitsToProps<Emits>
+  : Com extends WithSlotDefineComponent<any, infer Emits>
+  ? EmitsToProps<Emits>
   : never;
 
 /**
- * 从组件处获取slots的类型
+ * 从组件定义获取slots的类型
  */
 export type GetComponentSlots<Com extends ComponentType> = Com extends DefineComponent<
   any,
@@ -122,6 +129,8 @@ export type GetComponentSlots<Com extends ComponentType> = Com extends DefineCom
 >
   ? Slots
   : Com extends FunctionalComponent<any, any, infer Slots>
+  ? Slots
+  : Com extends WithSlotDefineComponent<any, any, infer Slots>
   ? Slots
   : never;
 
@@ -146,9 +155,16 @@ export type GetComponentPropsAndEmits<Com extends ComponentType> = NotNever<GetC
   TransformPropsToEmits<NotNever<GetComponentProps<Com>>>;
 
 /**
- * 核心，如果不是有明确的需求，否则都应该使用这个表示组件的props。
+ * 核心，这个类型最大程度的包括了有可能出现的属性，按照一般的规则，你不应该使用它。除非你知道自己的需求是什么。
  *
  * @see GetComponentProps - 进一步收窄 `props` 类型
  * @see GetComponentPropsAndEmits - 进一步收窄 `props` 类型
  */
 export type ComponentExternalProps<Com extends ComponentType> = DefineExternalProps<GetComponentPropsAndEmits<Com>>;
+
+/**
+ * 格式化类型，可以将复杂的类型运算展开，方便阅读
+ */
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};

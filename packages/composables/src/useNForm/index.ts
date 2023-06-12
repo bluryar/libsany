@@ -94,7 +94,7 @@ export function useNForm<Params = Record<string, any>, Response = any>(options: 
 
   const createHOCReturns = createHOC({
     component: UseNForm,
-    initState: () => ({
+    props: () => ({
       formProps,
       gridProps,
     }),

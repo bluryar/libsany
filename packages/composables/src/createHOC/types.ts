@@ -1,9 +1,5 @@
-import { EffectScope, type ShallowRef, type Slots } from 'vue'
-import type { ComponentExternalProps, ComponentType } from '../types'
-
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
+import { EffectScope, type ShallowRef, type Slots } from 'vue';
+import type { ComponentType, GetComponentLooseProps } from '../types';
 
 export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unknown> {
   /** 【必传】需要处理的组件 */
@@ -12,11 +8,9 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
   ref?: ShallowRef<ComponentRef | null>;
 
   /**
-   * 组件的props，被代理的组件的props可以通过三种方式修改
-   *
-   * 注意：此处存在合并策略，函数返回的Wrapper组件的props优先级最高，这里设置的state优先级最低
+   * @desc- 初始化的状态，其他状态请通过 `setState` 设置。
    */
-  initState?: () => Partial<Prettify<ComponentExternalProps<Com>>> & { [key: string]: any };
+  props?: GetComponentLooseProps<Com>;
 
   /**
    * 代理插槽， 大部分情况下你都不应传入
@@ -26,7 +20,17 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
   slots?: Slots;
 }
 
-export interface CreateHOCDevOptions {
+export interface CreateHOCDevOptions<Com extends ComponentType> {
   /** 谨慎传递，除非你知晓作用 */
   scope?: EffectScope;
+
+  /**
+   * 当发生 props 冲突时，会调用这个函数， 你可以在此打印它们的值
+   * @param composablesProps 通过 hook 的 props 参数传入的值
+   * @param componentProps 通过组件模板传入的值
+   */
+  onConflictProps?: <Key extends keyof GetComponentLooseProps<Com>>(
+    composablesProps: { key: Key; val: GetComponentLooseProps<Com>[Key] }[],
+    componentProps: { key: Key; val: GetComponentLooseProps<Com>[Key] }[],
+  ) => void;
 }

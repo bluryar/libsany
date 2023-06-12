@@ -11,5 +11,6 @@ module.exports = {
   ],
   globals: {
     __DEV__: true,
+    BigInt: true,
   },
 }

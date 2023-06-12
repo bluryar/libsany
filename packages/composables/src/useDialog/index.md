@@ -42,7 +42,7 @@ useDialog<Com extends ComponentType, ComponentRef = unknown>(
 ## 用法示例
 
 ```typescript
-import { useDialog } from './index';
+import { useDialog } from './index'
 
 const {
   visible,
@@ -60,30 +60,30 @@ const {
     formItems: [{ key: 'index', type: 'input', prop: { val: 1 } }],
   }),
   auto: true,
-});
+})
 
 // 调用对话框的方法
-openDialog();
-closeDialog();
+openDialog()
+closeDialog()
 
 // 获取对话框状态
-console.log(visible.value);
+console.log(visible.value)
 
 // 获取对话框组件
-console.log(Dialog);
+console.log(Dialog)
 
 // 重置组件状态
-restoreState();
+restoreState()
 
 // 销毁对话框
-destroy();
+destroy()
 
 // 重新挂载对话框
-remount();
+remount()
 
 // 获取组件是否已挂载
-console.log(mounted.value);
+console.log(mounted.value)
 
 // 获取对话框组件的 DOM 元素
-console.log(dom.value);
+console.log(dom.value)
 ```

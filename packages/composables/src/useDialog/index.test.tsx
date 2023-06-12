@@ -44,9 +44,9 @@ describe('useDialog', () => {
   it('should create a dialog instance', async () => {
     const { visible, openDialog, closeDialog, Dialog, getState, restoreState } = useDialog({
       component: VDialog,
-      initState: () => ({
+      props: {
         formItems: [{ key: 'index', type: 'input', prop: { val: 1 } } as const],
-      }),
+      },
     })
 
     const state = getState()
@@ -56,6 +56,7 @@ describe('useDialog', () => {
     // 等待下一个tick
     await nextTick()
     expect(visible.value).toBe(false)
+
     expect(state).toMatchInlineSnapshot(`
       {
         "formItems": [
@@ -68,6 +69,7 @@ describe('useDialog', () => {
           },
         ],
         "onUpdate:visible": [Function],
+        "onVnodeUnmounted": [Function],
         "visible": false,
       }
     `)
@@ -82,10 +84,10 @@ describe('useDialog', () => {
     closeDialog()
     await nextTick()
     expect(visible.value).toBe(false)
-    expect(state.visible).toBe(false);
+    expect(state.visible).toBe(false)
 
     // 点击对话框, 通过组件内部的双向绑定设置visible
-    (wrapper.element as HTMLDivElement).click()
+    ;(wrapper.element as HTMLDivElement).click()
 
     await nextTick()
     expect(visible.value).toBe(true)
@@ -127,9 +129,9 @@ describe('useDialog', () => {
       ref: refInst,
     } = useDialog({
       component: VDialog,
-      initState: () => ({
+      props: {
         formItems: [{ key: 'index', type: 'input', prop: { val: 1 } } as const],
-      }),
+      },
 
       auto: !!1,
     })
@@ -152,6 +154,7 @@ describe('useDialog', () => {
           },
         ],
         "onUpdate:visible": [Function],
+        "onVnodeUnmounted": [Function],
         "visible": false,
       }
     `)
@@ -196,7 +199,7 @@ describe('useDialog', () => {
     expect(state.formItems?.length).toBe(1)
     expect(isHTMLDivElement(dom.value)).toBe(true)
 
-    // 打开对话框并销毁它
+    // 打开对话框并销毁它: 状态将被重置
     openDialog()
     expect(isHTMLDivElement(dom.value)).toBe(true)
     destroy()
@@ -204,29 +207,36 @@ describe('useDialog', () => {
     expect(isHTMLDivElement(dom.value)).toBe(false)
     expect(mounted.value).toBe(false)
     expect(dom.value).toBe(null)
-    expect(state.visible).toBe(true) // 尽管销毁的DOM, 但是仍然保持它的状态
-    expect(visible.value).toBe(true)
+    expect(state.visible).toBe(false)
+    expect(visible.value).toBe(false)
 
-    // 重新挂载对话框
+    // 重新挂载对话框: 状态将被重置
     remount()
     await nextTick()
 
     expect(mounted.value).toBe(true)
     expect(isHTMLDivElement(dom.value)).toBe(true)
-    expect(state.visible).toBe(true) // 尽管销毁的DOM, 但是仍然保持它的状态
-    expect(visible.value).toBe(true)
+    expect(state.visible).toBe(false)
+    expect(visible.value).toBe(false)
 
     // 打开对话框并销毁它, 然后恢复状态并重新挂载
     openDialog()
     await nextTick()
     destroy()
-    restoreState()
+    restoreState({ visible: !!1 })
     await nextTick()
     remount()
     await nextTick()
     expect(mounted.value).toBe(true)
     expect(isHTMLDivElement(dom.value)).toBe(true)
-    expect(state.visible).toBe(false) // 销毁同时重置状态
-    expect(visible.value).toBe(false)
+    expect(state.visible).toBe(true)
+    expect(visible.value).toBe(true)
+    expect(getState()).toMatchInlineSnapshot(`
+      {
+        "onUpdate:visible": [Function],
+        "onVnodeUnmounted": [Function],
+        "visible": true,
+      }
+    `)
   })
 })

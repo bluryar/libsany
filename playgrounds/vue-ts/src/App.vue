@@ -1,20 +1,20 @@
 <script setup lang="tsx">
-import { RouterLink, RouterView } from 'vue-router'
-import { NButton, NModal } from 'naive-ui'
-import { useDialog } from '@bluryar/composables'
-import { ref } from 'vue'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterLink, RouterView } from 'vue-router';
+import { NButton, NModal } from 'naive-ui';
+import { useDialog } from '@bluryar/composables';
+import { ref } from 'vue';
+import HelloWorld from './components/HelloWorld.vue';
 
-const val = ref(1)
+const val = ref(1);
+
 const DialogReturn = useDialog({
   component: NModal,
-  initState: () =>
-    ({
-      preset: 'dialog',
-      title: '提示',
-      content: '这是一个弹窗',
-      val: 1,
-    } as const),
+  props: {
+    preset: 'dialog',
+    title: '提示',
+    content: '这是一个弹窗',
+    val: 1,
+  },
   slots: {
     default: () => [
       <div>
@@ -22,7 +22,7 @@ const DialogReturn = useDialog({
         <div>DialogReturn.getState(): {JSON.stringify(DialogReturn.getState())}</div>
         <div
           onClick={() => {
-            DialogReturn.setState('val', DialogReturn.getState().val + 1)
+            DialogReturn.setState('val', DialogReturn.getState().val + 1);
           }}
         >
           Click Me +1: {DialogReturn.getState().val}
@@ -32,11 +32,11 @@ const DialogReturn = useDialog({
   },
   visibleKey: 'show',
   auto: !!1,
-})
+});
 
 setInterval(() => {
-  val.value++
-}, 1000)
+  val.value++;
+}, 1000);
 </script>
 
 <template>
