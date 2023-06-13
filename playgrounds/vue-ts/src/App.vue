@@ -3,9 +3,15 @@ import { RouterLink, RouterView } from 'vue-router';
 import { NButton, NModal } from 'naive-ui';
 import { useDialog } from '@bluryar/composables';
 import { ref } from 'vue';
+import { useBMapGLScript } from '@bluryar/composables/src/useBMapGLScript';
 import HelloWorld from './components/HelloWorld.vue';
 
 const val = ref(1);
+
+const { loaded } = useBMapGLScript({
+  ak: '1XjLLEhZhQNUzd93EjU5nOGQ',
+  manual: !!0,
+});
 
 const DialogReturn = useDialog({
   component: NModal,

@@ -11,6 +11,7 @@ module.exports = {
   ],
   globals: {
     __DEV__: true,
+    BMAP_AK: true,
     BigInt: true,
   },
 }
