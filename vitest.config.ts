@@ -1,7 +1,8 @@
-import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import AutoImport from 'unplugin-auto-import/vite'
+import 'dotenv/config';
+import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import AutoImport from 'unplugin-auto-import/vite';
 
 export default defineConfig({
   plugins: [
@@ -18,6 +19,7 @@ export default defineConfig({
   ],
   define: {
     __DEV__: JSON.stringify('false'),
+    BMAP_AK: JSON.stringify(process.env.BMAP_AK || ''),
   },
   resolve: {
     alias: {
@@ -32,4 +34,4 @@ export default defineConfig({
     includeSource: ['src/**/*.{js,tsx,jsx,tsx,vue}'],
     environment: 'jsdom',
   },
-})
+});

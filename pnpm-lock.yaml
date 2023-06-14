@@ -1,4 +1,4 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
 
 settings:
   autoInstallPeers: true
@@ -74,6 +74,9 @@ importers:
       cz-git:
         specifier: ^1.6.1
         version: 1.6.1
+      dotenv:
+        specifier: ^16.1.4
+        version: 16.1.4
       eslint:
         specifier: ^8.42.0
         version: 8.42.0

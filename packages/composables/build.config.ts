@@ -1,19 +1,20 @@
-import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { defineBuildConfig } from 'unbuild'
+import 'dotenv/config';
 
-const isDevelopment = process.env.NODE_ENV === 'development'
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineBuildConfig } from 'unbuild';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url))
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineBuildConfig({
-  entries: [
-    'src/index',
-  ],
+  entries: ['src/index'],
 
   replace: {
     'import.meta.vitest': 'undefined',
-    '__DEV__': JSON.stringify(isDevelopment),
+    __DEV__: JSON.stringify(isDevelopment),
+    BMAP_AK: JSON.stringify(process.env.BMAP_AK || ''),
   },
 
   declaration: !!1,
@@ -36,9 +37,5 @@ export default defineBuildConfig({
     },
   },
 
-  externals: [
-    'vue',
-    'lodash-es',
-    '@vueuse/core',
-  ],
-})
+  externals: ['vue', 'lodash-es', '@vueuse/core'],
+});

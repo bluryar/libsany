@@ -1,31 +1,38 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": ".",
     "jsx": "preserve",
     "moduleResolution": "node",
     "lib": [
-      "ES2022", "DOM", "DOM.Iterable"
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
     ],
     "types": [
       "vitest/importMeta"
     ],
     "paths": {
-      "@bluryar/shared": ["./packages/shared/index.ts"],
-      "@bluryar/shared/*": ["./packages/shared/*"],
-      "@bluryar/composables": ["./packages/composables/index.ts"],
-      "@bluryar/composables/*": ["./packages/composables/*"]
+      "@bluryar/shared": [
+        "./packages/shared/index.ts"
+      ],
+      "@bluryar/shared/*": [
+        "./packages/shared/*"
+      ],
+      "@bluryar/composables": [
+        "./packages/composables/index.ts"
+      ],
+      "@bluryar/composables/*": [
+        "./packages/composables/*"
+      ]
     }
   },
-
   "include": [
     "auto-imports.d.ts",
     "packages",
     "packages/**/*.vue"
   ],
-
   "exclude": [
     "**/dist/**",
     "**/node_modules/**",
