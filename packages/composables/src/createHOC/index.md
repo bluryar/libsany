@@ -1,3 +1,7 @@
+---
+category: Component
+---
+
 # createHOC
 
 ```typescript
@@ -46,13 +50,7 @@ createHOC<Com extends ComponentType, ComponentRef = unknown>(
 ```typescript
 import { createHOC } from './index';
 
-const {
-  HOC,
-  ref,
-  getState,
-  setState,
-  restoreState,
-} = createHOC({
+const { HOC, ref, getState, setState, restoreState } = createHOC({
   component: MyComponent,
   ref: shallowRef(null),
   initState: () => ({ msg: 'Hello, world!', obj: { val: 1 } }),

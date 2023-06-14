@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { resolve } from 'path';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
@@ -32,6 +33,10 @@ export default defineConfig({
   test: {
     globals: !!1,
     includeSource: ['src/**/*.{js,tsx,jsx,tsx,vue}'],
+    setupFiles: [resolve(__dirname, 'packages/.test/setup.ts')],
     environment: 'jsdom',
+    deps: {
+      inline: ['msw'],
+    },
   },
 });

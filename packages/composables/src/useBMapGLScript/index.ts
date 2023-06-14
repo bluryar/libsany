@@ -1,8 +1,8 @@
-import { type MaybeRef, ref, shallowRef, toValue, unref } from 'vue';
+import { type MaybeRef, computed, ref, shallowRef, toValue, unref } from 'vue';
 import { uniqueId } from 'lodash-es';
-import { defaultDocument, tryOnMounted, useScriptTag } from '@vueuse/core';
+import { defaultDocument, tryOnMounted, useScriptTag, useTimeout } from '@vueuse/core';
 
-interface UseBMapGLScriptOptions {
+export interface UseBMapGLScriptOptions {
   /**
    * @enum {(""|"http"|"https")}
    *
@@ -20,6 +20,13 @@ interface UseBMapGLScriptOptions {
    * */
   manual?: boolean;
 
+  /**
+   * @description - 脚本加载超时时间, 单位毫秒
+   *
+   * @default 3000
+   */
+  timeout?: number;
+
   document?: Document;
 }
 
@@ -27,26 +34,20 @@ const isMapLoaded = () => 'BMapGL' in window && 'Map' in (window as any).BMapGL;
 const createRandomId = () => uniqueId('useBMapGLScript');
 
 /**
- * @description - 加载 [🗺️ 百度地图JavaScript API GL ](https://lbsyun.baidu.com/index.php?title=jspopularGL)
+ * @description - 动态加载 [🗺️ 百度地图JavaScript API GL ](https://lbsyun.baidu.com/index.php?title=jspopularGL)。
  */
 export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
+  const {
+    protocol = ref(``),
+    ak = ref(BMAP_AK || ''),
+    document = defaultDocument || window.document,
+    manual = !!0,
+    timeout = 3000,
+  } = options || {};
+
   const loaded = ref(toValue(isMapLoaded));
   const error = shallowRef<Error | null>(null);
   const loading = ref(!!0);
-
-  if (toValue(isMapLoaded)) {
-    return {
-      loaded,
-      loading,
-      error,
-      setup,
-    };
-  }
-
-  const { protocol = ref(``), ak = ref(BMAP_AK || ''), document = defaultDocument || window.document } = options || {};
-
-  const callbackName = createRandomId();
-  (window as any)[callbackName] = onLoaded;
 
   const getProtocol = () =>
     ({
@@ -56,19 +57,35 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
       '"https"': 'https:',
     }[JSON.stringify(String(unref(protocol)))]);
 
-  const indexUrl = () =>
-    `${toValue(getProtocol)}//api.map.baidu.com/api?v=1.0&type=webgl&ak=${unref(ak)}&callback=${callbackName}`;
+  const callbackName = createRandomId();
+  const indexUrl = computed(
+    () => `${toValue(getProtocol)}//api.map.baidu.com/api?v=1.0&type=webgl&ak=${unref(ak)}&callback=${callbackName}`,
+  );
 
-  const sdkUrl = () => `${toValue(getProtocol)}//api.map.baidu.com/getscript?type=webgl&v=1.0&ak=${unref(ak)}`;
+  const fallbackUrl = computed(
+    () => `${toValue(getProtocol)}//api.map.baidu.com/getscript?type=webgl&v=1.0&ak=${unref(ak)}`,
+  );
+
+  if (toValue(isMapLoaded)) {
+    return {
+      loaded,
+      loading,
+      error,
+      setup,
+      indexUrl,
+      fallbackUrl,
+    };
+  }
+
+  (window as any)[callbackName] = onLoaded;
 
   const { load: loadIndexScript } = useScriptTag(
     indexUrl,
 
-    () => {
-      onLoaded();
-    },
+    () => {},
 
     {
+      async: !!1,
       defer: !!1,
       immediate: !!0,
       manual: !!1, // 组件卸载无需移除
@@ -77,13 +94,12 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
   );
 
   const { load: loadSDKScript } = useScriptTag(
-    sdkUrl,
+    fallbackUrl,
 
-    () => {
-      onLoaded();
-    },
+    () => {},
 
     {
+      async: !!1,
       defer: !!1,
       immediate: !!0,
       manual: !!1, // 组件卸载无需移除
@@ -91,12 +107,30 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
     },
   );
 
-  if (!options?.manual) {
+  if (!manual) {
     tryOnMounted(setup);
   }
 
+  const { start: startTimer, stop: stopTimer } = useTimeout(timeout, {
+    immediate: !!0,
+    controls: !!1,
+    callback() {
+      if (toValue(isMapLoaded)) {
+        return;
+      }
+      if (toValue(loaded)) {
+        return;
+      }
+      loaded.value = !!0;
+      loading.value = !!0;
+      error.value = new Error('加载超时');
+    },
+  });
+
   function onLoaded() {
-    if (!isMapLoaded()) {
+    stopTimer();
+
+    if (!toValue(isMapLoaded)) {
       loaded.value = !!0;
       loading.value = !!0;
       error.value = new Error('未知网络错误');
@@ -121,7 +155,7 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
     document.head.appendChild(link);
   }
 
-  async function fallbackLoadScript() {
+  async function fallbackLoadScript(waitForScriptLoaded = !!1) {
     loading.value = !!1;
 
     // 设置默认参数
@@ -138,23 +172,31 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
 
     try {
       // fallback
-      await loadSDKScript(!!0);
+      await loadSDKScript(waitForScriptLoaded);
     } catch (err) {
-      error.value = err as any;
+      stopTimer();
+      error.value = new Error('加载失败');
+      Object.assign(error.value, { cause: err });
       loading.value = !!0;
       loaded.value = !!0;
     }
   }
 
-  async function setup() {
+  /**
+   * 加载脚本，当尝试加载完整脚本失败就会进入 fallback 处理， 将脚本内容硬编码
+   * @param waitForScriptLoaded - 是否等待脚本加载完成
+   */
+  async function setup(waitForScriptLoaded = !!1) {
     loading.value = !!1;
+    startTimer();
     try {
-      await loadIndexScript(!!1);
+      await loadIndexScript(waitForScriptLoaded);
     } catch (err) {
-      error.value = err as any;
-      await fallbackLoadScript();
+      await fallbackLoadScript(waitForScriptLoaded);
+    } finally {
+      stopTimer();
     }
   }
 
-  return { loaded, loading, error, setup };
+  return { loaded, loading, error, setup, indexUrl, fallbackUrl };
 }

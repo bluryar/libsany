@@ -1,16 +1,20 @@
 <script setup lang="tsx">
 import { RouterLink, RouterView } from 'vue-router';
-import { NButton, NModal } from 'naive-ui';
+import { NButton, NModal, NSpin } from 'naive-ui';
 import { useDialog } from '@bluryar/composables';
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { useBMapGLScript } from '@bluryar/composables/src/useBMapGLScript';
 import HelloWorld from './components/HelloWorld.vue';
 
 const val = ref(1);
 
-const { loaded } = useBMapGLScript({
+const { loading, error, loaded } = useBMapGLScript({
   ak: '1XjLLEhZhQNUzd93EjU5nOGQ',
-  manual: !!0,
+  timeout: 500,
+});
+watchEffect(() => {
+  console.log('🚀 ~ file: App.vue:15 ~ loaded:', loaded.value);
+  console.log('🚀 ~ file: App.vue:16 ~ error:', error.value);
 });
 
 const DialogReturn = useDialog({
@@ -47,6 +51,7 @@ setInterval(() => {
 
 <template>
   <header>
+    <NSpin v-if="loading"></NSpin>
     <NButton @click="DialogReturn.openDialog">打开弹窗</NButton>
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
