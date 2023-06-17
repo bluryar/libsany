@@ -42,30 +42,19 @@
     "stub": "unbuild --stub"
   },
   "peerDependencies": {
-    "@vueuse/core": ">=10.0.0",
-    "lodash-es": "*",
-    "vue": ">=3.0.0",
+    "lodash-es": ">=4.0.0",
+    "vue": ">=3.3.0",
     "vue-request": ">=2.0.0"
   },
   "peerDependenciesMeta": {
-    "lodash-es": {
-      "optional": true
-    },
     "vue-request": {
-      "optional": true
-    },
-    "@vueuse/core": {
       "optional": true
     }
   },
-  "dependencies": {
-    "type-fest": "^3.11.1"
-  },
   "devDependencies": {
     "@vueuse/core": "^10.1.2",
-    "lodash-es": "^4.17.21",
     "vue": "^3.3.4",
-    "vue-request": "2.0.2"
+    "vue-request": "2.0.3"
   },
   "publishConfig": {
     "access": "public",

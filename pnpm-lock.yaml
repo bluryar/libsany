@@ -140,22 +140,19 @@ importers:
 
   packages/composables:
     dependencies:
-      type-fest:
-        specifier: ^3.11.1
-        version: 3.11.1
+      lodash-es:
+        specifier: '>=4.0.0'
+        version: 4.17.21
     devDependencies:
       '@vueuse/core':
         specifier: ^10.1.2
         version: 10.1.2(vue@3.3.4)
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
       vue:
         specifier: ^3.3.4
         version: 3.3.4
       vue-request:
-        specifier: 2.0.2
-        version: 2.0.2(vue@3.3.4)
+        specifier: 2.0.3
+        version: 2.0.3(vue@3.3.4)
 
   packages/shared: {}
 
@@ -6538,7 +6535,6 @@ packages:
 
   /lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-    dev: true
 
   /lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -8746,6 +8742,7 @@ packages:
   /type-fest@3.11.1:
     resolution: {integrity: sha512-aCuRNRERRVh33lgQaJRlUxZqzfhzwTrsE98Mc3o3VXqmiaQdHacgUtJ0esp+7MvZ92qhtzKPeusaX6vIEcoreA==}
     engines: {node: '>=14.16'}
+    dev: true
 
   /typed-array-length@1.0.4:
     resolution: {integrity: sha512-KjZypGq+I/H7HI5HlOoGHkWUUGq+Q0TPhQurLbyrVrvnKTBgzLhIJ7j6J/XTQOi0d1RjyZ0wdas8bKs2p0x3Ng==}
@@ -9165,8 +9162,9 @@ packages:
       - supports-color
     dev: true
 
-  /vue-request@2.0.2(vue@3.3.4):
-    resolution: {integrity: sha512-VWOEQXZ2uNrdzHcTw9K0SgAAgLG9EEw+M3TyB32BIl8ngHnPVs2NdSciumMTmX4eKHilrZuV3dnvoJH+nn9VMQ==}
+  /vue-request@2.0.3(vue@3.3.4):
+    resolution: {integrity: sha512-eO90vlfrm1JFReurVjorwie/NvIUT6S5wvxr0VxpC1GoTDWZl/dBewxdScQh98HxZNeYDfjvSS8FiQISg8thww==}
+    engines: {node: '>=14'}
     peerDependencies:
       '@vue/composition-api': ^1.0.0-rc.1
       vue: ^2.0.0 || >=3.0.0

@@ -37,5 +37,5 @@ export default defineBuildConfig({
     },
   },
 
-  externals: ['vue', 'lodash-es', '@vueuse/core'],
+  externals: ['vue', 'lodash-es'],
 });
