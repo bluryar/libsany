@@ -4,11 +4,9 @@ import { defaultDocument, tryOnMounted, useScriptTag, useTimeout } from '@vueuse
 
 export interface UseBMapGLScriptOptions {
   /**
-   * @enum {(""|"http"|"https")}
-   *
    * @default ""
    * */
-  protocol?: MaybeRef<string>;
+  protocol?: MaybeRef<'' | 'http' | 'https'>;
 
   /** @default "" */
   ak?: MaybeRef<string>;

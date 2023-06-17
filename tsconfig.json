@@ -1,5 +1,10 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "references": [
+    {
+      "path": "./playgrounds/vue-ts/tsconfig.json"
+    }
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": ".",
@@ -41,9 +46,13 @@
     "**/playgrounds/**",
     "**/examples/**",
     "**/interactive/**",
-    "**/test/dts/**",
     "./playgrounds/**",
     "./playgrounds/**/*",
-    "./playgrounds/**/*.vue"
-  ]
+    "./playgrounds/**/*.vue",
+    "**/test/dts/**"
+  ],
+  "vueCompilerOptions": {
+    "target": "auto",
+    "lib": "vue"
+  }
 }

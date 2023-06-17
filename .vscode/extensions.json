@@ -1,37 +1,21 @@
 {
   "recommendations": [
-    "antfu.iconify",
-    "antfu.unocss",
-    "antfu.where-am-i",
-    "lokalise.i18n-ally",
-    "antfu.icons-carbon",
-    "antfu.theme-vitesse",
-    "file-icons.file-icons",
-    "sainnhe.gruvbox-material",
     "dbaeumer.vscode-eslint",
     "Vue.volar",
     "Vue.vscode-typescript-vue-plugin",
-    "github.copilot",
     "usernamehw.errorlens",
     "streetsidesoftware.code-spell-checker",
     "amodio.tsl-problem-matcher",
-    "eamodio.gitlens",
     "editorconfig.editorconfig",
-    "github.vscode-pull-request-github",
-    "mpontus.tab-cycle",
     "naumovs.color-highlight",
-    "richie5um2.vscode-sort-json",
-    "unional.vscode-sort-package-json",
-    "wakatime.vscode-wakatime",
-    "zjffun.snippetsmanager",
     "wmaurer.change-case",
     "zixuanchen.vitest-explorer",
     "johnsoncodehk.vscode-tsconfig-helper",
     "yoavbls.pretty-ts-errors",
+    "esbenp.prettier-vscode",
     "redjue.git-commit-plugin"
   ],
   "unwantedRecommendations": [
-    "octref.vetur",
-    "esbenp.prettier-vscode"
+    "octref.vetur"
   ]
 }
