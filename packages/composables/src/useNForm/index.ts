@@ -1,10 +1,10 @@
-import { type Service, type Options as VueRequestOptions, useRequest } from 'vue-request'
-import type { FormInst, FormItemProps, FormProps, GridProps } from 'naive-ui'
-import { NForm, NGrid } from 'naive-ui'
-import { createHOC } from '@bluryar/composables'
-import { type Ref, type Slot, createVNode, defineComponent, ref, shallowRef } from 'vue'
-import { set } from 'lodash-es'
-import { object } from 'vue-types'
+import { type Service, type Options as VueRequestOptions, useRequest } from 'vue-request';
+import type { FormInst, FormItemProps, FormProps, GridProps } from 'naive-ui';
+import { NForm, NGrid } from 'naive-ui';
+import { createHOC } from '@bluryar/composables';
+import { type Ref, type Slot, createVNode, defineComponent, ref, shallowRef } from 'vue-demi';
+import { set } from 'lodash-es';
+import { object } from 'vue-types';
 
 interface Items extends FormItemProps {
   /**
@@ -44,17 +44,17 @@ const UseNForm = defineComponent({
     gridProps: object<GridProps>().def({}),
   },
   setup(_, ctx) {
-    const refInst = shallowRef<null | FormInst>(null)
+    const refInst = shallowRef<null | FormInst>(null);
 
     ctx.expose({
       refInst,
-    })
+    });
 
     return {
       setInst(val: any) {
-        refInst.value = val
+        refInst.value = val;
       },
-    }
+    };
   },
   render() {
     return createVNode(
@@ -64,9 +64,9 @@ const UseNForm = defineComponent({
         ref: this.setInst,
       },
       () => createVNode(NGrid, this.gridProps, this.$slots),
-    )
+    );
   },
-})
+});
 
 export function useNForm<Params = Record<string, any>, Response = any>(options: UseNFormOptions<Params, Response>) {
   type RequestOptions = (typeof options)['requestOptions'];
@@ -79,18 +79,18 @@ export function useNForm<Params = Record<string, any>, Response = any>(options: 
     formProps = {},
     gridProps = {},
     shallow = false,
-  } = options
+  } = options;
 
-  const formData = (shallow ? shallowRef : ref)<Params>({} as any)
+  const formData = (shallow ? shallowRef : ref)<Params>({} as any);
 
   const mergedRequestOptions: RequestOptions = {
     ...{ manual: !!1 },
     ...requestOptions,
-  }
+  };
 
-  initFormData(formItems, formData)
+  initFormData(formItems, formData);
 
-  const useRequestReturns = useRequest(service as ServiceFn, mergedRequestOptions)
+  const useRequestReturns = useRequest(service as ServiceFn, mergedRequestOptions);
 
   const createHOCReturns = createHOC({
     component: UseNForm,
@@ -98,15 +98,14 @@ export function useNForm<Params = Record<string, any>, Response = any>(options: 
       formProps,
       gridProps,
     }),
-  })
+  });
 
-  return {}
+  return {};
 }
 
 function initFormData<Params = object>(formItems: Items[], formData: Ref<Params>) {
   formItems.forEach((item) => {
-    const { path, defaultValue } = item
-    if (path)
-      set(formData.value as any, path, defaultValue)
-  })
+    const { path, defaultValue } = item;
+    if (path) set(formData.value as any, path, defaultValue);
+  });
 }

@@ -21,21 +21,19 @@ export default defineBuildConfig({
 
   clean: true,
 
+  alias: {
+    '@bluryar/shared': resolve(__dirname, '../shared/index.ts'),
+  },
+
   rollup: {
     emitCJS: true,
 
     inlineDependencies: !!1,
-
-    alias: {
-      entries: {
-        '@bluryar/shared': resolve(__dirname, '../shared/index.ts'),
-      },
-    },
 
     esbuild: {
       jsx: 'automatic',
     },
   },
 
-  externals: ['vue', 'lodash-es'],
+  externals: ['vue', 'lodash-es', 'vue-demi', '@vueuse/core'],
 });

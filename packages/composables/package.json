@@ -42,18 +42,25 @@
     "stub": "unbuild --stub"
   },
   "peerDependencies": {
+    "@vue/composition-api": "^1.0.0-rc.1",
     "lodash-es": ">=4.0.0",
-    "vue": ">=3.3.0",
+    "vue": "^2.0.0 || >=3.0.0",
     "vue-request": ">=2.0.0"
   },
   "peerDependenciesMeta": {
     "vue-request": {
       "optional": true
+    },
+    "@vue/composition-api": {
+      "optional": true
     }
+  },
+  "dependencies": {
+    "vue-demi": "latest"
   },
   "devDependencies": {
     "@vueuse/core": "^10.1.2",
-    "vue": "^3.3.4",
+    "vue": "^3.0.0",
     "vue-request": "2.0.3"
   },
   "publishConfig": {

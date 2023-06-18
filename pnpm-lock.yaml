@@ -143,6 +143,9 @@ importers:
       lodash-es:
         specifier: '>=4.0.0'
         version: 4.17.21
+      vue-demi:
+        specifier: ^0.14.5
+        version: 0.14.5(vue@3.3.4)
     devDependencies:
       '@vueuse/core':
         specifier: ^10.1.2

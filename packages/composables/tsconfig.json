@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "paths": {
+      "vue": [
+        "vue-demi"
+      ]
+    },
+    "types": [
+      "vitest/importMeta"
+    ]
+  },
+  "include": [
+    "./src",
+    "../env.d.ts"
+  ],
+  "exclude": [
+    "./src/**/*.test.ts"
+  ]
+}

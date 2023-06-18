@@ -13,7 +13,7 @@ import type {
   ObjectEmitsOptions,
   Plugin,
   VNodeProps,
-} from 'vue'
+} from 'vue-demi';
 
 // never 是TS内唯一的兜底类型， 它是任何类型的子类型， 所以我们把它包裹在 [] 中， 使它不再是任何类型的子类型
 export type NotNever<T = {}> = [T] extends [never] ? {} : T;
@@ -82,7 +82,9 @@ export type GetComponentProps<Com extends ComponentType> = Com extends DefineCom
 /**
  * 从组件处获取props的类型，不严格要求props必须存在
  */
-export type GetComponentLooseProps<Com extends ComponentType> = Partial<GetComponentProps<Com>> & { [key: string]: any }
+export type GetComponentLooseProps<Com extends ComponentType> = Partial<GetComponentProps<Com>> & {
+  [key: string]: any;
+};
 
 /**
  * 从组件定义获取emits的类型

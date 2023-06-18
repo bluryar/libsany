@@ -1,4 +1,4 @@
-import { EffectScope, type ShallowRef, type Slots } from 'vue';
+import { EffectScope, type ShallowRef, type Slots } from 'vue-demi';
 import type { ComponentType, GetComponentLooseProps } from '../types';
 
 export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unknown> {

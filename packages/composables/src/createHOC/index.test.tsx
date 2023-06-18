@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { type PropType, defineComponent, isReactive, isShallow, nextTick, shallowRef } from 'vue';
+import { type PropType, defineComponent, isReactive, isShallow, nextTick, shallowRef } from 'vue-demi';
 import { createHOC } from './index';
 
 describe('createHOC', () => {

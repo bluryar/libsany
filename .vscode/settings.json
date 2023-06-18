@@ -63,6 +63,7 @@
     "bmapgl",
     "bumpp",
     "commitlintrc",
+    "demi",
     "vnode"
   ],
   "volar.takeOverMode.extension": "Vue.volar",

@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router';
 import { NButton, NModal, NSpin } from 'naive-ui';
 import { useDialog } from '@bluryar/composables';
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue-demi';
 import { useBMapGLScript } from '@bluryar/composables/src/useBMapGLScript';
 import HelloWorld from './components/HelloWorld.vue';
 

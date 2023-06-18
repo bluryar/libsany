@@ -1,6 +1,7 @@
-import { type MaybeRef, computed, ref, shallowRef, toValue, unref } from 'vue';
+import { computed, ref, shallowRef, unref } from 'vue-demi';
 import { uniqueId } from 'lodash-es';
-import { defaultDocument, tryOnMounted, useScriptTag, useTimeout } from '@vueuse/core';
+import type { MaybeRef } from '@vueuse/core';
+import { defaultDocument, toValue, tryOnMounted, useScriptTag, useTimeout } from '@vueuse/core';
 
 export interface UseBMapGLScriptOptions {
   /**

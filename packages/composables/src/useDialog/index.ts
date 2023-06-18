@@ -11,7 +11,7 @@ import {
   shallowRef,
   unref,
   watch,
-} from 'vue';
+} from 'vue-demi';
 
 /* eslint-disable no-inner-declarations */
 import { toValue } from '@vueuse/core';

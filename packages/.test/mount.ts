@@ -1,5 +1,5 @@
-import type { InjectionKey, Ref } from 'vue';
-import { createApp, defineComponent, h, provide, ref } from 'vue';
+import type { InjectionKey, Ref } from 'vue-demi';
+import { createApp, defineComponent, h, provide, ref } from 'vue-demi';
 
 type InstanceType<V> = V extends { new (...arg: any[]): infer X } ? X : never;
 type VM<V> = InstanceType<V> & { unmount(): void };

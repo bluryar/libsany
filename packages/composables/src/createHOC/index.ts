@@ -9,11 +9,10 @@ import {
   readonly,
   shallowReadonly,
   shallowRef,
-  toValue,
   unref,
   watch,
-} from 'vue';
-import { tryOnScopeDispose } from '@vueuse/core';
+} from 'vue-demi';
+import { toValue, tryOnScopeDispose } from '@vueuse/core';
 import { cloneDeep, set } from 'lodash-es';
 import { isUndef } from '@bluryar/shared';
 import type { ComponentType, GetComponentLooseProps } from '../types';

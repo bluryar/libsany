@@ -11,7 +11,7 @@ category: Component
 在使用 `useBMapGLScript` 函数之前，需要先导入相关的模块和依赖项。
 
 ```ts
-import { type MaybeRef, computed, ref, shallowRef, toValue, unref } from 'vue';
+import { type MaybeRef, computed, ref, shallowRef, toValue, unref } from 'vue-demi';
 import { uniqueId } from 'lodash-es';
 import { defaultDocument, tryOnMounted, useScriptTag, useTimeout } from '@vueuse/core';
 ```
