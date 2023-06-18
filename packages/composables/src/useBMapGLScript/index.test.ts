@@ -72,6 +72,7 @@ describe('useBMapGLScript', () => {
     await sleep(20);
     expect(vm.loaded).toBe(false);
     expect(vm.loading).toBe(true);
+    expect(document.querySelector(`script[src="${vm.indexUrl}"]`)).toBeInstanceOf(HTMLScriptElement);
     await sleep(100);
     expect(vm.loading).toBe(false);
     expect(vm.loaded).toBe(false);
@@ -79,6 +80,5 @@ describe('useBMapGLScript', () => {
     expect(vm.error?.message).toBe('加载超时');
 
     expect(addChildListener).toBeCalledTimes(1);
-    expect(document.querySelector(`script[src="${vm.indexUrl}"]`)).toBeInstanceOf(HTMLScriptElement);
   });
 });

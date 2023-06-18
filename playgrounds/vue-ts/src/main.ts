@@ -1,5 +1,3 @@
-import './assets/main.css';
-
 import { createApp } from 'vue-demi';
 import { createPinia } from 'pinia';
 

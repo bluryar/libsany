@@ -14,7 +14,7 @@
   },
   "include": [
     "./src",
-    "../env.d.ts"
+    "./env.d.ts"
   ],
   "exclude": [
     "./src/**/*.test.ts"

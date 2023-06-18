@@ -1,4 +1,4 @@
-import { computed, ref, shallowRef, unref } from 'vue-demi';
+import { computed, ref, shallowRef, unref, watch } from 'vue-demi';
 import { uniqueId } from 'lodash-es';
 import type { MaybeRef } from '@vueuse/core';
 import { defaultDocument, toValue, tryOnMounted, useScriptTag, useTimeout } from '@vueuse/core';
@@ -47,6 +47,7 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
   const loaded = ref(toValue(isMapLoaded));
   const error = shallowRef<Error | null>(null);
   const loading = ref(!!0);
+  let unload = () => {};
 
   const getProtocol = () =>
     ({
@@ -73,12 +74,13 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
       setup,
       indexUrl,
       fallbackUrl,
+      unload,
     };
   }
 
   (window as any)[callbackName] = onLoaded;
 
-  const { load: loadIndexScript } = useScriptTag(
+  const { load: loadIndexScript, unload: unloadIndexScript } = useScriptTag(
     indexUrl,
 
     () => {},
@@ -92,7 +94,7 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
     },
   );
 
-  const { load: loadSDKScript } = useScriptTag(
+  const { load: loadSDKScript, unload: unloadSDKScript } = useScriptTag(
     fallbackUrl,
 
     () => {},
@@ -106,9 +108,20 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
     },
   );
 
+  unload = () => {
+    unloadIndexScript();
+    unloadSDKScript();
+  };
+
   if (!manual) {
     tryOnMounted(setup);
   }
+
+  watch(error, (err) => {
+    if (err) {
+      unload();
+    }
+  });
 
   const { start: startTimer, stop: stopTimer } = useTimeout(timeout, {
     immediate: !!0,
@@ -150,8 +163,10 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
     let link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('type', 'text/css');
+    link.setAttribute('data-loaded', 'useBMapGLScript');
     link.setAttribute('href', 'https://api.map.baidu.com/res/webgl/10/bmap.css');
     document.head.appendChild(link);
+    return link;
   }
 
   async function fallbackLoadScript(waitForScriptLoaded = !!1) {
@@ -197,5 +212,5 @@ export function useBMapGLScript(options?: UseBMapGLScriptOptions) {
     }
   }
 
-  return { loaded, loading, error, setup, indexUrl, fallbackUrl };
+  return { loaded, loading, error, setup, indexUrl, fallbackUrl, unload };
 }
