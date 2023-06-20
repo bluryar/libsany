@@ -1,0 +1,75 @@
+{
+  "name": "@bluryar/naive-ui-themes",
+  "version": "0.0.0",
+  "private": false,
+  "description": "⚡ A plugin for naive-ui, unocss, and vueuse",
+  "author": "bluryar <bluryarl@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/bluryar/libsany#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluryar/libsany.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bluryar/libsany/issues"
+  },
+  "keywords": [
+    "naive-ui",
+    "unocss",
+    "vueuse",
+    "theme",
+    "themes",
+    "vue3",
+    "composables",
+    "hooks"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "cross-env NODE_ENV=production unbuild",
+    "bump:major": "npx bumpp major --no-commit --no-tag --no-push --yes",
+    "bump:minor": "npx bumpp minor --no-commit --no-tag --no-push --yes",
+    "bump:patch": "npx bumpp patch --no-commit --no-tag --no-push --yes",
+    "release": "npm publish",
+    "stub": "unbuild --stub"
+  },
+  "peerDependencies": {
+    "@vue/composition-api": "^1.0.0-rc.1",
+    "@vueuse/core": ">=10.0.0",
+    "lodash-es": ">=4.0.0",
+    "naive-ui": ">=2.30.0",
+    "unocss": ">=0.53.0",
+    "vue": "^2.0.0 || >=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@vue/composition-api": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "vue-demi": "latest"
+  },
+  "devDependencies": {
+    "@vueuse/core": "^10.1.2",
+    "naive-ui": "^2.34.4",
+    "unocss": "^0.53.1",
+    "vue": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

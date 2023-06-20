@@ -64,7 +64,9 @@
     "bumpp",
     "commitlintrc",
     "demi",
-    "vnode"
+    "unocss",
+    "vnode",
+    "vueuse"
   ],
   "volar.takeOverMode.extension": "Vue.volar",
   "vue.complete.normalizeComponentImportName": true,
