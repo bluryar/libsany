@@ -1,7 +1,7 @@
-import { variantMatcher } from '@unocss/preset-mini/utils';
-import type { Preset, Variant } from 'unocss';
+import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
+import type { CSSColorValue, Preset, Variant } from 'unocss';
 import { commonDark, commonLight } from 'naive-ui';
-import { kebabCase } from 'lodash-es';
+import { isNil, kebabCase } from 'lodash-es';
 import type { Theme } from './types';
 
 const PRESET_NAME = 'naive-ui-multi-themes';
@@ -39,6 +39,13 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
    * @default 'class'
    */
   attribute?: string;
+
+  /**
+   * css变量前缀
+   *
+   * @default ''
+   */
+  cssVarPrefix?: string;
 }
 
 function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, selector: string, attribute: string) {
@@ -50,7 +57,9 @@ function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, selector: s
 }
 
 function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: PresetNaiveThemesOptions<NaiveTheme>) {
-  const { selector = 'html', attribute = 'class', layerName = PRESET_NAME } = options;
+  const { selector = 'html', attribute = 'class', layerName = PRESET_NAME, cssVarPrefix = '' } = options;
+
+  const colorMap = new Map<string, CSSColorValue>();
 
   const { isDark } = theme;
   const shareDcommon = isDark ? commonDark : commonLight;
@@ -61,9 +70,23 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
 
   const { mergedSelector } = getSelector(theme, selector || 'html', attribute || 'class');
 
-  const cssRules = Object.entries(mergedCommon).map(([key, value]) => `--${kebabCase(key)}: ${value};`);
+  const cssRules = Object.entries(mergedCommon).map(([key, value]) => {
+    const parsedColor = parseCssColor(value);
+    let rules = `--${kebabCase(cssVarPrefix + '-' + key)}: ${value};`;
+    if (parsedColor) {
+      colorMap.set(key, parsedColor);
 
-  const code = `${mergedSelector} {\n${cssRules.join('\n')}\n}`;
+      const { type, components, alpha } = parsedColor;
+      rules += `--${kebabCase(cssVarPrefix + '-' + key)}-${type}: ${components.join(', ')};`;
+      if (!isNil(alpha)) {
+        rules += `--${kebabCase(cssVarPrefix + '-' + key)}-${type}-alpha: ${alpha};`;
+      }
+    }
+
+    return rules;
+  });
+
+  const code = `${mergedSelector} {${cssRules.join('')}}`;
 
   const variant = variantMatcher(theme.name, (input) => ({
     prefix: `${mergedSelector} $$ ${input.prefix}`,
@@ -73,6 +96,7 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
   return {
     mergedCommon,
     selector: mergedSelector,
+    colorMap,
     variant,
     code,
   };
