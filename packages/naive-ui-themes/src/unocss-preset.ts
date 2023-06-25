@@ -1,8 +1,9 @@
 import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
-import type { CSSColorValue, Preset, Variant } from 'unocss';
+import { type CSSColorValue, type Preset, type Variant, mergeDeep } from 'unocss';
 import { commonDark, commonLight } from 'naive-ui';
 import { isNil, kebabCase } from 'lodash-es';
-import type { Theme } from './types';
+import type { BreakpointsType, Theme, UnoTheme as UnoThemeType } from './types';
+import * as Breakpoints from './breakpoints';
 
 const PRESET_NAME = 'un-naive-ui-multi-themes';
 
@@ -15,7 +16,7 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
   layerName?: string;
 
   /**
-   * 最终生成CSS代码位于layer
+   * 最终生成CSS代码的位置
    *
    * @default -10
    */
@@ -46,13 +47,23 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
    * @default ''
    */
   cssVarPrefix?: string;
+
+  /**
+   * 屏幕尺寸断点
+   *
+   * @default 'NaiveUI'
+   */
+  breakpoints?: BreakpointsType | Record<string, number>;
 }
 
 function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, selector: string, attribute: string) {
   const theme = themeObj.name;
   const _selector = selector || '';
-  const classNames = ['.', ...theme.split('.')].join(' ');
-  const mergedSelector = attribute === 'class' ? `${_selector}${classNames}` : `${_selector}${attribute}=${theme}`;
+  const classNames = ['', ...theme.split('.')].join(' .');
+  let mergedSelector = attribute === 'class' ? `${_selector}${classNames}` : `${_selector}[${attribute}="${theme}"]`;
+  if (mergedSelector.startsWith(' ')) {
+    mergedSelector = mergedSelector.slice(1);
+  }
   return { theme, mergedSelector };
 }
 
@@ -102,7 +113,7 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
   };
 }
 
-export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends object = {}>(
+export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
   options: PresetNaiveThemesOptions<NaiveTheme> = {},
 ): Preset<UnoTheme> {
   const {
@@ -112,6 +123,8 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends obj
     ],
     layerName = PRESET_NAME,
     layerOrder = -10,
+    breakpoints = 'NaiveUI',
+    // cssVarPrefix = '',
   } = options;
 
   const res = themes.map((i) => parseThemes(i, options));
@@ -119,11 +132,133 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends obj
   const variants = res.map((i) => i.variant) as unknown as Variant<UnoTheme>[];
   const codes = res.map((i) => i.code);
 
+  // const concatPrefix = (suffix: keyof ThemeCommonVars) =>
+  //   `rgba(var(--${[cssVarPrefix, ...kebabCase(suffix).split('-')].join('-')}), %alpha)`;
+
   return {
     name: PRESET_NAME,
     variants: variants,
     layers: {
       [layerName]: layerOrder,
+    },
+    extendTheme(theme) {
+      const merged = mergeDeep(theme, {
+        // colors: {
+        //   base: concatPrefix('primaryColor'),
+        //   primary: {
+        //     DEFAULT: concatPrefix('primaryColor'),
+        //     hover: concatPrefix('primaryColorHover'),
+        //     pressed: concatPrefix('primaryColorPressed'),
+        //     suppl: concatPrefix('primaryColorSuppl'),
+        //   },
+        //   info: {
+        //     DEFAULT: concatPrefix('infoColor'),
+        //     hover: concatPrefix('infoColorHover'),
+        //     pressed: concatPrefix('infoColorPressed'),
+        //     suppl: concatPrefix('infoColorSuppl'),
+        //   },
+        //   success: {
+        //     DEFAULT: concatPrefix('successColor'),
+        //     hover: concatPrefix('successColorHover'),
+        //     pressed: concatPrefix('successColorPressed'),
+        //     suppl: concatPrefix('successColorSuppl'),
+        //   },
+        //   warning: {
+        //     DEFAULT: concatPrefix('warningColor'),
+        //     hover: concatPrefix('warningColorHover'),
+        //     pressed: concatPrefix('warningColorPressed'),
+        //     suppl: concatPrefix('warningColorSuppl'),
+        //   },
+        //   error: {
+        //     DEFAULT: concatPrefix('errorColor'),
+        //     hover: concatPrefix('errorColorHover'),
+        //     pressed: concatPrefix('errorColorPressed'),
+        //     suppl: concatPrefix('errorColorSuppl'),
+        //   },
+        //   text: {
+        //     DEFAULT: concatPrefix('textColorBase'),
+        //     1: concatPrefix('textColor1'),
+        //     2: concatPrefix('textColor2'),
+        //     3: concatPrefix('textColor3'),
+        //     base: concatPrefix('textColorBase'),
+        //     disabled: concatPrefix('textColorDisabled'),
+        //   },
+        //   placeholder: {
+        //     DEFAULT: concatPrefix('placeholderColor'),
+        //     disabled: concatPrefix('placeholderColorDisabled'),
+        //   },
+        //   icon: {
+        //     DEFAULT: concatPrefix('iconColor'),
+        //     hover: concatPrefix('iconColorHover'),
+        //     pressed: concatPrefix('iconColorPressed'),
+        //     disabled: concatPrefix('iconColorDisabled'),
+        //   },
+        //   closeicon: {
+        //     DEFAULT: concatPrefix('closeIconColor'),
+        //     hover: concatPrefix('closeIconColorHover'),
+        //     pressed: concatPrefix('closeIconColorPressed'),
+        //   },
+        //   close: {
+        //     hover: concatPrefix('closeColorHover'),
+        //     pressed: concatPrefix('closeColorPressed'),
+        //   },
+        //   clear: {
+        //     DEFAULT: concatPrefix('clearColor'),
+        //     hover: concatPrefix('clearColorHover'),
+        //     pressed: concatPrefix('clearColorPressed'),
+        //   },
+        //   scrollbar: {
+        //     DEFAULT: concatPrefix('scrollbarColor'),
+        //     hover: concatPrefix('scrollbarColorHover'),
+        //   },
+        //   button: {
+        //     2: {
+        //       DEFAULT: concatPrefix('buttonColor2'),
+        //       hover: concatPrefix('buttonColor2Hover'),
+        //       pressed: concatPrefix('buttonColor2Pressed'),
+        //     },
+        //   },
+        //   table: {
+        //     DEFAULT: concatPrefix('tableColor'),
+        //     hover: concatPrefix('tableColorHover'),
+        //     striped: concatPrefix('tableColorStriped'),
+        //     header: concatPrefix('tableHeaderColor'),
+        //   },
+        //   input: {
+        //     DEFAULT: concatPrefix('inputColor'),
+        //     disabled: concatPrefix('inputColorDisabled'),
+        //   },
+        //   progress: {
+        //     rail: concatPrefix('progressRailColor'),
+        //   },
+        //   rail: concatPrefix('railColor'),
+        //   popover: concatPrefix('popoverColor'),
+        //   card: concatPrefix('cardColor'),
+        //   modal: concatPrefix('modalColor'),
+        //   body: concatPrefix('bodyColor'),
+        //   tag: concatPrefix('tagColor'),
+        //   avatar: concatPrefix('avatarColor'),
+        //   inverted: concatPrefix('invertedColor'),
+        //   code: concatPrefix('codeColor'),
+        //   tab: concatPrefix('tabColor'),
+        //   action: concatPrefix('actionColor'),
+        //   hover: concatPrefix('hoverColor'),
+        //   pressed: concatPrefix('pressedColor'),
+        // } as any,
+        // boxShadow: {
+        //   '1': concatPrefix('boxShadow1'),
+        //   '2': concatPrefix('boxShadow2'),
+        //   '3': concatPrefix('boxShadow3'),
+        // } as any,
+      } satisfies UnoThemeType);
+
+      if (typeof breakpoints === 'object') {
+        merged.breakpoints = breakpoints;
+      } else if (breakpoints) {
+        merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
+      }
+
+      return merged;
     },
     preflights: [
       {
