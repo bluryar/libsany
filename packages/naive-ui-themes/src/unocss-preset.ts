@@ -4,7 +4,7 @@ import { commonDark, commonLight } from 'naive-ui';
 import { isNil, kebabCase } from 'lodash-es';
 import type { Theme } from './types';
 
-const PRESET_NAME = 'naive-ui-multi-themes';
+const PRESET_NAME = 'un-naive-ui-multi-themes';
 
 export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
   /**
