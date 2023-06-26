@@ -1,9 +1,10 @@
 import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
-import { type CSSColorValue, type Preset, type Variant, mergeDeep } from 'unocss';
-import { commonDark, commonLight } from 'naive-ui';
-import { isNil, kebabCase } from 'lodash-es';
+import { type CSSColorValue, type Preset, type Variant, mergeDeep, presetMini, presetUno } from 'unocss';
+import { type ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
+import { kebabCase } from 'lodash-es';
 import type { BreakpointsType, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
+import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
 
 const PRESET_NAME = 'un-naive-ui-multi-themes';
 
@@ -54,23 +55,227 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
    * @default 'NaiveUI'
    */
   breakpoints?: BreakpointsType | Record<string, number>;
+
+  /**
+   * 是否向 `uno.css` 中插入根据 `theme` 生成的 css vars 声明, 关闭此项, 如果你更希望自己控制naive的这些css变量
+   *
+   * @default true
+   * */
+  preflight?: boolean;
+
+  /**
+   * 是否扩展uno主题预设, 默认将根据传入 `theme` 来扩展, 假如 `preflight=false` 则此项配置失效
+   *
+   * @default true
+   */
+  extendTheme?: boolean;
 }
 
-function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, selector: string, attribute: string) {
-  const theme = themeObj.name;
-  const _selector = selector || '';
-  const classNames = ['', ...theme.split('.')].join(' .');
-  let mergedSelector = attribute === 'class' ? `${_selector}${classNames}` : `${_selector}[${attribute}="${theme}"]`;
-  if (mergedSelector.startsWith(' ')) {
-    mergedSelector = mergedSelector.slice(1);
+/**
+ * 适配naive-ui的主题配置, 提供以下三个功能
+ * - variants, 即使用 `dark:(text-primary)` 的语法来控制主题
+ * - preflight, 即向 虚拟模块 `uno.css` 中插入 naive-ui 主题相关的 css vars 声明
+ * - extendTheme, 即扩展 uno 主题预设, 使得你可以使用 `bg-primary hover:text-success-hover` 等这些uno的规则
+ *
+ * 其中生成 variants 是基础功能, 无法关闭
+ *
+ * 此预设建议搭配 `tryRemoveThemeVariant` 使用: @see tryRemoveThemeVariant
+ */
+export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
+  options: PresetNaiveThemesOptions<NaiveTheme> = {},
+): Preset<UnoTheme> {
+  const {
+    themes = [
+      { name: 'light', isDark: false, themeOverride: {} },
+      { name: 'dark', isDark: true, themeOverride: {} },
+    ],
+    layerName = PRESET_NAME,
+    layerOrder = -10,
+    breakpoints = 'NaiveUI',
+    cssVarPrefix = '',
+    preflight = true,
+    extendTheme = true,
+  } = options;
+
+  const parsedRes = themes.map((i) => parseThemes(i, options));
+  const colorMap: Map<keyof ThemeCommonVars, `${string}(${string})`> = parsedRes
+    .map((i) => i.unoThemeColorMap)
+    .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
+  const variants = parsedRes.map((i) => i.variant) as unknown as Variant<UnoTheme>[];
+  const codes = parsedRes.map((i) => i.code);
+
+  return {
+    name: PRESET_NAME,
+    variants: variants,
+    layers: {
+      [layerName]: layerOrder,
+    },
+    extendTheme: preflight && extendTheme ? getExtendTheme<UnoTheme>(cssVarPrefix, colorMap, breakpoints) : undefined,
+    preflights: preflight
+      ? [
+          {
+            layer: layerName,
+            getCSS() {
+              // 注入css变量
+              return codes.join('\n');
+            },
+          },
+        ]
+      : undefined,
+  };
+}
+
+function getExtendTheme<UnoTheme extends UnoThemeType = {}>(
+  cssVarPrefix: string,
+  colorMap: Map<string, `${string}(${string})`>,
+  breakpoints: string | Record<string, number>,
+) {
+  return (theme: UnoTheme) => {
+    const concatPrefix = (key: keyof ThemeCommonVars) => `rgba(var(${wrapCssVarKey(cssVarPrefix, key)}), %alpha)`;
+    const getThemeValue = (key: keyof ThemeCommonVars) => colorMap.get(key);
+
+    const merged = mergeDeep(theme, {
+      colors: {
+        base: getThemeValue('primaryColor'),
+        primary: {
+          DEFAULT: getThemeValue('primaryColor'),
+          hover: getThemeValue('primaryColorHover'),
+          pressed: getThemeValue('primaryColorPressed'),
+          suppl: getThemeValue('primaryColorSuppl'),
+        },
+        info: {
+          DEFAULT: getThemeValue('infoColor'),
+          hover: getThemeValue('infoColorHover'),
+          pressed: getThemeValue('infoColorPressed'),
+          suppl: getThemeValue('infoColorSuppl'),
+        },
+        success: {
+          DEFAULT: getThemeValue('successColor'),
+          hover: getThemeValue('successColorHover'),
+          pressed: getThemeValue('successColorPressed'),
+          suppl: getThemeValue('successColorSuppl'),
+        },
+        warning: {
+          DEFAULT: getThemeValue('warningColor'),
+          hover: getThemeValue('warningColorHover'),
+          pressed: getThemeValue('warningColorPressed'),
+          suppl: getThemeValue('warningColorSuppl'),
+        },
+        error: {
+          DEFAULT: getThemeValue('errorColor'),
+          hover: getThemeValue('errorColorHover'),
+          pressed: getThemeValue('errorColorPressed'),
+          suppl: getThemeValue('errorColorSuppl'),
+        },
+        text: {
+          DEFAULT: getThemeValue('textColorBase'),
+          1: getThemeValue('textColor1'),
+          2: getThemeValue('textColor2'),
+          3: getThemeValue('textColor3'),
+          base: getThemeValue('textColorBase'),
+          disabled: getThemeValue('textColorDisabled'),
+        },
+        placeholder: {
+          DEFAULT: getThemeValue('placeholderColor'),
+          disabled: getThemeValue('placeholderColorDisabled'),
+        },
+        icon: {
+          DEFAULT: getThemeValue('iconColor'),
+          hover: getThemeValue('iconColorHover'),
+          pressed: getThemeValue('iconColorPressed'),
+          disabled: getThemeValue('iconColorDisabled'),
+        },
+        closeicon: {
+          DEFAULT: getThemeValue('closeIconColor'),
+          hover: getThemeValue('closeIconColorHover'),
+          pressed: getThemeValue('closeIconColorPressed'),
+        },
+        close: {
+          hover: getThemeValue('closeColorHover'),
+          pressed: getThemeValue('closeColorPressed'),
+        },
+        clear: {
+          DEFAULT: getThemeValue('clearColor'),
+          hover: getThemeValue('clearColorHover'),
+          pressed: getThemeValue('clearColorPressed'),
+        },
+        scrollbar: {
+          DEFAULT: getThemeValue('scrollbarColor'),
+          hover: getThemeValue('scrollbarColorHover'),
+        },
+        button: {
+          2: {
+            DEFAULT: getThemeValue('buttonColor2'),
+            hover: getThemeValue('buttonColor2Hover'),
+            pressed: getThemeValue('buttonColor2Pressed'),
+          },
+        },
+        table: {
+          DEFAULT: getThemeValue('tableColor'),
+          hover: getThemeValue('tableColorHover'),
+          striped: getThemeValue('tableColorStriped'),
+          header: getThemeValue('tableHeaderColor'),
+        },
+        input: {
+          DEFAULT: getThemeValue('inputColor'),
+          disabled: getThemeValue('inputColorDisabled'),
+        },
+        progress: {
+          rail: getThemeValue('progressRailColor'),
+        },
+        rail: getThemeValue('railColor'),
+        popover: getThemeValue('popoverColor'),
+        card: getThemeValue('cardColor'),
+        modal: getThemeValue('modalColor'),
+        body: getThemeValue('bodyColor'),
+        tag: getThemeValue('tagColor'),
+        avatar: getThemeValue('avatarColor'),
+        inverted: getThemeValue('invertedColor'),
+        code: getThemeValue('codeColor'),
+        tab: getThemeValue('tabColor'),
+        action: getThemeValue('actionColor'),
+        hover: getThemeValue('hoverColor'),
+        pressed: getThemeValue('pressedColor'),
+      } as any,
+      boxShadow: {
+        '1': concatPrefix('boxShadow1'),
+        '2': concatPrefix('boxShadow2'),
+        '3': concatPrefix('boxShadow3'),
+      } as any,
+    } satisfies UnoThemeType);
+
+    if (typeof breakpoints === 'object') {
+      merged.breakpoints = breakpoints;
+    } else if (breakpoints) {
+      merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
+    }
+
+    return merged;
+  };
+}
+
+/**
+ * 工具方法, 尝试删除冲突的variant
+ * @param preset 期望被删除冲突variant的预设
+ */
+export function tryRemoveThemeVariant(preset: ReturnType<typeof presetUno> | ReturnType<typeof presetMini>) {
+  const removeableVariants = ['light', '.light', '@light', 'dark', '.dark', '@dark'];
+  const { variants } = preset;
+  if (variants) {
+    removeableVariants.forEach((variant) => {
+      const idx = variants.findIndex(({ name }) => name === variant);
+      if (idx !== -1) {
+        variants.splice(idx, 1);
+      }
+    });
   }
-  return { theme, mergedSelector };
 }
 
 function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: PresetNaiveThemesOptions<NaiveTheme>) {
   const { selector = 'html', attribute = 'class', layerName = PRESET_NAME, cssVarPrefix = '' } = options;
 
-  const colorMap = new Map<string, CSSColorValue>();
+  const colorMap = new Map<keyof ThemeCommonVars | string, CSSColorValue>();
+  const unoThemeColorMap = new Map<keyof ThemeCommonVars | string, `${string}(${string})`>();
 
   const { isDark } = theme;
   const shareDcommon = isDark ? commonDark : commonLight;
@@ -87,11 +292,10 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
     if (parsedColor) {
       colorMap.set(key, parsedColor);
 
-      const { type, components, alpha } = parsedColor;
-      rules += `--${kebabCase(cssVarPrefix + '-' + key)}-${type}: ${components.join(', ')};`;
-      if (!isNil(alpha)) {
-        rules += `--${kebabCase(cssVarPrefix + '-' + key)}-${type}-alpha: ${alpha};`;
-      }
+      const { type, components } = parsedColor;
+      rules += `${wrapCssVarKey(cssVarPrefix, key, 'value')}: ${components.join(', ')};`;
+
+      unoThemeColorMap.set(key, `${withoutAlphaColorType(type)}(var(${wrapCssVarKey(cssVarPrefix, key, 'value')})})`);
     }
 
     return rules;
@@ -108,166 +312,8 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
     mergedCommon,
     selector: mergedSelector,
     colorMap,
+    unoThemeColorMap: unoThemeColorMap,
     variant,
     code,
-  };
-}
-
-export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
-  options: PresetNaiveThemesOptions<NaiveTheme> = {},
-): Preset<UnoTheme> {
-  const {
-    themes = [
-      { name: 'light', isDark: false, themeOverride: {} },
-      { name: 'dark', isDark: true, themeOverride: {} },
-    ],
-    layerName = PRESET_NAME,
-    layerOrder = -10,
-    breakpoints = 'NaiveUI',
-    // cssVarPrefix = '',
-  } = options;
-
-  const res = themes.map((i) => parseThemes(i, options));
-
-  const variants = res.map((i) => i.variant) as unknown as Variant<UnoTheme>[];
-  const codes = res.map((i) => i.code);
-
-  // const concatPrefix = (suffix: keyof ThemeCommonVars) =>
-  //   `rgba(var(--${[cssVarPrefix, ...kebabCase(suffix).split('-')].join('-')}), %alpha)`;
-
-  return {
-    name: PRESET_NAME,
-    variants: variants,
-    layers: {
-      [layerName]: layerOrder,
-    },
-    extendTheme(theme) {
-      const merged = mergeDeep(theme, {
-        // colors: {
-        //   base: concatPrefix('primaryColor'),
-        //   primary: {
-        //     DEFAULT: concatPrefix('primaryColor'),
-        //     hover: concatPrefix('primaryColorHover'),
-        //     pressed: concatPrefix('primaryColorPressed'),
-        //     suppl: concatPrefix('primaryColorSuppl'),
-        //   },
-        //   info: {
-        //     DEFAULT: concatPrefix('infoColor'),
-        //     hover: concatPrefix('infoColorHover'),
-        //     pressed: concatPrefix('infoColorPressed'),
-        //     suppl: concatPrefix('infoColorSuppl'),
-        //   },
-        //   success: {
-        //     DEFAULT: concatPrefix('successColor'),
-        //     hover: concatPrefix('successColorHover'),
-        //     pressed: concatPrefix('successColorPressed'),
-        //     suppl: concatPrefix('successColorSuppl'),
-        //   },
-        //   warning: {
-        //     DEFAULT: concatPrefix('warningColor'),
-        //     hover: concatPrefix('warningColorHover'),
-        //     pressed: concatPrefix('warningColorPressed'),
-        //     suppl: concatPrefix('warningColorSuppl'),
-        //   },
-        //   error: {
-        //     DEFAULT: concatPrefix('errorColor'),
-        //     hover: concatPrefix('errorColorHover'),
-        //     pressed: concatPrefix('errorColorPressed'),
-        //     suppl: concatPrefix('errorColorSuppl'),
-        //   },
-        //   text: {
-        //     DEFAULT: concatPrefix('textColorBase'),
-        //     1: concatPrefix('textColor1'),
-        //     2: concatPrefix('textColor2'),
-        //     3: concatPrefix('textColor3'),
-        //     base: concatPrefix('textColorBase'),
-        //     disabled: concatPrefix('textColorDisabled'),
-        //   },
-        //   placeholder: {
-        //     DEFAULT: concatPrefix('placeholderColor'),
-        //     disabled: concatPrefix('placeholderColorDisabled'),
-        //   },
-        //   icon: {
-        //     DEFAULT: concatPrefix('iconColor'),
-        //     hover: concatPrefix('iconColorHover'),
-        //     pressed: concatPrefix('iconColorPressed'),
-        //     disabled: concatPrefix('iconColorDisabled'),
-        //   },
-        //   closeicon: {
-        //     DEFAULT: concatPrefix('closeIconColor'),
-        //     hover: concatPrefix('closeIconColorHover'),
-        //     pressed: concatPrefix('closeIconColorPressed'),
-        //   },
-        //   close: {
-        //     hover: concatPrefix('closeColorHover'),
-        //     pressed: concatPrefix('closeColorPressed'),
-        //   },
-        //   clear: {
-        //     DEFAULT: concatPrefix('clearColor'),
-        //     hover: concatPrefix('clearColorHover'),
-        //     pressed: concatPrefix('clearColorPressed'),
-        //   },
-        //   scrollbar: {
-        //     DEFAULT: concatPrefix('scrollbarColor'),
-        //     hover: concatPrefix('scrollbarColorHover'),
-        //   },
-        //   button: {
-        //     2: {
-        //       DEFAULT: concatPrefix('buttonColor2'),
-        //       hover: concatPrefix('buttonColor2Hover'),
-        //       pressed: concatPrefix('buttonColor2Pressed'),
-        //     },
-        //   },
-        //   table: {
-        //     DEFAULT: concatPrefix('tableColor'),
-        //     hover: concatPrefix('tableColorHover'),
-        //     striped: concatPrefix('tableColorStriped'),
-        //     header: concatPrefix('tableHeaderColor'),
-        //   },
-        //   input: {
-        //     DEFAULT: concatPrefix('inputColor'),
-        //     disabled: concatPrefix('inputColorDisabled'),
-        //   },
-        //   progress: {
-        //     rail: concatPrefix('progressRailColor'),
-        //   },
-        //   rail: concatPrefix('railColor'),
-        //   popover: concatPrefix('popoverColor'),
-        //   card: concatPrefix('cardColor'),
-        //   modal: concatPrefix('modalColor'),
-        //   body: concatPrefix('bodyColor'),
-        //   tag: concatPrefix('tagColor'),
-        //   avatar: concatPrefix('avatarColor'),
-        //   inverted: concatPrefix('invertedColor'),
-        //   code: concatPrefix('codeColor'),
-        //   tab: concatPrefix('tabColor'),
-        //   action: concatPrefix('actionColor'),
-        //   hover: concatPrefix('hoverColor'),
-        //   pressed: concatPrefix('pressedColor'),
-        // } as any,
-        // boxShadow: {
-        //   '1': concatPrefix('boxShadow1'),
-        //   '2': concatPrefix('boxShadow2'),
-        //   '3': concatPrefix('boxShadow3'),
-        // } as any,
-      } satisfies UnoThemeType);
-
-      if (typeof breakpoints === 'object') {
-        merged.breakpoints = breakpoints;
-      } else if (breakpoints) {
-        merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
-      }
-
-      return merged;
-    },
-    preflights: [
-      {
-        layer: layerName,
-        getCSS() {
-          // 注入css变量
-          return codes.join('\n');
-        },
-      },
-    ],
   };
 }

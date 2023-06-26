@@ -16,7 +16,8 @@
       "DOM.Iterable"
     ],
     "types": [
-      "vitest/importMeta"
+      "vitest/importMeta",
+      "vitest/globals"
     ],
     "paths": {
       "@bluryar/shared": [
