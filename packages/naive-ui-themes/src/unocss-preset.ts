@@ -25,6 +25,9 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
 
   /**
    * 主题配置列表
+   *
+   * - 推荐使用这个包导出的 `fileReader` 读取文件夹下的所有主题文件
+   * - 它的读取逻辑与 `vite-plugin-naive-ui-multi-theme` 一致
    */
   themes?: NaiveTheme[];
 

@@ -35,5 +35,15 @@ export default defineBuildConfig({
     },
   },
 
-  externals: ['vue', 'lodash-es', 'vue-demi', '@vueuse/core'],
+  externals: [
+    'vue',
+    'lodash-es',
+    'vue-demi',
+    '@vueuse/core',
+    '@unocss/preset-mini',
+    'vite',
+    'unocss',
+    'naive-ui',
+    'fast-glob',
+  ],
 });

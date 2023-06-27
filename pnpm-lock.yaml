@@ -184,6 +184,9 @@ importers:
       fast-glob:
         specifier: ^3.2.12
         version: 3.2.12
+      import-fresh:
+        specifier: ^3.3.0
+        version: 3.3.0
       mlly:
         specifier: ^1.4.0
         version: 1.4.0
