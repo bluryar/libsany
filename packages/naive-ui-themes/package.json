@@ -64,8 +64,11 @@
   },
   "devDependencies": {
     "@vueuse/core": "^10.1.2",
+    "fast-glob": "^3.2.12",
+    "mlly": "^1.4.0",
     "naive-ui": "^2.34.4",
     "unocss": "^0.53.1",
+    "vite": "^4.3.9",
     "vue": "^3.0.0"
   },
   "publishConfig": {

@@ -1,0 +1,118 @@
+{
+  "colors": {
+    "base": "rgb(var(--base-color-value)})",
+    "primary": {
+      "DEFAULT": "rgb(var(--primary-color-value)})",
+      "hover": "rgb(var(--primary-color-hover-value)})",
+      "pressed": "rgb(var(--primary-color-pressed-value)})",
+      "suppl": "rgb(var(--primary-color-suppl-value)})"
+    },
+    "info": {
+      "DEFAULT": "rgb(var(--info-color-value)})",
+      "hover": "rgb(var(--info-color-hover-value)})",
+      "pressed": "rgb(var(--info-color-pressed-value)})",
+      "suppl": "rgb(var(--info-color-suppl-value)})"
+    },
+    "success": {
+      "DEFAULT": "rgb(var(--success-color-value)})",
+      "hover": "rgb(var(--success-color-hover-value)})",
+      "pressed": "rgb(var(--success-color-pressed-value)})",
+      "suppl": "rgb(var(--success-color-suppl-value)})"
+    },
+    "warning": {
+      "DEFAULT": "rgb(var(--warning-color-value)})",
+      "hover": "rgb(var(--warning-color-hover-value)})",
+      "pressed": "rgb(var(--warning-color-pressed-value)})",
+      "suppl": "rgb(var(--warning-color-suppl-value)})"
+    },
+    "error": {
+      "DEFAULT": "rgb(var(--error-color-value)})",
+      "hover": "rgb(var(--error-color-hover-value)})",
+      "pressed": "rgb(var(--error-color-pressed-value)})",
+      "suppl": "rgb(var(--error-color-suppl-value)})"
+    },
+    "text": {
+      "1": "rgb(var(--text-color-1-value)})",
+      "2": "rgb(var(--text-color-2-value)})",
+      "3": "rgb(var(--text-color-3-value)})",
+      "base": "rgb(var(--text-color-base-value)})",
+      "disabled": "rgb(var(--text-color-disabled-value)})"
+    },
+    "placeholder": {
+      "DEFAULT": "rgb(var(--placeholder-color-value)})",
+      "disabled": "rgb(var(--placeholder-color-disabled-value)})"
+    },
+    "icon": {
+      "DEFAULT": "rgb(var(--icon-color-value)})",
+      "hover": "rgb(var(--icon-color-hover-value)})",
+      "pressed": "rgb(var(--icon-color-pressed-value)})",
+      "disabled": "rgb(var(--icon-color-disabled-value)})"
+    },
+    "divider": "rgb(var(--divider-color-value)})",
+    "border": "rgb(var(--border-color-value)})",
+    "close": {
+      "icon": {
+        "DEFAULT": "rgb(var(--close-icon-color-value)})",
+        "hover": "rgb(var(--close-icon-color-hover-value)})",
+        "pressed": "rgb(var(--close-icon-color-pressed-value)})"
+      },
+      "hover": "rgb(var(--close-color-hover-value)})",
+      "pressed": "rgb(var(--close-color-pressed-value)})"
+    },
+    "clear": {
+      "DEFAULT": "rgb(var(--clear-color-value)})",
+      "hover": "rgb(var(--clear-color-hover-value)})",
+      "pressed": "rgb(var(--clear-color-pressed-value)})"
+    },
+    "scrollbar": {
+      "DEFAULT": "rgb(var(--scrollbar-color-value)})",
+      "hover": "rgb(var(--scrollbar-color-hover-value)})"
+    },
+    "progress": {
+      "rail": "rgb(var(--progress-rail-color-value)})"
+    },
+    "rail": "rgb(var(--rail-color-value)})",
+    "popover": "rgb(var(--popover-color-value)})",
+    "table": {
+      "DEFAULT": "rgb(var(--table-color-value)})",
+      "header": "rgb(var(--table-header-color-value)})",
+      "hover": "rgb(var(--table-color-hover-value)})",
+      "striped": "rgb(var(--table-color-striped-value)})"
+    },
+    "card": "rgb(var(--card-color-value)})",
+    "modal": "rgb(var(--modal-color-value)})",
+    "body": "rgb(var(--body-color-value)})",
+    "tag": "rgb(var(--tag-color-value)})",
+    "avatar": "rgb(var(--avatar-color-value)})",
+    "inverted": "rgb(var(--inverted-color-value)})",
+    "input": {
+      "DEFAULT": "rgb(var(--input-color-value)})",
+      "disabled": "rgb(var(--input-color-disabled-value)})"
+    },
+    "code": "rgb(var(--code-color-value)})",
+    "tab": "rgb(var(--tab-color-value)})",
+    "action": "rgb(var(--action-color-value)})",
+    "hover": "rgb(var(--hover-color-value)})",
+    "pressed": "rgb(var(--pressed-color-value)})",
+    "button": {
+      "2": {
+        "DEFAULT": "rgb(var(--button-color-2-value)})",
+        "hover": "rgb(var(--button-color-2-hover-value)})",
+        "pressed": "rgb(var(--button-color-2-pressed-value)})"
+      }
+    }
+  },
+  "boxShadow": {
+    "1": "var(--box-shadow-1)",
+    "2": "var(--box-shadow-2)",
+    "3": "var(--box-shadow-3)"
+  },
+  "breakpoints": {
+    "xs": 0,
+    "s": 640,
+    "m": 1024,
+    "l": 1280,
+    "xl": 1536,
+    "xxl": 1920
+  }
+}

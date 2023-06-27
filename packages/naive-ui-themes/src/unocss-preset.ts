@@ -1,7 +1,7 @@
 import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
 import { type CSSColorValue, type Preset, type Variant, mergeDeep, presetMini, presetUno } from 'unocss';
 import { type ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
-import { kebabCase } from 'lodash-es';
+import { kebabCase, setWith } from 'lodash-es';
 import type { BreakpointsType, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
 import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
@@ -12,7 +12,7 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
   /**
    * 插件生成的代码被放置在样式文件的哪个位置
    *
-   * @deafult 'naive-ui-multi-themes'
+   * @deafult 'un-naive-ui-multi-themes'
    */
   layerName?: string;
 
@@ -69,6 +69,17 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
    * @default true
    */
   extendTheme?: boolean;
+
+  /**
+   * 是否删除 presetMini 和 presetWind 的 light\.light\@light 等默认的variant
+   *
+   * 默认不开启
+   *
+   * 当你确定会使用 dark 和 light 作为主题相关的variant时， 设置为 true 可以避免原本应该传递给本预设的 variants 的rules 被其他预设的 variants "拦截"
+   *
+   * @default false
+   */
+  removeDefaultThemeVariant?: boolean;
 }
 
 /**
@@ -95,6 +106,7 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
     cssVarPrefix = '',
     preflight = true,
     extendTheme = true,
+    removeDefaultThemeVariant = false,
   } = options;
 
   const parsedRes = themes.map((i) => parseThemes(i, options));
@@ -107,6 +119,7 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
   return {
     name: PRESET_NAME,
     variants: variants,
+    enforce: 'post',
     layers: {
       [layerName]: layerOrder,
     },
@@ -122,135 +135,26 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
           },
         ]
       : undefined,
-  };
-}
-
-function getExtendTheme<UnoTheme extends UnoThemeType = {}>(
-  cssVarPrefix: string,
-  colorMap: Map<string, `${string}(${string})`>,
-  breakpoints: string | Record<string, number>,
-) {
-  return (theme: UnoTheme) => {
-    const concatPrefix = (key: keyof ThemeCommonVars) => `rgba(var(${wrapCssVarKey(cssVarPrefix, key)}), %alpha)`;
-    const getThemeValue = (key: keyof ThemeCommonVars) => colorMap.get(key);
-
-    const merged = mergeDeep(theme, {
-      colors: {
-        base: getThemeValue('primaryColor'),
-        primary: {
-          DEFAULT: getThemeValue('primaryColor'),
-          hover: getThemeValue('primaryColorHover'),
-          pressed: getThemeValue('primaryColorPressed'),
-          suppl: getThemeValue('primaryColorSuppl'),
-        },
-        info: {
-          DEFAULT: getThemeValue('infoColor'),
-          hover: getThemeValue('infoColorHover'),
-          pressed: getThemeValue('infoColorPressed'),
-          suppl: getThemeValue('infoColorSuppl'),
-        },
-        success: {
-          DEFAULT: getThemeValue('successColor'),
-          hover: getThemeValue('successColorHover'),
-          pressed: getThemeValue('successColorPressed'),
-          suppl: getThemeValue('successColorSuppl'),
-        },
-        warning: {
-          DEFAULT: getThemeValue('warningColor'),
-          hover: getThemeValue('warningColorHover'),
-          pressed: getThemeValue('warningColorPressed'),
-          suppl: getThemeValue('warningColorSuppl'),
-        },
-        error: {
-          DEFAULT: getThemeValue('errorColor'),
-          hover: getThemeValue('errorColorHover'),
-          pressed: getThemeValue('errorColorPressed'),
-          suppl: getThemeValue('errorColorSuppl'),
-        },
-        text: {
-          DEFAULT: getThemeValue('textColorBase'),
-          1: getThemeValue('textColor1'),
-          2: getThemeValue('textColor2'),
-          3: getThemeValue('textColor3'),
-          base: getThemeValue('textColorBase'),
-          disabled: getThemeValue('textColorDisabled'),
-        },
-        placeholder: {
-          DEFAULT: getThemeValue('placeholderColor'),
-          disabled: getThemeValue('placeholderColorDisabled'),
-        },
-        icon: {
-          DEFAULT: getThemeValue('iconColor'),
-          hover: getThemeValue('iconColorHover'),
-          pressed: getThemeValue('iconColorPressed'),
-          disabled: getThemeValue('iconColorDisabled'),
-        },
-        closeicon: {
-          DEFAULT: getThemeValue('closeIconColor'),
-          hover: getThemeValue('closeIconColorHover'),
-          pressed: getThemeValue('closeIconColorPressed'),
-        },
-        close: {
-          hover: getThemeValue('closeColorHover'),
-          pressed: getThemeValue('closeColorPressed'),
-        },
-        clear: {
-          DEFAULT: getThemeValue('clearColor'),
-          hover: getThemeValue('clearColorHover'),
-          pressed: getThemeValue('clearColorPressed'),
-        },
-        scrollbar: {
-          DEFAULT: getThemeValue('scrollbarColor'),
-          hover: getThemeValue('scrollbarColorHover'),
-        },
-        button: {
-          2: {
-            DEFAULT: getThemeValue('buttonColor2'),
-            hover: getThemeValue('buttonColor2Hover'),
-            pressed: getThemeValue('buttonColor2Pressed'),
-          },
-        },
-        table: {
-          DEFAULT: getThemeValue('tableColor'),
-          hover: getThemeValue('tableColorHover'),
-          striped: getThemeValue('tableColorStriped'),
-          header: getThemeValue('tableHeaderColor'),
-        },
-        input: {
-          DEFAULT: getThemeValue('inputColor'),
-          disabled: getThemeValue('inputColorDisabled'),
-        },
-        progress: {
-          rail: getThemeValue('progressRailColor'),
-        },
-        rail: getThemeValue('railColor'),
-        popover: getThemeValue('popoverColor'),
-        card: getThemeValue('cardColor'),
-        modal: getThemeValue('modalColor'),
-        body: getThemeValue('bodyColor'),
-        tag: getThemeValue('tagColor'),
-        avatar: getThemeValue('avatarColor'),
-        inverted: getThemeValue('invertedColor'),
-        code: getThemeValue('codeColor'),
-        tab: getThemeValue('tabColor'),
-        action: getThemeValue('actionColor'),
-        hover: getThemeValue('hoverColor'),
-        pressed: getThemeValue('pressedColor'),
-      } as any,
-      boxShadow: {
-        '1': concatPrefix('boxShadow1'),
-        '2': concatPrefix('boxShadow2'),
-        '3': concatPrefix('boxShadow3'),
-      } as any,
-    } satisfies UnoThemeType);
-
-    if (typeof breakpoints === 'object') {
-      merged.breakpoints = breakpoints;
-    } else if (breakpoints) {
-      merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
-    }
-
-    return merged;
+    // options: {
+    //   themes: [
+    //     { name: 'light', isDark: false, themeOverride: {} },
+    //     { name: 'dark', isDark: true, themeOverride: {} },
+    //   ],
+    //   layerName: PRESET_NAME,
+    //   layerOrder: -10,
+    //   breakpoints: 'NaiveUI',
+    //   cssVarPrefix: '',
+    //   preflight: true,
+    //   extendTheme: true,
+    //   selector: 'html',
+    //   attribute: 'class',
+    //   removeDefaultThemeVariant: false,
+    // },
+    configResolved: (userconfig) => {
+      if (removeDefaultThemeVariant) {
+        tryRemoveThemeVariant(userconfig as any);
+      }
+    },
   };
 }
 
@@ -260,6 +164,7 @@ function getExtendTheme<UnoTheme extends UnoThemeType = {}>(
  */
 export function tryRemoveThemeVariant(preset: ReturnType<typeof presetUno> | ReturnType<typeof presetMini>) {
   const removeableVariants = ['light', '.light', '@light', 'dark', '.dark', '@dark'];
+
   const { variants } = preset;
   if (variants) {
     removeableVariants.forEach((variant) => {
@@ -269,6 +174,60 @@ export function tryRemoveThemeVariant(preset: ReturnType<typeof presetUno> | Ret
       }
     });
   }
+
+  return preset;
+}
+
+function getExtendTheme<UnoTheme extends UnoThemeType = {}>(
+  cssVarPrefix: string,
+  colorMap: Map<string, `${string}(${string})`>,
+  breakpoints: string | Record<string, number>,
+) {
+  return (theme: UnoTheme) => {
+    const placeholder = '@@@@@@@@@@@@@@@@@@';
+    const colors = [...colorMap.keys()]
+      .map((key, _, list) => {
+        if (list.some((i) => i.startsWith(key) && i !== key)) {
+          return key + placeholder;
+        }
+        return key;
+      })
+      .reduce((prev, key) => {
+        let _key = key;
+
+        if (_key.endsWith(placeholder)) {
+          _key = _key.replace(placeholder, 'Default');
+        }
+
+        let path = kebabCase(_key).replaceAll('-', '.').replace('.color', '');
+        if (path.endsWith('default')) {
+          path = path.replace('.default', '.DEFAULT');
+        }
+
+        setWith(prev, path, colorMap.get(key.replace(placeholder, '')), Object);
+        return prev;
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      }, {} as Record<string, string>);
+
+    const customTheme = {
+      colors: colors,
+      boxShadow: {
+        '1': `var(${wrapCssVarKey(cssVarPrefix, 'boxShadow1')})`,
+        '2': `var(${wrapCssVarKey(cssVarPrefix, 'boxShadow2')})`,
+        '3': `var(${wrapCssVarKey(cssVarPrefix, 'boxShadow3')})`,
+      } as any,
+    } satisfies UnoThemeType;
+
+    const merged = mergeDeep(theme, customTheme);
+
+    if (typeof breakpoints === 'object') {
+      merged.breakpoints = breakpoints;
+    } else if (breakpoints) {
+      merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
+    }
+
+    return merged;
+  };
 }
 
 function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: PresetNaiveThemesOptions<NaiveTheme>) {

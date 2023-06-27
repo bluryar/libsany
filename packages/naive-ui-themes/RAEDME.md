@@ -4,6 +4,10 @@
 
 - 涉及的依赖库: Vite, UnoCss, VueUse, naive-ui
 
+> 尽管支持多主题配置的实现很简单，但是建议您思考一个问题：在同一个应用代码中支持这样的写法会带来什么后果？
+>
+> 也许采用微前端的前端架构配合单一主题会更加合理。
+
 ## 背景
 
 假如你的后台管理系统需要实现多主题切换, 那么选择 naive-ui 作为你的组件库是很好的, 基于 Vue 3 的 [依赖注入](https://cn.vuejs.org/guide/components/provide-inject.html) 和 [CSS Variable](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Using_CSS_custom_properties) 可以很方便的实现多主题切换.
