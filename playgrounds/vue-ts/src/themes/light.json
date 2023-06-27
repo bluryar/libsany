@@ -1,1 +1,6 @@
-{}
+{
+  "common": {
+    "test": "test",
+    "test12": "test"
+  }
+}

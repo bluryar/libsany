@@ -6,7 +6,7 @@ import type * as breakpoints from './breakpoints';
 export interface Theme {
   name: string;
   isDark: boolean;
-  themeOverride: GlobalThemeOverrides;
+  themeOverrides: GlobalThemeOverrides;
 }
 
 export type Prettify<T> = {

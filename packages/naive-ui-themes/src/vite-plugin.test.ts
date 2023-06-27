@@ -50,12 +50,12 @@ describe('naiveMultiTheme', () => {
 
         const useSharedColorMode = createSharedComposable(useColorMode);
 
-        export const themes = [{\\"name\\":\\"default\\",\\"isDark\\":false,\\"themeOverride\\":{\\"common\\":{\\"bodyColor\\":\\"#d6eafa\\",\\"primaryColor\\":\\"#2282fc\\",\\"primaryColorHover\\":\\"#499DFD\\",\\"primaryColorPressed\\":\\"#1560D0\\",\\"primaryColorSuppl\\":\\"#499DFD\\",\\"layoutSiderColor\\":\\"#ffffff\\",\\"layoutHeaderColor\\":\\"#2282fc\\",\\"layoutTabColor\\":\\"#ffffff\\",\\"scrollbarTrackColor\\":\\"transparent\\",\\"scrollbarThumbColor\\":\\"#e1e1e1\\",\\"scrollbarWidth\\":\\"8px\\",\\"scrollbarHeight\\":\\"8px\\",\\"scrollbarTrackRadius\\":\\"8px\\",\\"scrollbarThumbRadius\\":\\"8px\\"},\\"Layout\\":{\\"color\\":\\"#2282fc\\",\\"headerColor\\":\\"#2282fc\\",\\"headerBorderColor\\":\\"#499DFD\\"},\\"Card\\":{\\"titleTextColor\\":\\"#fff\\",\\"closeIconColor\\":\\"#fff\\",\\"closeIconColorHover\\":\\"#fff\\",\\"closeIconColorPressed\\":\\"#fff\\",\\"closeColorHover\\":\\"#0000\\",\\"closeColorPressed\\":\\"#0000\\"},\\"DataTable\\":{\\"thColor\\":\\"#dcecfb\\",\\"thTextColor\\":\\"#3e3e3e\\",\\"tdColorStriped\\":\\"#eef4fd\\",\\"tdColor\\":\\"#fcfdfe\\",\\"thFontWeight\\":\\"600\\",\\"tdTextColor\\":\\"#010101\\"},\\"Input\\":{\\"border\\":\\"solid 1px #c2cad8\\"},\\"Form\\":{\\"labelTextColor\\":\\"#2d2d2d\\"},\\"Pagination\\":{\\"inputWidthSmall\\":\\"40px\\"}}}];
+        export const themes = [{\\"name\\":\\"default.light\\",\\"isDark\\":false,\\"themeOverrides\\":{\\"common\\":{\\"bodyColor\\":\\"#d6eafa\\",\\"primaryColor\\":\\"#2282fc\\",\\"primaryColorHover\\":\\"#499DFD\\",\\"primaryColorPressed\\":\\"#1560D0\\",\\"primaryColorSuppl\\":\\"#499DFD\\",\\"layoutSiderColor\\":\\"#ffffff\\",\\"layoutHeaderColor\\":\\"#2282fc\\",\\"layoutTabColor\\":\\"#ffffff\\",\\"scrollbarTrackColor\\":\\"transparent\\",\\"scrollbarThumbColor\\":\\"#e1e1e1\\",\\"scrollbarWidth\\":\\"8px\\",\\"scrollbarHeight\\":\\"8px\\",\\"scrollbarTrackRadius\\":\\"8px\\",\\"scrollbarThumbRadius\\":\\"8px\\"},\\"Layout\\":{\\"color\\":\\"#2282fc\\",\\"headerColor\\":\\"#2282fc\\",\\"headerBorderColor\\":\\"#499DFD\\"},\\"Card\\":{\\"titleTextColor\\":\\"#fff\\",\\"closeIconColor\\":\\"#fff\\",\\"closeIconColorHover\\":\\"#fff\\",\\"closeIconColorPressed\\":\\"#fff\\",\\"closeColorHover\\":\\"#0000\\",\\"closeColorPressed\\":\\"#0000\\"},\\"DataTable\\":{\\"thColor\\":\\"#dcecfb\\",\\"thTextColor\\":\\"#3e3e3e\\",\\"tdColorStriped\\":\\"#eef4fd\\",\\"tdColor\\":\\"#fcfdfe\\",\\"thFontWeight\\":\\"600\\",\\"tdTextColor\\":\\"#010101\\"},\\"Input\\":{\\"border\\":\\"solid 1px #c2cad8\\"},\\"Form\\":{\\"labelTextColor\\":\\"#2d2d2d\\"},\\"Pagination\\":{\\"inputWidthSmall\\":\\"40px\\"}}}];
 
         export function useTheme(initialValue = 'light') {
           const modes = unref(themes).map((i) => {
-            const name = i.name;
-            return [name, name];
+            const val = i.name.replace('.', ' ');
+            return [i.name, val];
           });
 
           const options = {

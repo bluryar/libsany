@@ -6,6 +6,8 @@ import { naiveMultiTheme, presetNaiveThemes, tryRemoveThemeVariant } from '@blur
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
+import Inspector from 'vite-plugin-vue-inspector';
+import Inspect from 'vite-plugin-inspect/dist/index';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
@@ -13,18 +15,29 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 
 dotenv.config({ path: '../../.env' });
 
+const fileReaderOptions = {
+  dir: './src/themes',
+  dts: './src/types/auto-naive-theme.d.ts',
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
     Unocss({
-      presets: [tryRemoveThemeVariant(presetUno()), presetNaiveThemes()],
+      presets: [
+        tryRemoveThemeVariant(presetUno()),
+        await presetNaiveThemes({ ...fileReaderOptions, autoimportThemes: !!1 }),
+      ],
     }),
-    naiveMultiTheme({
-      dir: './src/themes',
-      dts: 'src/types/auto-naive-theme.d.ts',
+    naiveMultiTheme({ ...fileReaderOptions }),
+    Inspector({
+      enabled: !!1,
+      vue: 3,
+      toggleButtonVisibility: 'always',
     }),
+    Inspect(),
     AutoImport({
       imports: [
         'vue',

@@ -1,5 +1,6 @@
 import { readdir, rm } from 'fs/promises';
 import { resolve } from 'path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { fileReader } from './fileReader';
 
 const NOT_EXIST_DIR = './do-not-exits-themes';
@@ -15,10 +16,10 @@ describe('fileReader', () => {
     expect(themes.size).toBe(1);
     expect(themes).toMatchInlineSnapshot(`
       Map {
-        "light" => {
+        "light.light" => {
           "isDark": false,
-          "name": "light",
-          "themeOverride": {},
+          "name": "light.light",
+          "themeOverrides": {},
         },
       }
     `);
@@ -34,10 +35,10 @@ describe('fileReader', () => {
     expect(themes.size).toBe(1);
     expect(themes).toMatchInlineSnapshot(`
       Map {
-        "default" => {
+        "default.light" => {
           "isDark": false,
-          "name": "default",
-          "themeOverride": {
+          "name": "default.light",
+          "themeOverrides": {
             "Card": {
               "closeColorHover": "#0000",
               "closeColorPressed": "#0000",

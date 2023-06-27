@@ -2,13 +2,15 @@ import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
 import { type CSSColorValue, type Preset, type Variant, mergeDeep, presetMini, presetUno } from 'unocss';
 import { type ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
 import { kebabCase, setWith } from 'lodash-es';
+import type { FileReaderOptions } from './fileReader';
 import type { BreakpointsType, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
 import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
+import { fileReader } from './fileReader';
 
 const PRESET_NAME = 'un-naive-ui-multi-themes';
 
-export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
+export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends FileReaderOptions {
   /**
    * 插件生成的代码被放置在样式文件的哪个位置
    *
@@ -83,6 +85,13 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
    * @default false
    */
   removeDefaultThemeVariant?: boolean;
+
+  /**
+   * 是否自动引入主题配置文件
+   *
+   * @default false
+   */
+  autoimportThemes?: boolean;
 }
 
 /**
@@ -95,13 +104,13 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> {
  *
  * 此预设建议搭配 `tryRemoveThemeVariant` 使用: @see tryRemoveThemeVariant
  */
-export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
+export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
   options: PresetNaiveThemesOptions<NaiveTheme> = {},
-): Preset<UnoTheme> {
-  const {
+): Promise<Preset<UnoTheme>> {
+  let {
     themes = [
-      { name: 'light', isDark: false, themeOverride: {} },
-      { name: 'dark', isDark: true, themeOverride: {} },
+      { name: 'light', isDark: false, themeOverrides: {} },
+      { name: 'dark', isDark: true, themeOverrides: {} },
     ],
     layerName = PRESET_NAME,
     layerOrder = -10,
@@ -110,7 +119,15 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
     preflight = true,
     extendTheme = true,
     removeDefaultThemeVariant = false,
+    autoimportThemes = false,
+    dir,
+    patterns,
   } = options;
+
+  if (autoimportThemes) {
+    const res = await fileReader({ dir, patterns });
+    themes = Array.from(res.values());
+  }
 
   const parsedRes = themes.map((i) => parseThemes(i, options));
   const colorMap: Map<keyof ThemeCommonVars, `${string}(${string})`> = parsedRes
@@ -133,26 +150,13 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
             layer: layerName,
             getCSS() {
               // 注入css变量
-              return codes.join('\n');
+              const res = codes.join('\n');
+              console.log('🚀 ~ file: unocss-preset.ts:154 ~ getCSS ~ res:', res);
+              return res;
             },
           },
         ]
       : undefined,
-    // options: {
-    //   themes: [
-    //     { name: 'light', isDark: false, themeOverride: {} },
-    //     { name: 'dark', isDark: true, themeOverride: {} },
-    //   ],
-    //   layerName: PRESET_NAME,
-    //   layerOrder: -10,
-    //   breakpoints: 'NaiveUI',
-    //   cssVarPrefix: '',
-    //   preflight: true,
-    //   extendTheme: true,
-    //   selector: 'html',
-    //   attribute: 'class',
-    //   removeDefaultThemeVariant: false,
-    // },
     configResolved: (userconfig) => {
       if (removeDefaultThemeVariant) {
         tryRemoveThemeVariant(userconfig as any);
@@ -243,7 +247,7 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
   const shareDcommon = isDark ? commonDark : commonLight;
   const mergedCommon = {
     ...shareDcommon,
-    ...theme.themeOverride.common,
+    ...theme.themeOverrides.common,
   };
 
   const { mergedSelector } = getSelector(theme, selector || 'html', attribute || 'class');

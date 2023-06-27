@@ -5,11 +5,11 @@ import type { Theme } from './types';
 describe('presetNaiveThemes', () => {
   it('should generate CSS code for light and dark themes', async () => {
     const themes = [
-      { name: 'default.light', isDark: false, themeOverride: {} },
-      { name: 'default.dark', isDark: true, themeOverride: {} },
+      { name: 'default.light', isDark: false, themeOverrides: {} },
+      { name: 'default.dark', isDark: true, themeOverrides: {} },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), presetNaiveThemes({ themes })],
+      presets: [presetUno(), await presetNaiveThemes({ themes })],
     });
     const { css } = await uno.generate(['default.dark:bg-red-500']);
     expect(css).toContain('html.default.light');
@@ -29,11 +29,11 @@ describe('presetNaiveThemes', () => {
 
   it('should generate CSS code with custom selector and attribute', async () => {
     const themes = [
-      { name: 'default.light', isDark: false, themeOverride: {} },
-      { name: 'default.dark', isDark: true, themeOverride: {} },
+      { name: 'default.light', isDark: false, themeOverrides: {} },
+      { name: 'default.dark', isDark: true, themeOverrides: {} },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), presetNaiveThemes({ themes, selector: 'body', attribute: 'data-theme' })],
+      presets: [presetUno(), await presetNaiveThemes({ themes, selector: 'body', attribute: 'data-theme' })],
     });
     const { css } = await uno.generate(['bg-red-500']);
     expect(css).toContain('body[data-theme="default.light"]');
@@ -54,11 +54,14 @@ describe('presetNaiveThemes', () => {
       {
         name: 'light',
         isDark: false,
-        themeOverride: { common: { primaryColor: '#ff0000', successColor: 'hsla(100,100%,50%,0.5)' } },
+        themeOverrides: { common: { primaryColor: '#ff0000', successColor: 'hsla(100,100%,50%,0.5)' } },
       },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), presetNaiveThemes({ themes, cssVarPrefix: 'my-prefix', removeDefaultThemeVariant: !!1 })],
+      presets: [
+        presetUno(),
+        await presetNaiveThemes({ themes, cssVarPrefix: 'my-prefix', removeDefaultThemeVariant: !!1 }),
+      ],
     });
     const { css } = await uno.generate([
       'bg-red-500',
@@ -86,11 +89,11 @@ describe('presetNaiveThemes', () => {
 
   it('should generate CSS code with custom layerName', async () => {
     const themes = [
-      { name: 'default.light', isDark: false, themeOverride: {} },
-      { name: 'default.dark', isDark: true, themeOverride: {} },
+      { name: 'default.light', isDark: false, themeOverrides: {} },
+      { name: 'default.dark', isDark: true, themeOverrides: {} },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), presetNaiveThemes({ themes, layerName: 'my-layer', layerOrder: 100 })],
+      presets: [presetUno(), await presetNaiveThemes({ themes, layerName: 'my-layer', layerOrder: 100 })],
     });
     const { css } = await uno.generate(['bg-red-500']);
     expect(css).toContain('/* layer: my-layer */');
@@ -116,7 +119,7 @@ describe('presetNaiveThemes', () => {
     const uno = createGenerator({
       presets: [
         presetUno(),
-        presetNaiveThemes({
+        await presetNaiveThemes({
           breakpoints: {
             sm: 480,
             md: 768,
@@ -143,6 +146,27 @@ describe('presetNaiveThemes', () => {
       .md\\\\:bg-primary{--un-bg-opacity:1;background-color:rgba(var(--primary-color-value)},var(--un-bg-opacity));}
       }"
     `);
+  });
+
+  it('should auto import themes file', async () => {
+    const options = {
+      dir: './packages/naive-ui-themes/test/fixtures/themes',
+      dts: './packages/naive-ui-themes/test/fixtures/themes.d.ts',
+    };
+    const uno = createGenerator({
+      presets: [tryRemoveThemeVariant(presetUno()), await presetNaiveThemes({ autoimportThemes: !!1, ...options })],
+    });
+
+    const { css } = await uno.generate(['bg-body']);
+    expect(css).toMatchInlineSnapshot(`
+      "/* layer: preflights */
+      *,::before,::after{--un-rotate:0;--un-rotate-x:0;--un-rotate-y:0;--un-rotate-z:0;--un-scale-x:1;--un-scale-y:1;--un-scale-z:1;--un-skew-x:0;--un-skew-y:0;--un-translate-x:0;--un-translate-y:0;--un-translate-z:0;--un-pan-x: ;--un-pan-y: ;--un-pinch-zoom: ;--un-scroll-snap-strictness:proximity;--un-ordinal: ;--un-slashed-zero: ;--un-numeric-figure: ;--un-numeric-spacing: ;--un-numeric-fraction: ;--un-border-spacing-x:0;--un-border-spacing-y:0;--un-ring-offset-shadow:0 0 rgba(0,0,0,0);--un-ring-shadow:0 0 rgba(0,0,0,0);--un-shadow-inset: ;--un-shadow:0 0 rgba(0,0,0,0);--un-ring-inset: ;--un-ring-offset-width:0px;--un-ring-offset-color:#fff;--un-ring-width:0px;--un-ring-color:rgba(147,197,253,0.5);--un-blur: ;--un-brightness: ;--un-contrast: ;--un-drop-shadow: ;--un-grayscale: ;--un-hue-rotate: ;--un-invert: ;--un-saturate: ;--un-sepia: ;--un-backdrop-blur: ;--un-backdrop-brightness: ;--un-backdrop-contrast: ;--un-backdrop-grayscale: ;--un-backdrop-hue-rotate: ;--un-backdrop-invert: ;--un-backdrop-opacity: ;--un-backdrop-saturate: ;--un-backdrop-sepia: ;}::backdrop{--un-rotate:0;--un-rotate-x:0;--un-rotate-y:0;--un-rotate-z:0;--un-scale-x:1;--un-scale-y:1;--un-scale-z:1;--un-skew-x:0;--un-skew-y:0;--un-translate-x:0;--un-translate-y:0;--un-translate-z:0;--un-pan-x: ;--un-pan-y: ;--un-pinch-zoom: ;--un-scroll-snap-strictness:proximity;--un-ordinal: ;--un-slashed-zero: ;--un-numeric-figure: ;--un-numeric-spacing: ;--un-numeric-fraction: ;--un-border-spacing-x:0;--un-border-spacing-y:0;--un-ring-offset-shadow:0 0 rgba(0,0,0,0);--un-ring-shadow:0 0 rgba(0,0,0,0);--un-shadow-inset: ;--un-shadow:0 0 rgba(0,0,0,0);--un-ring-inset: ;--un-ring-offset-width:0px;--un-ring-offset-color:#fff;--un-ring-width:0px;--un-ring-color:rgba(147,197,253,0.5);--un-blur: ;--un-brightness: ;--un-contrast: ;--un-drop-shadow: ;--un-grayscale: ;--un-hue-rotate: ;--un-invert: ;--un-saturate: ;--un-sepia: ;--un-backdrop-blur: ;--un-backdrop-brightness: ;--un-backdrop-contrast: ;--un-backdrop-grayscale: ;--un-backdrop-hue-rotate: ;--un-backdrop-invert: ;--un-backdrop-opacity: ;--un-backdrop-saturate: ;--un-backdrop-sepia: ;}
+      /* layer: un-naive-ui-multi-themes */
+      html.default.light {--name: common;--font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif, \\"Apple Color Emoji\\", \\"Segoe UI Emoji\\", \\"Segoe UI Symbol\\";--font-family-mono: v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace;--font-weight: 400;--font-weight-strong: 500;--cubic-bezier-ease-in-out: cubic-bezier(.4, 0, .2, 1);--cubic-bezier-ease-out: cubic-bezier(0, 0, .2, 1);--cubic-bezier-ease-in: cubic-bezier(.4, 0, 1, 1);--border-radius: 3px;--border-radius-small: 2px;--font-size: 14px;--font-size-mini: 12px;--font-size-tiny: 12px;--font-size-small: 14px;--font-size-medium: 14px;--font-size-large: 15px;--font-size-huge: 16px;--line-height: 1.6;--height-mini: 16px;--height-tiny: 22px;--height-small: 28px;--height-medium: 34px;--height-large: 40px;--height-huge: 46px;--base-color: #FFF;--base-color-value: 255, 255, 255;--primary-color: #2282fc;--primary-color-value: 34, 130, 252;--primary-color-hover: #499DFD;--primary-color-hover-value: 73, 157, 253;--primary-color-pressed: #1560D0;--primary-color-pressed-value: 21, 96, 208;--primary-color-suppl: #499DFD;--primary-color-suppl-value: 73, 157, 253;--info-color: #2080f0;--info-color-value: 32, 128, 240;--info-color-hover: #4098fc;--info-color-hover-value: 64, 152, 252;--info-color-pressed: #1060c9;--info-color-pressed-value: 16, 96, 201;--info-color-suppl: #4098fc;--info-color-suppl-value: 64, 152, 252;--success-color: #18a058;--success-color-value: 24, 160, 88;--success-color-hover: #36ad6a;--success-color-hover-value: 54, 173, 106;--success-color-pressed: #0c7a43;--success-color-pressed-value: 12, 122, 67;--success-color-suppl: #36ad6a;--success-color-suppl-value: 54, 173, 106;--warning-color: #f0a020;--warning-color-value: 240, 160, 32;--warning-color-hover: #fcb040;--warning-color-hover-value: 252, 176, 64;--warning-color-pressed: #c97c10;--warning-color-pressed-value: 201, 124, 16;--warning-color-suppl: #fcb040;--warning-color-suppl-value: 252, 176, 64;--error-color: #d03050;--error-color-value: 208, 48, 80;--error-color-hover: #de576d;--error-color-hover-value: 222, 87, 109;--error-color-pressed: #ab1f3f;--error-color-pressed-value: 171, 31, 63;--error-color-suppl: #de576d;--error-color-suppl-value: 222, 87, 109;--text-color-base: #000;--text-color-base-value: 0, 0, 0;--text-color-1: rgb(31, 34, 37);--text-color-1-value: 31, 34, 37;--text-color-2: rgb(51, 54, 57);--text-color-2-value: 51, 54, 57;--text-color-3: rgb(118, 124, 130);--text-color-3-value: 118, 124, 130;--text-color-disabled: rgba(194, 194, 194, 1);--text-color-disabled-value: 194, 194, 194;--placeholder-color: rgba(194, 194, 194, 1);--placeholder-color-value: 194, 194, 194;--placeholder-color-disabled: rgba(209, 209, 209, 1);--placeholder-color-disabled-value: 209, 209, 209;--icon-color: rgba(194, 194, 194, 1);--icon-color-value: 194, 194, 194;--icon-color-hover: rgba(146, 146, 146, 1);--icon-color-hover-value: 146, 146, 146;--icon-color-pressed: rgba(175, 175, 175, 1);--icon-color-pressed-value: 175, 175, 175;--icon-color-disabled: rgba(209, 209, 209, 1);--icon-color-disabled-value: 209, 209, 209;--opacity-1: 0.82;--opacity-2: 0.72;--opacity-3: 0.38;--opacity-4: 0.24;--opacity-5: 0.18;--divider-color: rgb(239, 239, 245);--divider-color-value: 239, 239, 245;--border-color: rgb(224, 224, 230);--border-color-value: 224, 224, 230;--close-icon-color: rgba(102, 102, 102, 1);--close-icon-color-value: 102, 102, 102;--close-icon-color-hover: rgba(102, 102, 102, 1);--close-icon-color-hover-value: 102, 102, 102;--close-icon-color-pressed: rgba(102, 102, 102, 1);--close-icon-color-pressed-value: 102, 102, 102;--close-color-hover: rgba(0, 0, 0, .09);--close-color-hover-value: 0, 0, 0;--close-color-pressed: rgba(0, 0, 0, .13);--close-color-pressed-value: 0, 0, 0;--clear-color: rgba(194, 194, 194, 1);--clear-color-value: 194, 194, 194;--clear-color-hover: rgba(146, 146, 146, 1);--clear-color-hover-value: 146, 146, 146;--clear-color-pressed: rgba(175, 175, 175, 1);--clear-color-pressed-value: 175, 175, 175;--scrollbar-color: rgba(0, 0, 0, 0.25);--scrollbar-color-value: 0, 0, 0;--scrollbar-color-hover: rgba(0, 0, 0, 0.4);--scrollbar-color-hover-value: 0, 0, 0;--scrollbar-width: 8px;--scrollbar-height: 8px;--scrollbar-border-radius: 5px;--progress-rail-color: rgba(235, 235, 235, 1);--progress-rail-color-value: 235, 235, 235;--rail-color: rgb(219, 219, 223);--rail-color-value: 219, 219, 223;--popover-color: #fff;--popover-color-value: 255, 255, 255;--table-color: #fff;--table-color-value: 255, 255, 255;--card-color: #fff;--card-color-value: 255, 255, 255;--modal-color: #fff;--modal-color-value: 255, 255, 255;--body-color: #d6eafa;--body-color-value: 214, 234, 250;--tag-color: #eee;--tag-color-value: 238, 238, 238;--avatar-color: rgba(204, 204, 204, 1);--avatar-color-value: 204, 204, 204;--inverted-color: rgb(0, 20, 40);--inverted-color-value: 0, 20, 40;--input-color: rgba(255, 255, 255, 1);--input-color-value: 255, 255, 255;--code-color: rgb(244, 244, 248);--code-color-value: 244, 244, 248;--tab-color: rgb(247, 247, 250);--tab-color-value: 247, 247, 250;--action-color: rgb(250, 250, 252);--action-color-value: 250, 250, 252;--table-header-color: rgb(250, 250, 252);--table-header-color-value: 250, 250, 252;--hover-color: rgb(243, 243, 245);--hover-color-value: 243, 243, 245;--table-color-hover: rgba(0, 0, 100, 0.03);--table-color-hover-value: 0, 0, 100;--table-color-striped: rgba(0, 0, 100, 0.02);--table-color-striped-value: 0, 0, 100;--pressed-color: rgb(237, 237, 239);--pressed-color-value: 237, 237, 239;--opacity-disabled: 0.5;--input-color-disabled: rgb(250, 250, 252);--input-color-disabled-value: 250, 250, 252;--button-color-2: rgba(46, 51, 56, .05);--button-color-2-value: 46, 51, 56;--button-color-2-hover: rgba(46, 51, 56, .09);--button-color-2-hover-value: 46, 51, 56;--button-color-2-pressed: rgba(46, 51, 56, .13);--button-color-2-pressed-value: 46, 51, 56;--box-shadow-1: 0 1px 2px -2px rgba(0, 0, 0, .08), 0 3px 6px 0 rgba(0, 0, 0, .06), 0 5px 12px 4px rgba(0, 0, 0, .04);--box-shadow-2: 0 3px 6px -4px rgba(0, 0, 0, .12), 0 6px 16px 0 rgba(0, 0, 0, .08), 0 9px 28px 8px rgba(0, 0, 0, .05);--box-shadow-3: 0 6px 16px -9px rgba(0, 0, 0, .08), 0 9px 28px 0 rgba(0, 0, 0, .05), 0 12px 48px 16px rgba(0, 0, 0, .03);--layout-sider-color: #ffffff;--layout-sider-color-value: 255, 255, 255;--layout-header-color: #2282fc;--layout-header-color-value: 34, 130, 252;--layout-tab-color: #ffffff;--layout-tab-color-value: 255, 255, 255;--scrollbar-track-color: transparent;--scrollbar-thumb-color: #e1e1e1;--scrollbar-thumb-color-value: 225, 225, 225;--scrollbar-track-radius: 8px;--scrollbar-thumb-radius: 8px;}
+      /* layer: default */
+      .bg-body{--un-bg-opacity:1;background-color:rgba(var(--body-color-value)},var(--un-bg-opacity));}"
+    `);
+    expect(css).to.include('--scrollbar-thumb-color');
   });
 });
 

@@ -2,12 +2,12 @@ import path from 'path';
 import type { ModuleNode, Plugin } from 'vite';
 import { normalizePath } from 'vite';
 import type { Theme } from './types';
-import { fileReader } from './fileReader';
+import { type FileReaderOptions, fileReader } from './fileReader';
 import { patchWriteFile } from './utils';
 
 const PLUGIN_NAME = 'vite-plugin-naive-ui-multi-theme';
 
-export interface NaiveMultiThemeOptions {
+export interface NaiveMultiThemeOptions extends FileReaderOptions {
   /**
    * 主题 对应的类名\属性 被应用的选择器
    *
@@ -28,28 +28,12 @@ export interface NaiveMultiThemeOptions {
    * @default 'auto-naive-theme.d.ts'
    */
   dts?: boolean | string;
-
-  /**
-   * 搜索文件的glob模式, 注意这些是同构文件, 会被Node和客户端共享
-   *
-   * 因此，当你使用非json格式时，不要引用Node的API，也不要引用浏览器的API
-   *
-   * @default ['*.(light|dark).(json|js|ts|cjs|mjs)']
-   */
-  patterns?: string[];
-
-  /**
-   * 主题文件夹路径
-   *
-   * @default './src/themes'
-   */
-  dir: string;
 }
 
 export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise<Plugin> {
   const {
     dts = 'auto-naive-theme.d.ts',
-    patterns = ['*.(light|dark).(json|js|ts|cjs|mjs)', '(light|dark).json'],
+    patterns = ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'],
     dir = './src/themes',
     attribute = 'class',
     selector = 'html',
@@ -144,8 +128,12 @@ async function genDtsFile(
     const dtsContent = virtualModuleIdList.map(
       (id) => `declare module '${id}' {
   import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui';
+  import type { UseColorModeReturn } from '@vueuse/core';
+  import type { ComputedRef } from 'vue';
 
-  export type ThemeType = ${Array.from(themes.keys()).join(' | ')};
+  export type ThemeType = ${Array.from(themes.keys())
+    .map((i) => `'${i}'`)
+    .join(' | ')};
 
   export interface Theme {
     name: ThemeType;
@@ -154,11 +142,11 @@ async function genDtsFile(
   }
 
   export interface UseThemeReturns {
-    state: ThemeType;
+    colorMode: UseColorModeReturn<ThemeType>;
     setTheme: (theme: ThemeType) => void;
-    isDark: boolean;
-    currentTheme: GlobalTheme;
-    currentThemeOverrides: GlobalThemeOverrides;
+    isDark: ComputedRef<boolean>;
+    currentTheme: ComputedRef<GlobalTheme>;
+    currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
   declare const themes: Array<Theme>;
@@ -190,8 +178,8 @@ async function genRuntimeCode(themes: Map<string, Theme>, attribute = 'class', s
 
   export function useTheme(initialValue = 'light') {
     const modes = unref(themes).map((i) => {
-      const name = i.name;
-      return [name, name];
+      const val = ${attribute === 'class' ? `i.name.replace('.', ' ')` : `i.name`};
+      return [i.name, val];
     });
 
     const options = {

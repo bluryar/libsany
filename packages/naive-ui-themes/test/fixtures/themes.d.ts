@@ -1,7 +1,9 @@
 declare module 'virtual:naive-ui-theme' {
   import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui';
+  import type { UseColorModeReturn } from '@vueuse/core';
+  import type { ComputedRef } from 'vue';
 
-  export type ThemeType = light;
+  export type ThemeType = 'light.light';
 
   export interface Theme {
     name: ThemeType;
@@ -10,11 +12,11 @@ declare module 'virtual:naive-ui-theme' {
   }
 
   export interface UseThemeReturns {
-    state: ThemeType;
+    colorMode: UseColorModeReturn<ThemeType>;
     setTheme: (theme: ThemeType) => void;
-    isDark: boolean;
-    currentTheme: GlobalTheme;
-    currentThemeOverrides: GlobalThemeOverrides;
+    isDark: ComputedRef<boolean>;
+    currentTheme: ComputedRef<GlobalTheme>;
+    currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
   declare const themes: Array<Theme>;
@@ -25,8 +27,10 @@ declare module 'virtual:naive-ui-theme' {
 
 declare module '~naive-ui-theme' {
   import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui';
+  import type { UseColorModeReturn } from '@vueuse/core';
+  import type { ComputedRef } from 'vue';
 
-  export type ThemeType = light;
+  export type ThemeType = 'light.light';
 
   export interface Theme {
     name: ThemeType;
@@ -35,11 +39,11 @@ declare module '~naive-ui-theme' {
   }
 
   export interface UseThemeReturns {
-    state: ThemeType;
+    colorMode: UseColorModeReturn<ThemeType>;
     setTheme: (theme: ThemeType) => void;
-    isDark: boolean;
-    currentTheme: GlobalTheme;
-    currentThemeOverrides: GlobalThemeOverrides;
+    isDark: ComputedRef<boolean>;
+    currentTheme: ComputedRef<GlobalTheme>;
+    currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
   declare const themes: Array<Theme>;

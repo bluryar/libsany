@@ -24,7 +24,7 @@
     "dev": "concurrently \"npm:dev:vue-ts\"",
     "dev:vue-ts": "nr -F ./playgrounds/vue-ts dev",
     "build": "nr -r build",
-    "build:pkg": "nr -F ./packages/* build",
+    "build:pkg": "pnpm run -F ./packages/** build",
     "stub": "nr -r stub",
     "test": "vitest",
     "check:types": "tsc --noEmit",

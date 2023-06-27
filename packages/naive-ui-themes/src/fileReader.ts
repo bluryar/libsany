@@ -1,8 +1,8 @@
 import path from 'path';
 import { mkdir, readdir, writeFile } from 'fs/promises';
-import { pathToFileURL } from 'url';
-import { loadModule } from 'mlly';
+import { evalModule } from 'mlly';
 import fg from 'fast-glob';
+import { build } from 'esbuild';
 import type { Theme } from './types';
 
 export interface FileReaderOptions {
@@ -20,7 +20,7 @@ export interface FileReaderOptions {
    *
    * @default './src/themes'
    */
-  dir: string;
+  dir?: string;
 }
 
 /**
@@ -29,7 +29,7 @@ export interface FileReaderOptions {
  * @param options 配置
  */
 export async function fileReader(options?: FileReaderOptions) {
-  const { patterns = ['*.(light|dark).(json|js|ts|cjs|mjs)', '(light|dark).json'], dir = './src/themes' } =
+  const { patterns = ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'], dir = './src/themes' } =
     options ?? {};
 
   const resolvedDir = path.resolve(process.cwd(), dir);
@@ -64,30 +64,51 @@ export async function fileReader(options?: FileReaderOptions) {
 
   // collect themes
   const themes = new Map<string, Theme>();
-  for (const file of files) {
-    let [, themeName = '', dark = ''] = path.basename(file).match(/(\w+)?\.?(light|dark)\.(json|js|ts|cjs|mjs)$/) || [];
-    if (dark === '') {
-      continue;
-    }
-    if (themeName === '') {
-      themeName = dark;
-    }
-    const isDark = dark === 'dark';
-    try {
-      const url = pathToFileURL(path.resolve(resolvedDir, file));
-
-      const themeOverride = await loadModule(url.toString());
-
-      if ('default' in themeOverride) {
-        themes.set(themeName, { name: themeName, isDark, themeOverride: themeOverride.default });
-      } else {
-        throw new Error('default not found');
+  await Promise.all(
+    files.map(async (file) => {
+      let [, themeName = '', dark = ''] = path.basename(file).match(/(\w+)?\.?(light|dark)\.(json|js|ts)$/) || [];
+      if (dark === '') {
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
+      if (themeName === '') {
+        themeName = dark;
+      }
+      const isDark = dark === 'dark';
+      try {
+        const _file = path.resolve(resolvedDir, file);
 
+        const modules = await build({
+          write: !!0,
+          format: 'esm',
+          bundle: !!1,
+          entryPoints: [_file],
+          loader: {
+            '.json': 'json',
+            '.ts': 'ts',
+            '.js': 'js',
+            '.mjs': 'js',
+            '.cjs': 'js',
+            '.mts': 'ts',
+            '.cts': 'ts',
+          },
+        });
+
+        const themeOverride = await evalModule(modules.outputFiles[0].text);
+
+        if ('default' in themeOverride) {
+          themes.set(`${themeName}.${dark}`, {
+            name: `${themeName}.${dark}`,
+            isDark,
+            themeOverrides: themeOverride.default,
+          });
+        } else {
+          throw new Error('default not found');
+        }
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    }),
+  );
   return themes;
 }

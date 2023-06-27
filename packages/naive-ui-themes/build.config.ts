@@ -45,5 +45,7 @@ export default defineBuildConfig({
     'unocss',
     'naive-ui',
     'fast-glob',
+    'mlly',
+    'esbuild',
   ],
 });

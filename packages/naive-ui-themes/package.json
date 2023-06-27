@@ -40,7 +40,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "cross-env NODE_ENV=production unbuild",
+    "build": "unbuild",
     "bump:major": "npx bumpp major --no-commit --no-tag --no-push --yes",
     "bump:minor": "npx bumpp minor --no-commit --no-tag --no-push --yes",
     "bump:patch": "npx bumpp patch --no-commit --no-tag --no-push --yes",
@@ -65,12 +65,15 @@
   },
   "devDependencies": {
     "@vueuse/core": "^10.1.2",
+    "esbuild": "^0.18.10",
     "fast-glob": "^3.2.12",
     "import-fresh": "^3.3.0",
     "mlly": "^1.4.0",
     "naive-ui": "^2.34.4",
     "unocss": "^0.53.1",
     "vite": "^4.3.9",
+    "vite-plugin-inspect": "^0.7.29",
+    "vite-plugin-vue-inspector": "^3.4.2",
     "vue": "^3.0.0"
   },
   "publishConfig": {
