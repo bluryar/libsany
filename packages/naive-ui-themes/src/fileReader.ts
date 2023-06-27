@@ -1,5 +1,7 @@
 import path from 'path';
 import { mkdir, readdir, writeFile } from 'fs/promises';
+import { pathToFileURL } from 'url';
+import { loadModule } from 'mlly';
 import fg from 'fast-glob';
 import type { Theme } from './types';
 
@@ -72,9 +74,10 @@ export async function fileReader(options?: FileReaderOptions) {
     }
     const isDark = dark === 'dark';
     try {
-      const url =
-        path.resolve(resolvedDir, file) + '?timestamp=' + Date.now() + Math.random().toString().replace('.', '');
-      const themeOverride = await import(url);
+      const url = pathToFileURL(path.resolve(resolvedDir, file));
+
+      const themeOverride = await loadModule(url.toString());
+
       if ('default' in themeOverride) {
         themes.set(themeName, { name: themeName, isDark, themeOverride: themeOverride.default });
       } else {
