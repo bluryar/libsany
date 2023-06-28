@@ -5,12 +5,20 @@
     "composite": true,
     "moduleResolution": "node",
     "types": [
-      "naive-ui/volar"
-    ]
+      "naive-ui/volar",
+      "vite/client"
+    ],
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   },
   "include": [
-    "./",
-    "./**/*.vue"
+    "./*.ts",
+    "./src",
+    "./src/**/*.vue",
+    "./src/**/*.json"
   ],
   "vueCompilerOptions": {
     "target": 3.3

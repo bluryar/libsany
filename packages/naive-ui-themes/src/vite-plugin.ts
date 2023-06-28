@@ -1,8 +1,8 @@
-import path from 'path';
+import path from 'node:path';
 import type { ModuleNode, Plugin } from 'vite';
 import { normalizePath } from 'vite';
 import type { Theme } from './types';
-import { type FileReaderOptions, fileReader } from './fileReader';
+import { type FileReaderOptions, unsafeFileReaderSync } from './fileReader';
 import { patchWriteFile } from './utils';
 
 const PLUGIN_NAME = 'vite-plugin-naive-ui-multi-theme';
@@ -33,7 +33,7 @@ export interface NaiveMultiThemeOptions extends FileReaderOptions {
 export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise<Plugin> {
   const {
     dts = 'auto-naive-theme.d.ts',
-    patterns = ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'],
+    patterns = ['*.(light|dark).json', '(light|dark).json'],
     dir = './src/themes',
     attribute = 'class',
     selector = 'html',
@@ -108,14 +108,14 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   };
 }
 
-async function scanThemesDir(dir: string, patterns: string[], themes: Map<string, Theme>) {
-  const res = await fileReader({
+function scanThemesDir(dir: string, patterns: string[], themes: Map<string, Theme>) {
+  const { themes: _themes } = unsafeFileReaderSync({
     dir,
     patterns,
   });
   themes.clear();
-  for (const [k, v] of res) {
-    themes.set(k, v);
+  for (const theme of _themes) {
+    themes.set(theme.name, theme);
   }
 }
 

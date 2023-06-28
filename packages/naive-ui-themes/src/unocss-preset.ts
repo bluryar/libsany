@@ -2,11 +2,10 @@ import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
 import { type CSSColorValue, type Preset, type Variant, mergeDeep, presetMini, presetUno } from 'unocss';
 import { type ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
 import { kebabCase, setWith } from 'lodash-es';
-import type { FileReaderOptions } from './fileReader';
+import { type FileReaderOptions, unsafeFileReaderSync } from './fileReader';
 import type { BreakpointsType, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
 import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
-import { fileReader } from './fileReader';
 
 const PRESET_NAME = 'un-naive-ui-multi-themes';
 
@@ -21,7 +20,7 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
   /**
    * 最终生成CSS代码的位置
    *
-   * @default -10
+   * @default 1
    */
   layerOrder?: number;
 
@@ -76,17 +75,6 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
   extendTheme?: boolean;
 
   /**
-   * 是否删除 presetMini 和 presetWind 的 light\.light\@light 等默认的variant
-   *
-   * 默认不开启
-   *
-   * 当你确定会使用 dark 和 light 作为主题相关的variant时， 设置为 true 可以避免原本应该传递给本预设的 variants 的rules 被其他预设的 variants "拦截"
-   *
-   * @default false
-   */
-  removeDefaultThemeVariant?: boolean;
-
-  /**
    * 是否自动引入主题配置文件
    *
    * @default false
@@ -104,29 +92,31 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
  *
  * 此预设建议搭配 `tryRemoveThemeVariant` 使用: @see tryRemoveThemeVariant
  */
-export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
+export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
   options: PresetNaiveThemesOptions<NaiveTheme> = {},
-): Promise<Preset<UnoTheme>> {
+): Preset<UnoTheme> {
+  console.warn('🚀 ~ file: unocss-preset.ts:11 ~ PRESET_NAME:', PRESET_NAME);
   let {
     themes = [
       { name: 'light', isDark: false, themeOverrides: {} },
       { name: 'dark', isDark: true, themeOverrides: {} },
     ],
     layerName = PRESET_NAME,
-    layerOrder = -10,
+    layerOrder = 1,
     breakpoints = 'NaiveUI',
     cssVarPrefix = '',
     preflight = true,
     extendTheme = true,
-    removeDefaultThemeVariant = false,
     autoimportThemes = false,
     dir,
     patterns,
   } = options;
 
+  let files: string[] = [];
   if (autoimportThemes) {
-    const res = await fileReader({ dir, patterns });
-    themes = Array.from(res.values());
+    const { themes: _themes, files: _files } = unsafeFileReaderSync({ dir, patterns });
+    themes = Array.from(_themes);
+    files = _files;
   }
 
   const parsedRes = themes.map((i) => parseThemes(i, options));
@@ -139,7 +129,6 @@ export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme exten
   return {
     name: PRESET_NAME,
     variants: variants,
-    enforce: 'post',
     layers: {
       [layerName]: layerOrder,
     },
@@ -148,20 +137,10 @@ export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme exten
       ? [
           {
             layer: layerName,
-            getCSS() {
-              // 注入css变量
-              const res = codes.join('\n');
-              console.log('🚀 ~ file: unocss-preset.ts:154 ~ getCSS ~ res:', res);
-              return res;
-            },
+            getCSS: () => codes.join('\n'),
           },
         ]
       : undefined,
-    configResolved: (userconfig) => {
-      if (removeDefaultThemeVariant) {
-        tryRemoveThemeVariant(userconfig as any);
-      }
-    },
   };
 }
 
@@ -226,9 +205,10 @@ function getExtendTheme<UnoTheme extends UnoThemeType = {}>(
     } satisfies UnoThemeType;
 
     const merged = mergeDeep(theme, customTheme);
+    console.warn('🚀 ~ file: unocss-preset.ts:207 ~ return ~ merged:', merged);
 
     if (typeof breakpoints === 'object') {
-      merged.breakpoints = breakpoints;
+      merged.breakpoints = breakpoints as any;
     } else if (breakpoints) {
       merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
     }
@@ -269,6 +249,7 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
 
   const code = `${mergedSelector} {${cssRules.join('')}}`;
 
+  console.warn('🚀 ~ file: unocss-preset.ts:251 ~ code:', code);
   const variant = variantMatcher(theme.name, (input) => ({
     prefix: `${mergedSelector} $$ ${input.prefix}`,
     layer: layerName,

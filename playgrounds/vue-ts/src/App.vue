@@ -1,8 +1,8 @@
 <script setup lang="tsx">
 import { useTheme } from '~naive-ui-theme';
 
-const res = useTheme('default.dark');
-res.setTheme('default.dark');
+const res = useTheme('light');
+res.setTheme('light');
 console.log('🚀 ~ file: App.vue:6 ~ res:', res);
 </script>
 

@@ -1,4 +1,5 @@
 import { createGenerator, presetMini, presetUno } from 'unocss';
+import { describe, expect, it } from 'vitest';
 import { presetNaiveThemes, tryRemoveThemeVariant } from './unocss-preset';
 import type { Theme } from './types';
 
@@ -9,7 +10,7 @@ describe('presetNaiveThemes', () => {
       { name: 'default.dark', isDark: true, themeOverrides: {} },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), await presetNaiveThemes({ themes })],
+      presets: [presetUno(), presetNaiveThemes({ themes })],
     });
     const { css } = await uno.generate(['default.dark:bg-red-500']);
     expect(css).toContain('html.default.light');
@@ -33,7 +34,7 @@ describe('presetNaiveThemes', () => {
       { name: 'default.dark', isDark: true, themeOverrides: {} },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), await presetNaiveThemes({ themes, selector: 'body', attribute: 'data-theme' })],
+      presets: [presetUno(), presetNaiveThemes({ themes, selector: 'body', attribute: 'data-theme' })],
     });
     const { css } = await uno.generate(['bg-red-500']);
     expect(css).toContain('body[data-theme="default.light"]');
@@ -58,10 +59,7 @@ describe('presetNaiveThemes', () => {
       },
     ];
     const uno = createGenerator({
-      presets: [
-        presetUno(),
-        await presetNaiveThemes({ themes, cssVarPrefix: 'my-prefix', removeDefaultThemeVariant: !!1 }),
-      ],
+      presets: [tryRemoveThemeVariant(presetUno()), presetNaiveThemes({ themes, cssVarPrefix: 'my-prefix' })],
     });
     const { css } = await uno.generate([
       'bg-red-500',
@@ -93,7 +91,7 @@ describe('presetNaiveThemes', () => {
       { name: 'default.dark', isDark: true, themeOverrides: {} },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), await presetNaiveThemes({ themes, layerName: 'my-layer', layerOrder: 100 })],
+      presets: [presetUno(), presetNaiveThemes({ themes, layerName: 'my-layer', layerOrder: 100 })],
     });
     const { css } = await uno.generate(['bg-red-500']);
     expect(css).toContain('/* layer: my-layer */');
@@ -119,7 +117,7 @@ describe('presetNaiveThemes', () => {
     const uno = createGenerator({
       presets: [
         presetUno(),
-        await presetNaiveThemes({
+        presetNaiveThemes({
           breakpoints: {
             sm: 480,
             md: 768,
@@ -154,7 +152,7 @@ describe('presetNaiveThemes', () => {
       dts: './packages/naive-ui-themes/test/fixtures/themes.d.ts',
     };
     const uno = createGenerator({
-      presets: [tryRemoveThemeVariant(presetUno()), await presetNaiveThemes({ autoimportThemes: !!1, ...options })],
+      presets: [tryRemoveThemeVariant(presetUno()), presetNaiveThemes({ autoimportThemes: !!1, ...options })],
     });
 
     const { css } = await uno.generate(['bg-body']);

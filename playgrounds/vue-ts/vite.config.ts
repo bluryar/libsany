@@ -1,17 +1,15 @@
 import { URL, fileURLToPath } from 'node:url';
+
 import dotenv from 'dotenv';
 import Unocss from '@unocss/vite';
-import { presetUno } from 'unocss';
-import { naiveMultiTheme, presetNaiveThemes, tryRemoveThemeVariant } from '@bluryar/naive-ui-themes';
-import AutoImport from 'unplugin-auto-import/vite';
-import Components from 'unplugin-vue-components/vite';
-import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
-import Inspector from 'vite-plugin-vue-inspector';
-import Inspect from 'vite-plugin-inspect/dist/index';
+
+import { naiveMultiTheme } from '@bluryar/naive-ui-themes';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
+
+// import unocssConfig from './unocss.config';
 
 dotenv.config({ path: '../../.env' });
 
@@ -26,47 +24,42 @@ export default defineConfig({
     vue(),
     vueJsx(),
     Unocss({
-      presets: [
-        tryRemoveThemeVariant(presetUno()),
-        await presetNaiveThemes({ ...fileReaderOptions, autoimportThemes: !!1 }),
-      ],
+      // ...unocssConfig,
+      // configFile: false,
     }),
     naiveMultiTheme({ ...fileReaderOptions }),
-    Inspector({
-      enabled: !!1,
-      vue: 3,
-      toggleButtonVisibility: 'always',
-    }),
-    Inspect(),
-    AutoImport({
-      imports: [
-        'vue',
-        'vue-router',
-        'pinia',
-        '@vueuse/core',
-        {
-          'vue-request': ['useRequest'],
-        },
-      ],
-      dts: 'src/types/auto-imports.d.ts',
-      eslintrc: {
-        enabled: true,
-        filepath: './.eslintrc-auto-import.json',
-      },
-    }),
-    Components({
-      // globs: ['src/components/*.{vue}'],
-      dirs: ['src/components'],
-      deep: !!0,
-      resolvers: [NaiveUiResolver()],
-      dts: 'src/types/components.d.ts',
-    }),
+
+    // Inspect(),
+    // AutoImport({
+    //   imports: [
+    //     'vue',
+    //     'vue-router',
+    //     'pinia',
+    //     '@vueuse/core',
+    //     {
+    //       'vue-request': ['useRequest'],
+    //     },
+    //   ],
+    //   dts: 'src/types/auto-imports.d.ts',
+    //   eslintrc: {
+    //     enabled: true,
+    //     filepath: './.eslintrc-auto-import.json',
+    //   },
+    // }),
+    // Components({
+    //   // globs: ['src/components/*.{vue}'],
+    //   dirs: ['src/components'],
+    //   deep: !!0,
+    //   resolvers: [NaiveUiResolver()],
+    //   dts: 'src/types/components.d.ts',
+    // }),
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@bluryar/shared': fileURLToPath(new URL('../../packages/shared/', import.meta.url)),
-      '@bluryar/composables': fileURLToPath(new URL('../../packages/composables/', import.meta.url)),
+      '@bluryar/shared': fileURLToPath(new URL('../../packages/shared/index.ts', import.meta.url)),
+      '@bluryar/composables': fileURLToPath(new URL('../../packages/composables/index.ts', import.meta.url)),
+      '@bluryar/naive-ui-themes': fileURLToPath(new URL('../../packages/naive-ui-themes/index.ts', import.meta.url)),
     },
   },
   define: {

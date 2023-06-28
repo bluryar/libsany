@@ -9,7 +9,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineBuildConfig({
-  entries: ['src/index'],
+  entries: ['src/index', 'src/unocss-preset', 'src/vite-plugin', 'src/fileReader'],
 
   replace: {
     'import.meta.vitest': 'undefined',
@@ -36,16 +36,15 @@ export default defineBuildConfig({
   },
 
   externals: [
-    'vue',
-    'lodash-es',
-    'vue-demi',
-    '@vueuse/core',
-    '@unocss/preset-mini',
-    'vite',
-    'unocss',
-    'naive-ui',
-    'fast-glob',
-    'mlly',
-    'esbuild',
+    // 'vue',
+    // 'lodash-es',
+    // '@vueuse/core',
+    // '@unocss/preset-mini',
+    // 'vite',
+    // 'unocss',
+    // 'naive-ui',
+    // 'fast-glob',
+    // 'mlly',
+    // 'esbuild',
   ],
 });

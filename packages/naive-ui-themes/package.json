@@ -30,6 +30,21 @@
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
+    },
+    "./dist/unocss-preset": {
+      "types": "./dist/unocss-preset.d.ts",
+      "require": "./dist/unocss-preset.cjs",
+      "import": "./dist/unocss-preset.mjs"
+    },
+    "./dist/vite-plugin": {
+      "types": "./dist/vite-plugin.d.ts",
+      "require": "./dist/vite-plugin.cjs",
+      "import": "./dist/vite-plugin.mjs"
+    },
+    "./dist/fileReader": {
+      "types": "./dist/fileReader.d.ts",
+      "require": "./dist/fileReader.cjs",
+      "import": "./dist/fileReader.mjs"
     }
   },
   "main": "./dist/index.cjs",
@@ -48,34 +63,16 @@
     "stub": "unbuild --stub"
   },
   "peerDependencies": {
-    "@vue/composition-api": "^1.0.0-rc.1",
-    "@vueuse/core": ">=10.0.0",
+    "esbuild": ">=0.14.10",
+    "fast-glob": ">=3.0.0",
     "lodash-es": ">=4.0.0",
-    "naive-ui": ">=2.30.0",
-    "unocss": ">=0.53.0",
-    "vue": "^2.0.0 || >=3.0.0"
+    "mlly": ">=1.0.0",
+    "naive-ui": ">=2.0.0",
+    "unocss": ">=0.50.0",
+    "vite": ">=4.0.0",
+    "vue": ">=3.0.0"
   },
-  "peerDependenciesMeta": {
-    "@vue/composition-api": {
-      "optional": true
-    }
-  },
-  "dependencies": {
-    "vue-demi": "latest"
-  },
-  "devDependencies": {
-    "@vueuse/core": "^10.1.2",
-    "esbuild": "^0.18.10",
-    "fast-glob": "^3.2.12",
-    "import-fresh": "^3.3.0",
-    "mlly": "^1.4.0",
-    "naive-ui": "^2.34.4",
-    "unocss": "^0.53.1",
-    "vite": "^4.3.9",
-    "vite-plugin-inspect": "^0.7.29",
-    "vite-plugin-vue-inspector": "^3.4.2",
-    "vue": "^3.0.0"
-  },
+  "devDependencies": {},
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

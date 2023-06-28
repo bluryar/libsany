@@ -1,7 +1,9 @@
 import type { GlobalThemeOverrides } from 'naive-ui';
 
+console.warn('hello world');
+
 export default {
   common: {
-    heightMini: '100px',
+    heightMini: '10120px',
   },
 } satisfies GlobalThemeOverrides;
