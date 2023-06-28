@@ -1,12 +1,9 @@
 import { URL, fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import Unocss from '@unocss/vite';
-import { presetUno } from 'unocss';
-import { naiveMultiTheme, presetNaiveThemes, tryRemoveThemeVariant } from '@bluryar/naive-ui-themes';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
-import Inspector from 'vite-plugin-vue-inspector';
 import Inspect from 'vite-plugin-inspect/dist/index';
 
 import { defineConfig } from 'vite';
@@ -16,6 +13,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 dotenv.config({ path: '../../.env' });
 
 const fileReaderOptions = {
+  patterns: ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'],
   dir: './src/themes',
   dts: './src/types/auto-naive-theme.d.ts',
 };
@@ -25,18 +23,8 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
-    Unocss({
-      presets: [
-        tryRemoveThemeVariant(presetUno()),
-        await presetNaiveThemes({ ...fileReaderOptions, autoimportThemes: !!1 }),
-      ],
-    }),
-    naiveMultiTheme({ ...fileReaderOptions }),
-    Inspector({
-      enabled: !!1,
-      vue: 3,
-      toggleButtonVisibility: 'always',
-    }),
+    Unocss(),
+    // naiveMultiTheme({ ...fileReaderOptions }),
     Inspect(),
     AutoImport({
       imports: [

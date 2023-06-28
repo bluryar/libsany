@@ -2,15 +2,15 @@ import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
 import { type CSSColorValue, type Preset, type Variant, mergeDeep, presetMini, presetUno } from 'unocss';
 import { type ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
 import { kebabCase, setWith } from 'lodash-es';
-import type { FileReaderOptions } from './fileReader';
+import { fileReader } from './fileReader'
+import type { FileReaderOptions } from './fileReader'
 import type { BreakpointsType, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
 import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
-import { fileReader } from './fileReader';
 
 const PRESET_NAME = 'un-naive-ui-multi-themes';
 
-export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends FileReaderOptions {
+export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends FileReaderOptions{
   /**
    * 插件生成的代码被放置在样式文件的哪个位置
    *
@@ -76,17 +76,6 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
   extendTheme?: boolean;
 
   /**
-   * 是否删除 presetMini 和 presetWind 的 light\.light\@light 等默认的variant
-   *
-   * 默认不开启
-   *
-   * 当你确定会使用 dark 和 light 作为主题相关的variant时， 设置为 true 可以避免原本应该传递给本预设的 variants 的rules 被其他预设的 variants "拦截"
-   *
-   * @default false
-   */
-  removeDefaultThemeVariant?: boolean;
-
-  /**
    * 是否自动引入主题配置文件
    *
    * @default false
@@ -118,15 +107,15 @@ export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme exten
     cssVarPrefix = '',
     preflight = true,
     extendTheme = true,
-    removeDefaultThemeVariant = false,
-    autoimportThemes = false,
-    dir,
-    patterns,
+    autoimportThemes = false
   } = options;
 
-  if (autoimportThemes) {
-    const res = await fileReader({ dir, patterns });
-    themes = Array.from(res.values());
+  if(autoimportThemes) {
+    const { themes: _themes, files: _files } = await fileReader({
+      ...(options as any),
+    });
+    themes.length = 0
+    Object.assign(themes, _themes)
   }
 
   const parsedRes = themes.map((i) => parseThemes(i, options));
@@ -139,7 +128,7 @@ export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme exten
   return {
     name: PRESET_NAME,
     variants: variants,
-    enforce: 'post',
+    enforce: 'pre',
     layers: {
       [layerName]: layerOrder,
     },
@@ -151,17 +140,11 @@ export async function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme exten
             getCSS() {
               // 注入css变量
               const res = codes.join('\n');
-              console.log('🚀 ~ file: unocss-preset.ts:154 ~ getCSS ~ res:', res);
               return res;
             },
           },
         ]
       : undefined,
-    configResolved: (userconfig) => {
-      if (removeDefaultThemeVariant) {
-        tryRemoveThemeVariant(userconfig as any);
-      }
-    },
   };
 }
 

@@ -21,6 +21,13 @@ export interface FileReaderOptions {
    * @default './src/themes'
    */
   dir?: string;
+
+  /**
+   * 是否解析目标文件
+   * 
+   * @default true
+   */
+  parseFile?: boolean
 }
 
 /**
@@ -29,8 +36,11 @@ export interface FileReaderOptions {
  * @param options 配置
  */
 export async function fileReader(options?: FileReaderOptions) {
-  const { patterns = ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'], dir = './src/themes' } =
-    options ?? {};
+  const { 
+    patterns = ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'], 
+    dir = './src/themes',
+    parseFile = true
+  } = options ?? {};
 
   const resolvedDir = path.resolve(process.cwd(), dir);
 
@@ -62,8 +72,15 @@ export async function fileReader(options?: FileReaderOptions) {
   // rescan files
   files = await fg(patterns, { cwd: resolvedDir, absolute: !!1 });
 
+  if(!parseFile) {
+    return {
+      files,
+      themes: []
+    }
+  }
+  
   // collect themes
-  const themes = new Map<string, Theme>();
+  const themes = new Array<Theme>();
   await Promise.all(
     files.map(async (file) => {
       let [, themeName = '', dark = ''] = path.basename(file).match(/(\w+)?\.?(light|dark)\.(json|js|ts)$/) || [];
@@ -72,11 +89,14 @@ export async function fileReader(options?: FileReaderOptions) {
       }
       if (themeName === '') {
         themeName = dark;
+      } else {
+        themeName = themeName + '.' + dark;
       }
       const isDark = dark === 'dark';
       try {
         const _file = path.resolve(resolvedDir, file);
 
+        // 全部编译成ESM，然后交给mlly执行，最终保证所有配置文件在此处处理的逻辑是统一的
         const modules = await build({
           write: !!0,
           format: 'esm',
@@ -96,8 +116,8 @@ export async function fileReader(options?: FileReaderOptions) {
         const themeOverride = await evalModule(modules.outputFiles[0].text);
 
         if ('default' in themeOverride) {
-          themes.set(`${themeName}.${dark}`, {
-            name: `${themeName}.${dark}`,
+          themes.push({
+            name: themeName,
             isDark,
             themeOverrides: themeOverride.default,
           });
@@ -110,5 +130,5 @@ export async function fileReader(options?: FileReaderOptions) {
       }
     }),
   );
-  return themes;
+  return { themes, files };
 }
