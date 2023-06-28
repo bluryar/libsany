@@ -44,7 +44,7 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
 
   const resolvedDir = path.resolve(process.cwd(), dir);
 
-  const themes: Theme[] = [];
+  const themes = new Map<string, Theme>();
 
   try {
     await scanThemesDir(dir, patterns, themes);
@@ -108,18 +108,20 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   };
 }
 
-async function scanThemesDir(dir: string, patterns: string[], themes: Theme[]) {
+async function scanThemesDir(dir: string, patterns: string[], themes: Map<string, Theme>) {
   const res = await fileReader({
     dir,
     patterns,
   });
-  themes.length = 0
-  themes.push(...res.themes)
+  themes.clear();
+  for (const [k, v] of res) {
+    themes.set(k, v);
+  }
 }
 
 async function genDtsFile(
   virtualModuleIdList: readonly ['virtual:naive-ui-theme', '~naive-ui-theme'],
-  themes: Theme[],
+  themes: Map<string, Theme>,
   dts: boolean | string,
 ) {
   if (dts) {
@@ -129,7 +131,7 @@ async function genDtsFile(
   import type { UseColorModeReturn } from '@vueuse/core';
   import type { ComputedRef } from 'vue';
 
-  export type ThemeType = ${themes.map(i => i.name)
+  export type ThemeType = ${Array.from(themes.keys())
     .map((i) => `'${i}'`)
     .join(' | ')};
 
@@ -164,7 +166,7 @@ async function genDtsFile(
   }
 }
 
-async function genRuntimeCode(themes: Theme[], attribute = 'class', selector = 'html') {
+async function genRuntimeCode(themes: Map<string, Theme>, attribute = 'class', selector = 'html') {
   const clientCode = `
   import { computed, effectScope, unref } from 'vue';
   import { createSharedComposable, tryOnScopeDispose, useColorMode } from '@vueuse/core';
@@ -172,7 +174,7 @@ async function genRuntimeCode(themes: Theme[], attribute = 'class', selector = '
 
   const useSharedColorMode = createSharedComposable(useColorMode);
 
-  export const themes = ${JSON.stringify(themes)};
+  export const themes = ${JSON.stringify(Array.from(themes.values()))};
 
   export function useTheme(initialValue = 'light') {
     const modes = unref(themes).map((i) => {

@@ -77,8 +77,5 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "testing.automaticallyOpenPeekView": "never",
-  "unocss.root": [
-    "./playgrounds/vue-ts"
-  ]
+  "testing.automaticallyOpenPeekView": "never"
 }

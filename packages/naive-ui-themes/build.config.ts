@@ -9,9 +9,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineBuildConfig({
-  entries: [
-    { builder: 'mkdist', input: 'src', outDir: './dist' }
-  ],
+  entries: ['src/index'],
 
   replace: {
     'import.meta.vitest': 'undefined',

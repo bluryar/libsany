@@ -9,33 +9,33 @@ describe('fileReader', () => {
   afterAll(clear);
 
   it('should create a default light.json', async () => {
-    const { themes } = await fileReader({
+    const themes = await fileReader({
       dir: NOT_EXIST_DIR,
     });
-    expect(Array.isArray(themes)).toBe(true)
-    expect(themes.length).toBe(1);
+    expect(themes).instanceOf(Map);
+    expect(themes.size).toBe(1);
     expect(themes).toMatchInlineSnapshot(`
-      [
-        {
+      Map {
+        "light.light" => {
           "isDark": false,
-          "name": "light",
+          "name": "light.light",
           "themeOverrides": {},
         },
-      ]
+      }
     `);
 
     clear();
   });
 
   it('should read a default.light.json', async () => {
-    const { themes } = await fileReader({
+    const themes = await fileReader({
       dir: './packages/naive-ui-themes/test/fixtures/themes',
     });
-    expect(Array.isArray(themes)).toBe(true)
-    expect(themes.length).toBe(1);
+    expect(themes).instanceOf(Map);
+    expect(themes.size).toBe(1);
     expect(themes).toMatchInlineSnapshot(`
-      [
-        {
+      Map {
+        "default.light" => {
           "isDark": false,
           "name": "default.light",
           "themeOverrides": {
@@ -87,7 +87,7 @@ describe('fileReader', () => {
             },
           },
         },
-      ]
+      }
     `);
   });
 });

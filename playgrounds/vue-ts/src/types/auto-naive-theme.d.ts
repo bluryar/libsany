@@ -3,7 +3,7 @@ declare module 'virtual:naive-ui-theme' {
   import type { UseColorModeReturn } from '@vueuse/core';
   import type { ComputedRef } from 'vue';
 
-  export type ThemeType = 'dark' | 'light' | 'default.dark';
+  export type ThemeType = 'default.dark' | 'light.light' | 'dark.dark';
 
   export interface Theme {
     name: ThemeType;
@@ -30,7 +30,7 @@ declare module '~naive-ui-theme' {
   import type { UseColorModeReturn } from '@vueuse/core';
   import type { ComputedRef } from 'vue';
 
-  export type ThemeType = 'dark' | 'light' | 'default.dark';
+  export type ThemeType = 'default.dark' | 'light.light' | 'dark.dark';
 
   export interface Theme {
     name: ThemeType;

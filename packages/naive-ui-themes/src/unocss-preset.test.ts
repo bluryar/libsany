@@ -58,7 +58,10 @@ describe('presetNaiveThemes', () => {
       },
     ];
     const uno = createGenerator({
-      presets: [presetUno(), await presetNaiveThemes({ themes, cssVarPrefix: 'my-prefix' })],
+      presets: [
+        presetUno(),
+        await presetNaiveThemes({ themes, cssVarPrefix: 'my-prefix', removeDefaultThemeVariant: !!1 }),
+      ],
     });
     const { css } = await uno.generate([
       'bg-red-500',
@@ -150,12 +153,8 @@ describe('presetNaiveThemes', () => {
       dir: './packages/naive-ui-themes/test/fixtures/themes',
       dts: './packages/naive-ui-themes/test/fixtures/themes.d.ts',
     };
-
-    const presetUnoRes = tryRemoveThemeVariant(presetUno())
-    const presetThemesRes = await presetNaiveThemes({ autoimportThemes: !!1, ...options })
-    
     const uno = createGenerator({
-      presets: [presetUnoRes, presetThemesRes],
+      presets: [tryRemoveThemeVariant(presetUno()), await presetNaiveThemes({ autoimportThemes: !!1, ...options })],
     });
 
     const { css } = await uno.generate(['bg-body']);
