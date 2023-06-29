@@ -1,18 +1,17 @@
 <script setup lang="tsx">
-// import { useDialog } from '@bluryar/composables';
-// import { useTheme } from '~naive-ui-theme';
+import { themes, useTheme } from '~naive-ui-theme';
 
-// console.log('🚀 ~ file: App.vue:4 ~ useDialog:', useDialog);
-
-// const res = useTheme('light');
-// res.setTheme('light');
-// console.log('🚀 ~ file: App.vue:6 ~ res:', res);
+const res = useTheme('default.light');
+res.setTheme('default.light');
 </script>
 
 <template>
   <div>
-    1
-    <!-- {{ res.currentThemeOverrides }} -->
+    {{ res.currentThemeOverrides }}
+    <br />
+    <br />
+    <br />
+    {{ themes }}
   </div>
 </template>
 

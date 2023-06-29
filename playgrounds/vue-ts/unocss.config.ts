@@ -11,6 +11,7 @@ const config = {
   presets: [
     tryRemoveThemeVariant(presetUno()),
     presetNaiveThemes({
+      ...fileReaderOptions,
       autoimportThemes: !!1,
     }),
   ],
