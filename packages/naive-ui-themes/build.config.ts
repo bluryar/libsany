@@ -2,7 +2,6 @@ import 'dotenv/config';
 
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { commonDark, commonLight } from 'naive-ui';
 import { defineBuildConfig } from 'unbuild';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -15,9 +14,6 @@ export default defineBuildConfig({
   replace: {
     'import.meta.vitest': 'undefined',
     __DEV__: JSON.stringify(isDevelopment),
-    BMAP_AK: JSON.stringify(process.env.BMAP_AK || ''),
-    commonDark: JSON.stringify(commonDark),
-    commonLight: JSON.stringify(commonLight),
   },
 
   declaration: !!1,
@@ -33,5 +29,16 @@ export default defineBuildConfig({
     inlineDependencies: !!1,
   },
 
-  externals: ['lodash-es', '@vueuse/core', '@unocss/core', '@unocss/preset-mini', '@unocss/preset-mini/utils'],
+  externals: [
+    'lodash',
+    'unocss',
+    '@unocss/core',
+    '@unocss/preset-mini',
+    'vite',
+    '@unocss/preset-mini/utils',
+    'fast-glob',
+    'mlly',
+    'naive-ui',
+    'esbuild',
+  ],
 });

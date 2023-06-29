@@ -1,6 +1,6 @@
 import type { WriteFileOptions } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
-import { kebabCase } from 'lodash-es';
+import _ from 'lodash';
 import type { Theme } from './types';
 
 /** rgb => rgba */
@@ -12,7 +12,7 @@ export function withoutAlphaColorType(type: string) {
   return type.replace(/a$/, '');
 }
 export function wrapCssVarKey(cssVarPrefix: string, name: string, suffix?: string) {
-  return `--${kebabCase(cssVarPrefix + '-' + name + '-' + (suffix ?? ''))}`;
+  return `--${_.kebabCase(cssVarPrefix + '-' + name + '-' + (suffix ?? ''))}`;
 }
 export function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, selector: string, attribute: string) {
   const theme = themeObj.name;

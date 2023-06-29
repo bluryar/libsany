@@ -10,13 +10,13 @@
     "clear": "npx rimraf ./node_modules && npx rimraf .pnpm-lock.yaml"
   },
   "dependencies": {
-    "@bluryar/composables": "file:../../packages/composables",
+    "@bluryar/composables": "workspace:*",
     "pinia": "^2.1.4",
     "vue": "^3.3.2",
     "vue-router": "^4.2.2"
   },
   "devDependencies": {
-    "@bluryar/naive-ui-themes": "file:../../packages/naive-ui-themes",
+    "@bluryar/naive-ui-themes": "workspace:*",
     "@tsconfig/node18": "^2.0.1",
     "@types/node": "^18.16.18",
     "@vitejs/plugin-vue": "^4.2.3",

@@ -6,7 +6,8 @@
     "moduleResolution": "node",
     "types": [
       "naive-ui/volar",
-      "vite/client"
+      "vite/client",
+      "node"
     ],
     "paths": {
       "@/*": [

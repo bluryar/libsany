@@ -1,6 +1,7 @@
 import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
 import { type CSSColorValue, type Preset, type Variant, mergeDeep } from 'unocss';
-import { kebabCase, setWith } from 'lodash-es';
+import _ from 'lodash';
+import { commonDark, commonLight } from 'naive-ui';
 import { unsafeFileReaderSync } from './fileReader';
 import type { PresetNaiveThemesOptions, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
@@ -20,9 +21,9 @@ const PRESET_NAME = 'un-naive-ui-multi-themes';
  *
  * 此预设建议搭配 `tryRemoveThemeVariant` 使用: @see tryRemoveThemeVariant
  */
-export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends UnoThemeType = {}>(
-  options: PresetNaiveThemesOptions<NaiveTheme> = {},
-): Preset<UnoTheme> {
+export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends UnoThemeType = {}>(
+  options: PresetNaiveThemesOptions<_NaiveTheme_> = {},
+): Preset<_UnoTheme_> {
   let {
     themes = [
       { name: 'light', isDark: false, themeOverrides: {} },
@@ -50,7 +51,7 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
   const colorMap: Map<string, `${string}(${string})`> = parsedRes
     .map((i) => i.unoThemeColorMap)
     .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
-  const variants = parsedRes.map((i) => i.variant) as unknown as Variant<UnoTheme>[];
+  const variants = parsedRes.map((i) => i.variant) as unknown as Variant<_UnoTheme_>[];
   const codes = parsedRes.map((i) => i.code);
 
   return {
@@ -59,7 +60,7 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
     layers: {
       [layerName]: layerOrder,
     },
-    extendTheme: (theme: UnoTheme) => {
+    extendTheme: (theme: _UnoTheme_) => {
       const isExtenable = preflight && extendTheme;
       if (!isExtenable) {
         return theme;
@@ -79,12 +80,12 @@ export function presetNaiveThemes<NaiveTheme extends Theme, UnoTheme extends Uno
             _key = _key.replace(placeholder, 'Default');
           }
 
-          let path = kebabCase(_key).replaceAll('-', '.').replace('.color', '');
+          let path = _.kebabCase(_key).replaceAll('-', '.').replace('.color', '');
           if (path.endsWith('default')) {
             path = path.replace('.default', '.DEFAULT');
           }
 
-          setWith(prev, path, colorMap.get(key.replace(placeholder, '')), Object);
+          _.setWith(prev, path, colorMap.get(key.replace(placeholder, '')), Object);
           return prev;
         }, {});
 
@@ -134,7 +135,7 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
 
   const cssRules = Object.entries(mergedCommon).map(([key, value]) => {
     const parsedColor = parseCssColor(value);
-    let rules = `--${kebabCase(cssVarPrefix + '-' + key)}: ${value};`;
+    let rules = `--${_.kebabCase(cssVarPrefix + '-' + key)}: ${value};`;
     if (parsedColor) {
       colorMap.set(key, parsedColor);
 

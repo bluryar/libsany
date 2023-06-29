@@ -1,9 +1,14 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "target": "ESNext",
     "module": "ESNext",
+    "strict": true,
+    "types": [
+      "node",
+      "lodash",
+      "lodash-es"
+    ],
     "lib": [
       "ESNext"
     ],
