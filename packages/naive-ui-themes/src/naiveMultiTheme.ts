@@ -106,8 +106,8 @@ async function genDtsFile(
   import type { UseColorModeReturn } from '@vueuse/core';
   import type { ComputedRef } from 'vue';
 
-  export type ThemeType = ${Array.from(themes.keys())
-    .map((i) => `'${i}'`)
+  export type ThemeType = ${Array.from(themes)
+    .map((i) => `'${i.name}'`)
     .join(' | ')};
 
   export interface Theme {
@@ -149,7 +149,7 @@ async function genRuntimeCode(themes: Theme[], attribute = 'class', selector = '
 
   const useSharedColorMode = createSharedComposable(useColorMode);
 
-  export const themes = ${JSON.stringify(Array.from(themes.values()))};
+  export const themes = ${JSON.stringify(Array.from(themes))};
 
   export function useTheme(initialValue = 'light') {
     const modes = unref(themes).map((i) => {

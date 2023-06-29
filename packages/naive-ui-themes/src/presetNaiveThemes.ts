@@ -46,6 +46,7 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
   }
 
   const parsedRes = themes.map((i) => parseThemes(i, options));
+
   const colorMap: Map<string, `${string}(${string})`> = parsedRes
     .map((i) => i.unoThemeColorMap)
     .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
@@ -149,7 +150,6 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
 
   const code = `${mergedSelector} {${cssRules.join('')}}`;
 
-  console.log('🚀 ~ file: presetNaiveThemes.ts:152 ~ mergedSelector:', mergedSelector);
   const variant = variantMatcher(theme.name, (input) => {
     const res = {
       selector: `${mergedSelector} ${input.selector}`,

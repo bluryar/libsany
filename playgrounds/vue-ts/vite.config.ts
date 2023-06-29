@@ -45,6 +45,8 @@ export default defineConfig(() => {
       }),
       naiveMultiTheme({
         dts: './src/types/auto-naive-theme.d.ts',
+        selector: 'html',
+        attribute: 'theme',
         ...fileReaderOptions,
       }),
 
