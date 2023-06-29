@@ -1,5 +1,5 @@
 import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
-import { type CSSColorValue, type Preset, type Variant, mergeDeep } from 'unocss';
+import { type CSSColorValue, type Preset, type Variant, definePreset, mergeDeep } from 'unocss';
 import _ from 'lodash';
 import { commonDark, commonLight } from 'naive-ui';
 import { unsafeFileReaderSync } from './fileReader';
@@ -40,11 +40,9 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
     patterns,
   } = options;
 
-  let files: string[] = [];
   if (autoimportThemes) {
     const { themes: _themes, files: _files } = unsafeFileReaderSync({ dir, patterns });
     themes = Array.from(_themes);
-    files = _files;
   }
 
   const parsedRes = themes.map((i) => parseThemes(i, options));
@@ -54,10 +52,11 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
   const variants = parsedRes.map((i) => i.variant) as unknown as Variant<_UnoTheme_>[];
   const codes = parsedRes.map((i) => i.code);
 
-  return {
+  return definePreset({
     name: PRESET_NAME,
     variants: variants,
     layers: {
+      default: 1,
       [layerName]: layerOrder,
     },
     extendTheme: (theme: _UnoTheme_) => {
@@ -115,7 +114,7 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
         getCSS: () => (preflight ? codes.join('\n') : undefined),
       },
     ],
-  };
+  });
 }
 
 function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: PresetNaiveThemesOptions<NaiveTheme>) {
@@ -150,10 +149,15 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
 
   const code = `${mergedSelector} {${cssRules.join('')}}`;
 
-  const variant = variantMatcher(theme.name, (input) => ({
-    prefix: `${mergedSelector} $$ ${input.prefix}`,
-    layer: layerName,
-  }));
+  console.log('🚀 ~ file: presetNaiveThemes.ts:152 ~ mergedSelector:', mergedSelector);
+  const variant = variantMatcher(theme.name, (input) => {
+    const res = {
+      selector: `${mergedSelector} ${input.selector}`,
+      layer: layerName,
+    };
+
+    return res;
+  });
 
   return {
     mergedCommon,

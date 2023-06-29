@@ -23,7 +23,7 @@ export function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, sele
   if (mergedSelector.startsWith(' ')) {
     mergedSelector = mergedSelector.slice(1);
   }
-  return { theme: themeName, mergedSelector };
+  return { mergedSelector };
 }
 
 /** 写入文件，在写入文件前进行内容对比 */

@@ -21,7 +21,7 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
 
   const resolvedDir = path.resolve(process.cwd(), dir);
 
-  const themes = new Map<string, Theme>();
+  let themes: Theme[] = [];
 
   try {
     await scanThemesDir(dir, patterns, themes);
@@ -85,20 +85,18 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   };
 }
 
-function scanThemesDir(dir: string, patterns: string[], themes: Map<string, Theme>) {
+function scanThemesDir(dir: string, patterns: string[], themes: Theme[]) {
   const { themes: _themes } = unsafeFileReaderSync({
     dir,
     patterns,
   });
-  themes.clear();
-  for (const theme of _themes) {
-    themes.set(theme.name, theme);
-  }
+  themes.length = 0;
+  Object.assign(themes, _themes);
 }
 
 async function genDtsFile(
   virtualModuleIdList: readonly ['virtual:naive-ui-theme', '~naive-ui-theme'],
-  themes: Map<string, Theme>,
+  themes: Theme[],
   dts: boolean | string,
 ) {
   if (dts) {
@@ -143,7 +141,7 @@ async function genDtsFile(
   }
 }
 
-async function genRuntimeCode(themes: Map<string, Theme>, attribute = 'class', selector = 'html') {
+async function genRuntimeCode(themes: Theme[], attribute = 'class', selector = 'html') {
   const clientCode = `
   import { computed, effectScope, unref } from 'vue';
   import { createSharedComposable, tryOnScopeDispose, useColorMode } from '@vueuse/core';
