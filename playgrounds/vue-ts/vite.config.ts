@@ -1,15 +1,15 @@
 import { URL, fileURLToPath } from 'node:url';
 
 import dotenv from 'dotenv';
-import Unocss from '@unocss/vite';
+import UnoVitePlugin from '@unocss/vite';
 
-import { naiveMultiTheme } from '@bluryar/naive-ui-themes';
+// import { naiveMultiTheme } from '@bluryar/naive-ui-themes/dist/naiveMultiTheme';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 
-// import unocssConfig from './unocss.config';
+// import unocssConfig from '';
 
 dotenv.config({ path: '../../.env' });
 
@@ -23,11 +23,8 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
-    Unocss({
-      // ...unocssConfig,
-      // configFile: false,
-    }),
-    naiveMultiTheme({ ...fileReaderOptions }),
+    UnoVitePlugin(),
+    // naiveMultiTheme({ ...fileReaderOptions }),
 
     // Inspect(),
     // AutoImport({

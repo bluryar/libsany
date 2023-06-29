@@ -1,7 +1,7 @@
 {
   "name": "@bluryar/naive-ui-themes",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": false,
   "description": "⚡ A plugin for naive-ui, unocss, and vueuse",
   "author": "bluryar <bluryarl@gmail.com>",
@@ -28,26 +28,21 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
       "import": "./dist/index.mjs"
     },
-    "./dist/unocss-preset": {
-      "types": "./dist/unocss-preset.d.ts",
-      "require": "./dist/unocss-preset.cjs",
-      "import": "./dist/unocss-preset.mjs"
+    "./dist/presetNaiveThemes": {
+      "types": "./dist/presetNaiveThemes.d.ts",
+      "import": "./dist/presetNaiveThemes.mjs"
     },
-    "./dist/vite-plugin": {
-      "types": "./dist/vite-plugin.d.ts",
-      "require": "./dist/vite-plugin.cjs",
-      "import": "./dist/vite-plugin.mjs"
+    "./dist/naiveMultiTheme": {
+      "types": "./dist/naiveMultiTheme.d.ts",
+      "import": "./dist/naiveMultiTheme.mjs"
     },
     "./dist/fileReader": {
       "types": "./dist/fileReader.d.ts",
-      "require": "./dist/fileReader.cjs",
       "import": "./dist/fileReader.mjs"
     }
   },
-  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
@@ -72,7 +67,9 @@
     "vite": ">=4.0.0",
     "vue": ">=3.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@unocss/preset-mini": "^0.53.4"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

@@ -2,12 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "moduleResolution": "node",
-    "paths": {
-      "vue": [
-        "vue-demi"
-      ]
-    }
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": [
+      "ESNext"
+    ],
+    "moduleResolution": "Bundler"
   },
   "include": [
     "./index.ts",

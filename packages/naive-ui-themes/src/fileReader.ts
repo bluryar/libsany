@@ -1,35 +1,15 @@
 import path from 'path';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import vm from 'vm';
+import { pathToFileURL } from 'url';
 import fg from 'fast-glob';
+import { createCommonJS } from 'mlly';
+import { buildSync } from 'esbuild';
+import type { FileReaderOptions, Theme } from './types';
 
-// import eval from 'eval';
-import type { Theme } from './types';
+// import {createRequire} from 'node:module'
 
 const FILE_REGEX = /(\w+)?\.?(light|dark)\.(json|js|ts|mjs|cjs|mts|cts)$/;
-export interface FileReaderOptions {
-  /**
-   * 搜索文件的glob模式, 注意这些是同构文件, 会被Node和客户端共享
-   *
-   * 因此，当你使用非json格式时，不要引用Node的API，也不要引用浏览器的API
-   *
-   * @default ['*.(light|dark).(json|js|ts|cjs|mjs)']
-   */
-  patterns?: string[];
-
-  /**
-   * 主题文件夹路径
-   *
-   * @default './src/themes'
-   */
-  dir?: string;
-
-  /**
-   * 是否对引入的模块进行解析, 当你仅需要扫描主题文件夹时获取文件路径时，可以关闭
-   *
-   * @default true
-   */
-  parse?: boolean;
-}
 
 // /**
 //  * 扫描主题文件夹，生成主题列表
@@ -209,35 +189,36 @@ export function unsafeFileReaderSync(options?: FileReaderOptions) {
     try {
       const _file = path.resolve(resolvedDir, file);
 
-      // const modules = buildSync({
-      //   write: !!0,
-      //   format: 'cjs',
+      const modules = buildSync({
+        write: !!0,
+        format: 'cjs',
+        platform: 'node',
+        bundle: !!1,
+        entryPoints: [_file],
+        loader: {
+          '.json': 'json',
+          '.ts': 'ts',
+          '.js': 'js',
+          '.mjs': 'js',
+          '.cjs': 'js',
+          '.mts': 'ts',
+          '.cts': 'ts',
+        },
+      });
 
-      //   bundle: !!1,
-      //   entryPoints: [_file],
-      //   loader: {
-      //     '.json': 'json',
-      //     '.ts': 'ts',
-      //     '.js': 'js',
-      //     '.mjs': 'js',
-      //     '.cjs': 'js',
-      //     '.mts': 'ts',
-      //     '.cts': 'ts',
-      //   },
-      // });
+      const rawCode = modules.outputFiles[0].text;
+      const script = new vm.Script(rawCode);
+      const module = createCommonJS(pathToFileURL(_file).toString());
+      const context = { module } as any;
+      script.runInNewContext(context);
+      const exportName = `${themeName}.default`.replaceAll('.', '_');
+      const themeOverrides = context[exportName];
 
-      // const rawCode = modules.outputFiles[0].text;
-      // const script = new vm.Script(rawCode);
-      // const module = createCommonJS(pathToFileURL(_file).toString());
-      // const context = { module } as any;
-      // script.runInNewContext(context);
-
-      // const exportName = `${themeName}.default`.replaceAll('.', '_');
-      const themeOverrides = JSON.parse(readFileSync(_file, 'utf-8')) as any;
+      // const themeOverrides = JSON.parse(readFileSync(_file, 'utf-8')) as any;
       themes.push({
         name: themeName,
         isDark,
-        themeOverrides: themeOverrides,
+        themeOverrides,
       });
     } catch (error) {
       console.error(error);

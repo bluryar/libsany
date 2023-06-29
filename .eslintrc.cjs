@@ -15,5 +15,7 @@ module.exports = {
     __BMAPGL_STYLE__: true,
     BMAP_AK: true,
     BigInt: true,
+    commonLight: true,
+    commonDark: true,
   },
 }
