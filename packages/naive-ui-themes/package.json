@@ -6,7 +6,7 @@
   "description": "⚡ A plugin for naive-ui, unocss, and vueuse",
   "author": "bluryar <bluryarl@gmail.com>",
   "license": "MIT",
-  "homepage": "https://github.com/bluryar/libsany#readme",
+  "homepage": "https://github.com/bluryar/libsany/blob/main/packages/naive-ui-themes/README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bluryar/libsany.git"

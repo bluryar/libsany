@@ -127,7 +127,7 @@ async function genDtsFile(
   }
 
   declare const themes: Array<Theme>;
-  declare const useTheme: (theme: ThemeType) => UseThemeReturns;
+  declare const useTheme: (theme?: ThemeType) => UseThemeReturns;
 
   export { themes, useTheme };
 }`,
