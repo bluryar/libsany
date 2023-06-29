@@ -20,7 +20,7 @@ declare module 'virtual:naive-ui-theme' {
   }
 
   declare const themes: Array<Theme>;
-  declare const useTheme: (theme: ThemeType) => UseThemeReturns;
+  declare const useTheme: (theme?: ThemeType) => UseThemeReturns;
 
   export { themes, useTheme };
 }
@@ -47,7 +47,7 @@ declare module '~naive-ui-theme' {
   }
 
   declare const themes: Array<Theme>;
-  declare const useTheme: (theme: ThemeType) => UseThemeReturns;
+  declare const useTheme: (theme?: ThemeType) => UseThemeReturns;
 
   export { themes, useTheme };
 }

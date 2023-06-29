@@ -6,7 +6,7 @@ res.setTheme('default.light');
 </script>
 
 <template>
-  <div>
+  <div class="default.light:text-cyan">
     {{ res.currentThemeOverrides }}
     <br />
     <br />

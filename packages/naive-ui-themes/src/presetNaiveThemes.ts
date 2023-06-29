@@ -142,7 +142,7 @@ function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: Prese
       const { type, components } = parsedColor;
       rules += `${wrapCssVarKey(cssVarPrefix, key, 'value')}: ${components.join(', ')};`;
 
-      unoThemeColorMap.set(key, `${withoutAlphaColorType(type)}(var(${wrapCssVarKey(cssVarPrefix, key, 'value')})})`);
+      unoThemeColorMap.set(key, `${withoutAlphaColorType(type)}(var(${wrapCssVarKey(cssVarPrefix, key, 'value')}))`);
     }
 
     return rules;

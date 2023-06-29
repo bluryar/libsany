@@ -15,19 +15,15 @@ export function wrapCssVarKey(cssVarPrefix: string, name: string, suffix?: strin
   return `--${_.kebabCase(cssVarPrefix + '-' + name + '-' + (suffix ?? ''))}`;
 }
 export function getSelector<NaiveTheme extends Theme>(themeObj: NaiveTheme, selector: string, attribute: string) {
-  const theme = themeObj.name;
-  return getSelectorByName(theme, selector, attribute);
-}
-
-export function getSelectorByName(name: string, selector: string, attribute: string) {
-  const theme = name;
+  const themeName = themeObj.name;
   const _selector = selector || '';
-  const classNames = ['', ...theme.split('.')].join('.');
-  let mergedSelector = attribute === 'class' ? `${_selector}${classNames}` : `${_selector}[${attribute}="${theme}"]`;
+  const classNames = ['', ...themeName.split('.')].join('.');
+  let mergedSelector =
+    attribute === 'class' ? `${_selector}${classNames}` : `${_selector}[${attribute}="${themeName}"]`;
   if (mergedSelector.startsWith(' ')) {
     mergedSelector = mergedSelector.slice(1);
   }
-  return { theme, mergedSelector };
+  return { theme: themeName, mergedSelector };
 }
 
 /** 写入文件，在写入文件前进行内容对比 */
