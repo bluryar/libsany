@@ -201,17 +201,20 @@ importers:
 
   packages/naive-ui-themes:
     dependencies:
+      '@unocss/preset-mini':
+        specifier: ^0.53.4
+        version: 0.53.4
       esbuild:
-        specifier: '>=0.14.10'
+        specifier: 0.18.10
         version: 0.18.10
       fast-glob:
-        specifier: '>=3.0.0'
+        specifier: ^3.2.12
         version: 3.2.12
-      lodash-es:
-        specifier: '>=4.0.0'
+      lodash:
+        specifier: ^4.17.21
         version: 4.17.21
       mlly:
-        specifier: '>=1.0.0'
+        specifier: ^1.4.0
         version: 1.4.0
       naive-ui:
         specifier: '>=2.0.0'
@@ -225,10 +228,6 @@ importers:
       vue:
         specifier: '>=3.0.0'
         version: 3.3.4
-    devDependencies:
-      '@unocss/preset-mini':
-        specifier: ^0.53.4
-        version: 0.53.4
 
   packages/shared: {}
 
