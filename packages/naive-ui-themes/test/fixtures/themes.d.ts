@@ -19,8 +19,8 @@ declare module 'virtual:naive-ui-theme' {
     currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
-  declare const themes: Array<Theme>;
-  declare const useTheme: (theme?: ThemeType) => UseThemeReturns;
+  const themes: Array<Theme>;
+  const useTheme: (theme?: ThemeType) => UseThemeReturns;
 
   export { themes, useTheme };
 }
@@ -46,8 +46,8 @@ declare module '~naive-ui-theme' {
     currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
-  declare const themes: Array<Theme>;
-  declare const useTheme: (theme?: ThemeType) => UseThemeReturns;
+  const themes: Array<Theme>;
+  const useTheme: (theme?: ThemeType) => UseThemeReturns;
 
   export { themes, useTheme };
 }

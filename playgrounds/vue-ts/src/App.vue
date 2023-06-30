@@ -6,7 +6,7 @@ res.setTheme('default.light');
 </script>
 
 <template>
-  <div class="default.light:text-cyan">
+  <div class="default.light:text-error" bg-primary>
     {{ res.currentThemeOverrides }}
     <br />
     <br />
