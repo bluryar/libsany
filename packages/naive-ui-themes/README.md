@@ -103,7 +103,7 @@ pnpm add @bluryar/naive-ui-themes
 
      _src/default.dark.json_
 
-     ```json
+     ```jsonc
      {
        "common": {
          "primaryColor": "#409eff"
