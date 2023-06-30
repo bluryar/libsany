@@ -56,7 +56,7 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
   /**
    * 最终生成CSS代码的位置
    *
-   * @default 1
+   * @default 0
    */
   layerOrder?: number;
 

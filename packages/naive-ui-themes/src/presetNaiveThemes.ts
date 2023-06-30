@@ -30,7 +30,7 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
       { name: 'dark', isDark: true, themeOverrides: {} },
     ],
     layerName = PRESET_NAME,
-    layerOrder = 1,
+    layerOrder = 0,
     breakpoints = 'NaiveUI',
     cssVarPrefix = '',
     preflight = true,
@@ -50,16 +50,29 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
   const colorMap: Map<string, `${string}(${string})`> = parsedRes
     .map((i) => i.unoThemeColorMap)
     .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
+
+  const layers: Record<string, number> = {
+    default: 1,
+  };
+  layers[layerName] = layerOrder;
+
+  const preflights = [
+    {
+      layer: layerName,
+      getCSS: () => (preflight ? parsedRes.map((i) => i.code).join('\n') : undefined),
+    },
+  ];
   const variants = parsedRes.map((i) => i.variant) as unknown as Variant<_UnoTheme_>[];
-  const codes = parsedRes.map((i) => i.code);
 
   return definePreset({
     name: PRESET_NAME,
-    variants: variants,
-    layers: {
-      default: 1,
-      [layerName]: layerOrder,
-    },
+
+    variants,
+
+    layers,
+
+    preflights,
+
     extendTheme: (theme: _UnoTheme_) => {
       const isExtenable = preflight && extendTheme;
       if (!isExtenable) {
@@ -108,13 +121,6 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
 
       return merged;
     },
-
-    preflights: [
-      {
-        layer: layerName,
-        getCSS: () => (preflight ? codes.join('\n') : undefined),
-      },
-    ],
   });
 }
 
