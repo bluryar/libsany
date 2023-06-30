@@ -34,12 +34,15 @@ pnpm add @bluryar/naive-ui-themes
   _./unocss.config.ts_
 
   ```ts
+  import { resolve } from 'node:path';
   import { defineConfig, presetUno } from 'unocss';
   import type { UserConfig } from 'unocss';
   import { type FileReaderOptions, presetNaiveThemes, tryRemoveThemeVariant } from '@bluryar/naive-ui-themes';
 
+  const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
   export const fileReaderOptions = {
-    dir: './src/themes',
+    dir: resolve(__dirname, './src/themes'),
     patterns: ['*.(light|dark).(json|js|ts|cjs|mjs)'],
   } satisfies FileReaderOptions;
 
