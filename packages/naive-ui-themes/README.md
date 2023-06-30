@@ -85,89 +85,89 @@ pnpm add @bluryar/naive-ui-themes
 
 3. 使用
 
-- 编写主题
+   - 编写主题
 
-  _src/default.dark.json_
+     _src/default.dark.json_
 
-  ```json
-  {
-    "common": {
-      "primaryColor": "#409eff"
-      // ...
-      // 这部分配置可以使用 naive-ui 的 文档提供的主题配置器来配置
-    }
-  }
-  ```
+     ```json
+     {
+       "common": {
+         "primaryColor": "#409eff"
+         // ...
+         // 这部分配置可以使用 naive-ui 的 文档提供的主题配置器来配置
+       }
+     }
+     ```
 
-- 激活主题配置
-  _src/App.vue_
+   - 激活主题配置
+     _src/App.vue_
 
-  ```vue
-  <template>
-    <NConfigProvider :theme="currentTheme" :theme-overrides="currentThemeOverrides">
-      <RouterView></RouterView>
-    </NConfigProvider>
-  </template>
+     ```vue
+     <template>
+       <NConfigProvider :theme="currentTheme" :theme-overrides="currentThemeOverrides">
+         <RouterView></RouterView>
+       </NConfigProvider>
+     </template>
 
-  <script lang="ts" setup>
-  import { useTheme } from '~naive-ui-themes';
+     <script lang="ts" setup>
+     import { useTheme } from '~naive-ui-themes';
 
-  const { currentTheme, currentThemeOverrides } = useTheme();
-  </script>
-  ```
+     const { currentTheme, currentThemeOverrides } = useTheme();
+     </script>
+     ```
 
-- 切换主题
+   - 切换主题
 
-  _src/path/to/myVue.vue_
+     _src/path/to/myVue.vue_
 
-  ```vue
-  <template>
-    <div>
-      <n-button>按钮</n-button>
-    </div>
-  </template>
+     ```vue
+     <template>
+       <div>
+         <n-button>按钮</n-button>
+       </div>
+     </template>
 
-  <script lang="ts" setup>
-  import { useTheme } from '~naive-ui-themes';
-  const {
-    setTheme,
-    isDark
-  } = useTheme('default.light')
+     <script lang="ts" setup>
+     import { useTheme } from '~naive-ui-themes';
+     const {
+       setTheme,
+       isDark
+     } = useTheme('default.light')
 
-  watch(
-    [isDark, otherCondition],
-    () => {
-      setTheme('default.dark')
-    },
-    {
-      immediate: true
-    }
-  )
-  ```
+     watch(
+       [isDark, otherCondition],
+       () => {
+         setTheme('default.dark')
+       },
+       {
+         immediate: true
+       }
+     )
+     ```
 
-- 使用主题变量
+   - 使用主题变量
 
-  下面给出常用的四种有效的主题选择器:
+     下面给出常用的四种有效的主题选择器:
 
-  _src/path/to/myVue.vue_
+     _src/path/to/myVue.vue_
 
-  ```vue
-  <template>
-    <div>
-      <n-button :style="`background-color: --primary-color" class="bg-primary">按钮</n-button>
-    </div>
-  </template>
+     ```vue
+     <template>
+       <div>
+         <n-button :style="`background-color: --primary-color" class="bg-primary">按钮</n-button>
+       </div>
+     </template>
 
-  <script lang="ts" setup></script>
+     <script lang="ts" setup></script>
 
-  <style scoped>
-  html[theme*='dark'] {
-    background-color: var(--primary-color);
+     <style scoped>
+     html[theme*='dark'] {
+       background-color: var(--primary-color);
 
-    @apply bg-primary;
-  }
-  </style>
-  ```
+       @apply bg-primary;
+     }
+     </style>
+     ```
 
 ## 背景
 
