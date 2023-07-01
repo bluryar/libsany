@@ -145,62 +145,70 @@ async function genDtsFile(
 }
 
 async function genRuntimeCode(themes: Theme[], attribute = 'class', selector = 'html') {
-  const clientCode = `
-  import { computed, effectScope, unref } from 'vue';
-  import { createSharedComposable, tryOnScopeDispose, useColorMode } from '@vueuse/core';
-  import { darkTheme, lightTheme } from 'naive-ui';
+  const clientCode = `import { computed, effectScope, unref } from 'vue';
+import { tryOnScopeDispose, useColorMode } from '@vueuse/core';
+import { darkTheme, lightTheme } from 'naive-ui';
 
-  const useSharedColorMode = createSharedComposable(useColorMode);
+export const themes = ${JSON.stringify(Array.from(themes))};
 
-  export const themes = ${JSON.stringify(Array.from(themes))};
+export function useTheme(initialValue = 'auto') {
+  const modes = unref(themes).map((i) => {
+    const val = ${attribute === 'class' ? `i.name.replace('.', ' ')` : `i.name`};
+    return [i.name, val];
+  });
 
-  export function useTheme(initialValue = 'light') {
-    const modes = unref(themes).map((i) => {
-      const val = ${attribute === 'class' ? `i.name.replace('.', ' ')` : `i.name`};
-      return [i.name, val];
-    });
+  const options = {
+    selector: '${selector}',
 
-    const options = {
-      selector: '${selector}',
+    attribute: '${attribute}',
 
-      attribute: '${attribute}',
+    initialValue: initialValue,
 
-      initialValue: initialValue,
+    modes: Object.fromEntries(modes),
 
-      modes: Object.fromEntries(modes),
+    disableTransition: !!1,
+  };
 
-      disableTransition: !!1,
-    };
+  let scope = effectScope(!!1);
 
-    const scope = effectScope(!!1);
+  let colorMode = scope.run(() => useColorMode(options)) || (() => {
+    console.warn('[vite-plugin-naive-ui-multi-theme] 未在组件上下文中使用');
+    return useColorMode(options)
+  })();
 
-    const colorMode = scope.run(() => useSharedColorMode(options)) ?? useSharedColorMode(options);
+  const setTheme = (theme) => {
+    colorMode.value = theme;
+  };
 
-    const setTheme = (theme) => {
-      colorMode.value = theme;
-    };
+  const isDark = computed(() => {
+    return !!unref(themes).find((i) => i.name === colorMode.value)?.isDark;
+  });
 
-    const isDark = computed(() => {
-      return !!unref(themes).find((i) => i.name === colorMode.value)?.isDark;
-    });
-    const currentTheme = computed(() => {
-      return unref(isDark) ? darkTheme : lightTheme;
-    });
-    const currentThemeOverrides = computed(() => {
-      const res = unref(themes).find((i) => i.name === colorMode.value)?.themeOverrides;
-      return res;
-    });
+  const currentTheme = computed(() => {
+    return unref(isDark) ? darkTheme : lightTheme;
+  });
 
-    tryOnScopeDispose(scope.stop);
+  const currentThemeOverrides = computed(() => {
+    const res = unref(themes).find((i) => i.name === colorMode.value)?.themeOverrides || {};
+    return res;
+  });
 
-    return {
-      colorMode,
-      isDark,
-      currentTheme,
-      currentThemeOverrides,
-      setTheme,
-    };
+  const dispose = () => {
+    scope.stop()
+    scope = undefined
+    colorMode = undefined
   }
+
+  tryOnScopeDispose(dispose);
+
+  return {
+    colorMode,
+    isDark,
+    currentTheme,
+    currentThemeOverrides,
+    setTheme,
+  };
+}
 `;
 
   return clientCode;

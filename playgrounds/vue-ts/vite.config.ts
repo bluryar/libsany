@@ -12,7 +12,7 @@ import { naiveMultiTheme, unsafeFileReaderSync } from '@bluryar/naive-ui-themes'
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers';
-import { fileReaderOptions } from './unocss.config';
+import { fileReaderOptions, selectorOptions } from './unocss.config';
 
 dotenv.config({ path: '../../.env' });
 
@@ -45,8 +45,7 @@ export default defineConfig(() => {
       }),
       naiveMultiTheme({
         dts: './src/types/auto-naive-theme.d.ts',
-        selector: 'html',
-        attribute: 'theme',
+        ...selectorOptions,
         ...fileReaderOptions,
       }),
 

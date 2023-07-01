@@ -14,6 +14,11 @@ import { presetScrollbar } from 'unocss-preset-scrollbar';
 
 const { __dirname } = createCommonJS(import.meta.url);
 
+export const selectorOptions = {
+  selector: 'html',
+  attribute: 'class',
+};
+
 export const fileReaderOptions = {
   dir: resolve(__dirname, './src/themes'),
   patterns: ['*.(light|dark).(json|js|ts|cjs|mjs)'],
@@ -47,8 +52,7 @@ const config = {
 
     presetNaiveThemes({
       ...fileReaderOptions,
-      selector: 'html',
-      attribute: 'theme',
+      ...selectorOptions,
       autoimportThemes: !!1,
     }),
 

@@ -1,11 +1,12 @@
-import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
-import { type CSSColorValue, type Preset, type Variant, definePreset, mergeDeep } from 'unocss';
+import { variantMatcher } from '@unocss/preset-mini/utils';
+import { type Preset, type Variant, definePreset, mergeDeep } from 'unocss';
 import _ from 'lodash';
-import { commonDark, commonLight } from 'naive-ui';
+import { ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
+import tinycolor from 'tinycolor2';
 import { unsafeFileReaderSync } from './file-reader';
 import type { PresetNaiveThemesOptions, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
-import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
+import { getSelector, wrapCssVarKey } from './utils';
 
 export * from './try-remove-theme-variant';
 
@@ -44,16 +45,23 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
     themes = Array.from(_themes);
   }
 
-  const parsedRes = themes.map((i) => parseThemes(i, options));
+  const innerLightTheme = parseThemes(
+    { name: 'light', isDark: !!0, themeOverrides: { common: commonLight } } as any,
+    options,
+    !!1,
+  );
+  const innerDarkTheme = parseThemes(
+    { name: 'dark', isDark: !!1, themeOverrides: { common: commonDark } } as any,
+    options,
+    !!1,
+  );
 
-  const colorMap: Map<string, `${string}(${string})`> = parsedRes
-    .map((i) => i.unoThemeColorMap)
-    .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
+  const parsedRes = [innerLightTheme, innerDarkTheme, ...themes.map((i) => parseThemes(i, options))];
 
   const layers: Record<string, number> = {
     default: 1,
+    [layerName]: layerOrder,
   };
-  layers[layerName] = layerOrder;
 
   const preflights = [
     {
@@ -77,29 +85,24 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
       if (!isExtenable) {
         return theme;
       }
-      const placeholder = '@@@@@@@@@@@@@@@@@@';
-      const colors = [...colorMap.keys()]
-        .map((key, _, list) => {
-          if (list.some((i) => i.startsWith(key) && i !== key)) {
-            return key + placeholder;
-          }
-          return key;
-        })
-        .reduce((prev, key) => {
-          let _key = key;
+      // 合并不同主题的颜色相关的变量, 用于扩展主题, 比如 `bg-primary`
+      // 由于不同主题都有这个token, 因此无法给定一个特定值, 只能传入一个 css 变量 `var(--primary-color-value)`
+      const colorCssVarValueMap: Map<string, `${string}(${string})`> = parsedRes
+        .map((i) => new Map(Array.from(i.colorMap).map(([key, { rgbVars }]) => [key, rgbVars])))
+        .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
+      const colorValueMap = parsedRes.map(
+        (i) => new Map(Array.from(i.colorMap).map(([key, { value }]) => [key, value])),
+      );
 
-          if (_key.endsWith(placeholder)) {
-            _key = _key.replace(placeholder, 'Default');
-          }
+      const typeColors = parsedRes.map(({ colorMap, themeName }) => {
+        const map = new Map(Array.from(colorMap).map(([key, { value }]) => [key, value]));
 
-          let path = _.kebabCase(_key).replaceAll('-', '.').replace('.color', '');
-          if (path.endsWith('default')) {
-            path = path.replace('.default', '.DEFAULT');
-          }
-
-          _.setWith(prev, path, colorMap.get(key.replace(placeholder, '')), Object);
-          return prev;
-        }, {});
+        return getColorsRecord(map, (path) => `theme.${_.kebabCase(themeName).replaceAll('-', '.')}.${path}`);
+      });
+      const colors = [getColorsRecord(colorCssVarValueMap), ...typeColors].reduce(
+        (prev, curr) => mergeDeep(prev, curr),
+        {},
+      );
 
       const customTheme = {
         colors: colors,
@@ -123,53 +126,114 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
   });
 }
 
-function parseThemes<NaiveTheme extends Theme>(theme: NaiveTheme, options: PresetNaiveThemesOptions<NaiveTheme>) {
+function getColorsRecord(
+  colorCssVarValueMap: Map<string, string>,
+  transformKey: (path: string) => string = (input) => input,
+): Record<string, string> {
+  const placeholder = '@@@@@@@@@@@@@@@@@@';
+
+  return [...colorCssVarValueMap.keys()]
+    .map((key, _, list) => {
+      if (list.some((i) => i.startsWith(key) && i !== key)) {
+        return key + placeholder;
+      }
+      return key;
+    })
+    .reduce((prev, key) => {
+      let _key = key;
+
+      if (_key.endsWith(placeholder)) {
+        _key = _key.replace(placeholder, 'Default');
+      }
+
+      let path = _.kebabCase(_key).replaceAll('-', '.').replace('.color', '');
+      if (path.endsWith('default')) {
+        path = path.replace('.default', '.DEFAULT');
+      }
+
+      const value = colorCssVarValueMap.get(key.replace(placeholder, ''));
+
+      _.setWith(prev, transformKey(path), value, Object);
+      return prev;
+    }, {});
+}
+
+function parseThemes<NaiveTheme extends Theme>(
+  theme: NaiveTheme,
+  options: PresetNaiveThemesOptions<NaiveTheme>,
+  inner = false,
+) {
   const { selector = 'html', attribute = 'class', layerName = PRESET_NAME, cssVarPrefix = '' } = options;
 
-  const colorMap = new Map<string | string, CSSColorValue>();
-  const unoThemeColorMap = new Map<string | string, `${string}(${string})`>();
-
-  const { isDark } = theme;
-  const shareDcommon = isDark ? commonDark : commonLight;
-  const mergedCommon = {
-    ...shareDcommon,
+  const mergedCommon: Partial<ThemeCommonVars> = {
     ...theme.themeOverrides.common,
   };
 
-  const { mergedSelector } = getSelector(theme, selector || 'html', attribute || 'class');
+  let { mergedSelector } = getSelector(theme, selector || 'html', attribute || 'class');
 
-  const cssRules = Object.entries(mergedCommon).map(([key, value]) => {
-    const parsedColor = parseCssColor(value);
-    let rules = `--${_.kebabCase(cssVarPrefix + '-' + key)}: ${value};`;
-    if (parsedColor) {
-      colorMap.set(key, parsedColor);
-
-      const { type, components } = parsedColor;
-      rules += `${wrapCssVarKey(cssVarPrefix, key, 'value')}: ${components.join(', ')};`;
-
-      unoThemeColorMap.set(key, `${withoutAlphaColorType(type)}(var(${wrapCssVarKey(cssVarPrefix, key, 'value')}))`);
+  // 内置设置, 解析 commonLight 和 commonDark 来作为公共的配置样式, 以减少preflight的体积
+  if (inner) {
+    const targetName = ['light', 'dark'].find((i) => i === theme.name);
+    if (targetName) {
+      if (attribute === 'class') {
+        mergedSelector = `.${targetName}`;
+      } else {
+        mergedSelector = `[${attribute}*="${targetName}"]`;
+      }
     }
+  }
 
-    return rules;
-  });
+  const { rules, colorMap } = getCssRules(mergedCommon, cssVarPrefix);
 
-  const code = `${mergedSelector} {${cssRules.join('')}}`;
+  const code = `${mergedSelector} {${rules.join('')}}`;
 
   const variant = variantMatcher(theme.name, (input) => {
     const res = {
-      selector: `${mergedSelector} ${input.selector}`,
+      prefix: `${mergedSelector} $$ ${input.prefix}`,
       layer: layerName,
     };
 
     return res;
   });
 
+  // make it always the last one
+  if (inner) {
+    variant.order = Infinity;
+  }
+
   return {
+    themeName: theme.name,
     mergedCommon,
     selector: mergedSelector,
     colorMap,
-    unoThemeColorMap: unoThemeColorMap,
     variant,
     code,
+  };
+}
+
+function getCssRules(mergedCommon: Partial<ThemeCommonVars & { [k: string]: any }>, cssVarPrefix: string) {
+  const colorMap = new Map<string, { value: string; rgbVars: string }>();
+
+  const rules = Object.entries(mergedCommon).map(([key, value]) => {
+    let rules = `--${_.kebabCase(cssVarPrefix + '-' + key)}: ${value};`;
+    const color = tinycolor(value);
+
+    if (/color/gi.test(key) && color.isValid()) {
+      const { r, g, b, a } = color.toRgb();
+      rules = `--${_.kebabCase(cssVarPrefix + '-' + key)}: ${color.toRgbString().toLowerCase()};`;
+      rules += `${wrapCssVarKey(cssVarPrefix, key, 'value')}: ${`${r}, ${g}, ${b}`};`;
+
+      colorMap.set(key, {
+        value: color.toRgbString().toLowerCase(),
+        rgbVars: `rgb(var(${wrapCssVarKey(cssVarPrefix, key, 'value')}))`,
+      });
+    }
+
+    return rules;
+  });
+
+  return {
+    rules,
+    colorMap,
   };
 }
