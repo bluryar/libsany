@@ -1,7 +1,7 @@
 {
   "name": "@bluryar/libsany",
   "type": "module",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": true,
   "description": "⚙️ Vue3开发者自用的常用工具库",
   "author": "bluryar <bluryarl@gmail.com>",
