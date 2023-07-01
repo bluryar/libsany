@@ -11,11 +11,9 @@
 <details>
   <summary>📃TODO</summary>
 
-- [ ] useTheme 实现与参数调整
-
-- [ ] naiveMultiTheme HMR 策略调整
-
-- [ ] presetNaiveThemes preflight 的字符串大小减少
+- [x] ~~useTheme 实现与参数调整~~
+- [x] ~~naiveMultiTheme HMR 策略调整~~
+- [x] ~~presetNaiveThemes preflight 的字符串大小减少~~
 
 </details>
 
