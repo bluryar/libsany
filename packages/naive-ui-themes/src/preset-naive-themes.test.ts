@@ -1,6 +1,6 @@
 import { createGenerator, presetMini, presetUno } from 'unocss';
 import { describe, expect, it } from 'vitest';
-import { presetNaiveThemes, tryRemoveThemeVariant } from './presetNaiveThemes';
+import { presetNaiveThemes, tryRemoveThemeVariant } from './preset-naive-themes';
 import type { Theme } from './types';
 
 describe('presetNaiveThemes', () => {

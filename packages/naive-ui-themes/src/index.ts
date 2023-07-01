@@ -1,4 +1,4 @@
-export * from './presetNaiveThemes';
-export * from './naiveMultiTheme';
+export * from './preset-naive-themes';
+export * from './naive-multi-theme';
 export * from './types';
-export * from './fileReader';
+export * from './file-reader';

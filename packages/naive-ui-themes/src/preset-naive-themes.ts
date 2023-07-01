@@ -2,12 +2,12 @@ import { parseCssColor, variantMatcher } from '@unocss/preset-mini/utils';
 import { type CSSColorValue, type Preset, type Variant, definePreset, mergeDeep } from 'unocss';
 import _ from 'lodash';
 import { commonDark, commonLight } from 'naive-ui';
-import { unsafeFileReaderSync } from './fileReader';
+import { unsafeFileReaderSync } from './file-reader';
 import type { PresetNaiveThemesOptions, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
 import { getSelector, withoutAlphaColorType, wrapCssVarKey } from './utils';
 
-export * from './tryRemoveThemeVariant';
+export * from './try-remove-theme-variant';
 
 const PRESET_NAME = 'un-naive-ui-multi-themes';
 

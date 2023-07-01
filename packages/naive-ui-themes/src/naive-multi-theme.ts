@@ -2,7 +2,7 @@ import path from 'node:path';
 import type { ModuleNode, Plugin } from 'vite';
 import { normalizePath } from 'vite';
 import type { FileReaderOptions, NaiveMultiThemeOptions, Theme } from './types';
-import { fileReader } from './fileReader';
+import { fileReader } from './file-reader';
 import { patchWriteFile } from './utils';
 
 const PLUGIN_NAME = 'vite-plugin-naive-ui-multi-theme';

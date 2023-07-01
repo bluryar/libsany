@@ -2,7 +2,7 @@ import { readdir, rm } from 'fs/promises';
 import { resolve } from 'path';
 import { sleep } from '@bluryar/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { fileReader, unsafeFileReaderSync } from './fileReader';
+import { fileReader, unsafeFileReaderSync } from './file-reader';
 
 describe('fileReader', () => {
   const NOT_EXIST_DIR = './do-not-exits-themes-async';

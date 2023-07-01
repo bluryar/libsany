@@ -30,17 +30,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
-    "./dist/presetNaiveThemes": {
-      "types": "./dist/presetNaiveThemes.d.ts",
-      "import": "./dist/presetNaiveThemes.mjs"
+    "./dist/preset-naive-themes": {
+      "types": "./dist/preset-naive-themes.d.ts",
+      "import": "./dist/preset-naive-themes.mjs"
     },
-    "./dist/naiveMultiTheme": {
-      "types": "./dist/naiveMultiTheme.d.ts",
-      "import": "./dist/naiveMultiTheme.mjs"
+    "./dist/naive-multi-theme": {
+      "types": "./dist/naive-multi-theme.d.ts",
+      "import": "./dist/naive-multi-theme.mjs"
     },
-    "./dist/fileReader": {
-      "types": "./dist/fileReader.d.ts",
-      "import": "./dist/fileReader.mjs"
+    "./dist/file-reader": {
+      "types": "./dist/file-reader.d.ts",
+      "import": "./dist/file-reader.mjs"
     }
   },
   "module": "./dist/index.mjs",

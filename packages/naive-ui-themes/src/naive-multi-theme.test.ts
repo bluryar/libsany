@@ -5,7 +5,7 @@ import { createServer } from 'vite';
 import type { ModuleNode, Plugin } from 'vite';
 import { sleep } from '@bluryar/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { naiveMultiTheme } from './naiveMultiTheme';
+import { naiveMultiTheme } from './naive-multi-theme';
 
 const NOT_EXIST_DIR = './do-not-exits-themes';
 const options = {
