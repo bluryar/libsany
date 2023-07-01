@@ -3,6 +3,7 @@ import { useVModel } from '@vueuse/core';
 import { mount } from '@vue/test-utils';
 import { array } from 'vue-types';
 import { isHTMLDivElement } from '@bluryar/shared';
+import { describe, expect, it } from 'vitest';
 import { useDialog } from './index';
 
 describe('useDialog', () => {

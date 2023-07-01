@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { type PropType, defineComponent, isReactive, isShallow, nextTick, shallowRef } from 'vue-demi';
+import { describe, expect, it } from 'vitest';
 import { createHOC } from './index';
 
 describe('createHOC', () => {

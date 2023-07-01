@@ -7,7 +7,6 @@
 module.exports = {
   extends: [
     '@bluryar/vue',
-    './auto-eslintrc.json',
   ],
   globals: {
     __DEV__: true,
@@ -15,7 +14,5 @@ module.exports = {
     __BMAPGL_STYLE__: true,
     BMAP_AK: true,
     BigInt: true,
-    commonLight: true,
-    commonDark: true,
   },
 }
