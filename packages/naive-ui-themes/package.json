@@ -69,7 +69,8 @@
     "esbuild": "0.18.10",
     "fast-glob": "^3.2.12",
     "lodash": "^4.17.21",
-    "mlly": "^1.4.0"
+    "mlly": "^1.4.0",
+    "tinycolor2": "^1.6.0"
   },
   "publishConfig": {
     "access": "public",

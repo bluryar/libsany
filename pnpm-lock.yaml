@@ -222,6 +222,9 @@ importers:
       naive-ui:
         specifier: '>=2.0.0'
         version: 2.34.4(vue@3.3.4)
+      tinycolor2:
+        specifier: ^1.6.0
+        version: 1.6.0
       unocss:
         specifier: '>=0.50.0'
         version: 0.53.4(postcss@8.4.24)(rollup@3.25.3)(vite@4.3.9)
@@ -8535,7 +8538,6 @@ packages:
 
   /tinycolor2@1.6.0:
     resolution: {integrity: sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw==}
-    dev: true
 
   /tinypool@0.5.0:
     resolution: {integrity: sha512-paHQtnrlS1QZYKF/GnLoOM/DN9fqaGOFbCbxzAhwniySnzl9Ebk8w73/dd34DAhe/obUbPAOldTyYXQZxnPBPQ==}
