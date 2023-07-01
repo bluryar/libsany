@@ -1,5 +1,6 @@
 import type { GlobalThemeOverrides } from 'naive-ui';
 import type { Theme as UnoMiniTheme } from '@unocss/preset-mini';
+import { BuildOptions } from 'esbuild';
 import type * as breakpoints from './breakpoints';
 
 export interface Theme {
@@ -43,6 +44,11 @@ export interface FileReaderOptions {
    * @default true
    */
   parse?: boolean;
+
+  /**
+   * esbuild 配置
+   */
+  esbuild?: Omit<BuildOptions, 'write' | 'format' | 'platform' | 'bundle' | 'entryPoints' | 'loader'>;
 }
 
 export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends FileReaderOptions {
@@ -92,7 +98,7 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
   /**
    * 屏幕尺寸断点
    *
-   * @default 'NaiveUI'
+   * @default 'AntDesign'
    */
   breakpoints?: BreakpointsType | Record<string, number>;
 

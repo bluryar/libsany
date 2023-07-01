@@ -1,8 +1,8 @@
 import path from 'node:path';
 import type { ModuleNode, Plugin } from 'vite';
 import { normalizePath } from 'vite';
-import type { NaiveMultiThemeOptions, Theme } from './types';
-import { unsafeFileReaderSync } from './fileReader';
+import type { FileReaderOptions, NaiveMultiThemeOptions, Theme } from './types';
+import { fileReader } from './fileReader';
 import { patchWriteFile } from './utils';
 
 const PLUGIN_NAME = 'vite-plugin-naive-ui-multi-theme';
@@ -14,6 +14,7 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
     dir = './src/themes',
     attribute = 'class',
     selector = 'html',
+    esbuild = {},
   } = options ?? {};
 
   const virtualModuleIdList = ['virtual:naive-ui-theme', '~naive-ui-theme'] as const;
@@ -24,7 +25,7 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   let themes: Theme[] = [];
 
   try {
-    await scanThemesDir(dir, patterns, themes);
+    await scanThemesDir({ dir, patterns, esbuild }, themes);
   } catch (error) {
     console.error(error);
     console.warn(`[vite-plugin-naive-ui-multi-theme] 无法读取主题文件夹: ${resolvedDir}`);
@@ -35,7 +36,7 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   await genDtsFile(virtualModuleIdList, themes, dts);
 
   const genCode = async () => {
-    await scanThemesDir(dir, patterns, themes);
+    await scanThemesDir({ dir, patterns, esbuild }, themes);
     await genDtsFile(virtualModuleIdList, themes, dts);
   };
 
@@ -85,9 +86,11 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   };
 }
 
-function scanThemesDir(dir: string, patterns: string[], themes: Theme[]) {
-  const { themes: _themes } = unsafeFileReaderSync({
+async function scanThemesDir(fileReaderOptions: FileReaderOptions, themes: Theme[]) {
+  const { dir, esbuild, patterns } = fileReaderOptions;
+  const { themes: _themes } = await fileReader({
     dir,
+    esbuild,
     patterns,
   });
   themes.length = 0;

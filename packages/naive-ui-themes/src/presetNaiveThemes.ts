@@ -17,8 +17,6 @@ const PRESET_NAME = 'un-naive-ui-multi-themes';
  * - preflight, 即向 虚拟模块 `uno.css` 中插入 naive-ui 主题相关的 css vars 声明
  * - extendTheme, 即扩展 uno 主题预设, 使得你可以使用 `bg-primary hover:text-success-hover` 等这些uno的规则
  *
- * 其中生成 variants 是基础功能, 无法关闭
- *
  * 此预设建议搭配 `tryRemoveThemeVariant` 使用: @see tryRemoveThemeVariant
  */
 export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends UnoThemeType = {}>(
@@ -31,17 +29,18 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
     ],
     layerName = PRESET_NAME,
     layerOrder = 0,
-    breakpoints = 'NaiveUI',
+    breakpoints = 'AntDesign',
     cssVarPrefix = '',
     preflight = true,
     extendTheme = true,
     autoimportThemes = false,
     dir,
     patterns,
+    esbuild,
   } = options;
 
   if (autoimportThemes) {
-    const { themes: _themes, files: _files } = unsafeFileReaderSync({ dir, patterns });
+    const { themes: _themes, files: _files } = unsafeFileReaderSync({ dir, patterns, esbuild });
     themes = Array.from(_themes);
   }
 
