@@ -1,7 +1,7 @@
 declare module 'virtual:naive-ui-theme' {
   import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui';
-  import type { UseColorModeReturn } from '@vueuse/core';
-  import type { ComputedRef } from 'vue';
+  import type { UseColorModeOptions, UseColorModeReturn } from '@vueuse/core';
+  import type { ComputedRef, ShallowRef } from 'vue';
 
   export type ThemeType = 'default.dark' | 'default.light';
 
@@ -19,16 +19,16 @@ declare module 'virtual:naive-ui-theme' {
     currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
-  const themes: Array<Theme>;
-  const useTheme: (theme?: ThemeType) => UseThemeReturns;
+  const themes: ShallowRef<Array<Theme>>;
+  const useTheme: (theme?: ThemeType, options?: UseColorModeOptions<ThemeType>) => UseThemeReturns;
 
   export { themes, useTheme };
 }
 
 declare module '~naive-ui-theme' {
   import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui';
-  import type { UseColorModeReturn } from '@vueuse/core';
-  import type { ComputedRef } from 'vue';
+  import type { UseColorModeOptions, UseColorModeReturn } from '@vueuse/core';
+  import type { ComputedRef, ShallowRef } from 'vue';
 
   export type ThemeType = 'default.dark' | 'default.light';
 
@@ -46,8 +46,8 @@ declare module '~naive-ui-theme' {
     currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
-  const themes: Array<Theme>;
-  const useTheme: (theme?: ThemeType) => UseThemeReturns;
+  const themes: ShallowRef<Array<Theme>>;
+  const useTheme: (theme?: ThemeType, options?: UseColorModeOptions<ThemeType>) => UseThemeReturns;
 
   export { themes, useTheme };
 }

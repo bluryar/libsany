@@ -90,9 +90,6 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
       const colorCssVarValueMap: Map<string, `${string}(${string})`> = parsedRes
         .map((i) => new Map(Array.from(i.colorMap).map(([key, { rgbVars }]) => [key, rgbVars])))
         .reduce((prev, curr) => new Map([...prev, ...curr]), new Map());
-      const colorValueMap = parsedRes.map(
-        (i) => new Map(Array.from(i.colorMap).map(([key, { value }]) => [key, value])),
-      );
 
       const typeColors = parsedRes.map(({ colorMap, themeName }) => {
         const map = new Map(Array.from(colorMap).map(([key, { value }]) => [key, value]));

@@ -11,3 +11,9 @@ app.use(createPinia());
 app.use(router);
 
 app.mount('#app');
+
+if (import.meta.hot) {
+  import.meta.hot.acceptExports('~naive-ui-theme', (mod) => {
+    console.log('🚀 ~ file: index.vue:16 ~ mod:', mod);
+  });
+}

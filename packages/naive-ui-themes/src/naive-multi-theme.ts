@@ -28,7 +28,7 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
     await scanThemesDir({ dir, patterns, esbuild }, themes);
   } catch (error) {
     console.error(error);
-    console.warn(`[vite-plugin-naive-ui-multi-theme] 无法读取主题文件夹: ${resolvedDir}`);
+    console.warn(`[${PLUGIN_NAME}] 无法读取主题文件夹: ${resolvedDir}`);
     return { name: PLUGIN_NAME };
   }
 
@@ -106,8 +106,8 @@ async function genDtsFile(
     const dtsContent = virtualModuleIdList.map(
       (id) => `declare module '${id}' {
   import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui';
-  import type { UseColorModeReturn } from '@vueuse/core';
-  import type { ComputedRef } from 'vue';
+  import type { UseColorModeOptions, UseColorModeReturn } from '@vueuse/core';
+  import type { ComputedRef, ShallowRef } from 'vue';
 
   export type ThemeType = ${Array.from(themes)
     .map((i) => `'${i.name}'`)
@@ -127,8 +127,8 @@ async function genDtsFile(
     currentThemeOverrides: ComputedRef<GlobalThemeOverrides>;
   }
 
-  const themes: Array<Theme>;
-  const useTheme: (theme?: ThemeType) => UseThemeReturns;
+  const themes: ShallowRef<Array<Theme>>;
+  const useTheme: (theme?: ThemeType, options?: UseColorModeOptions<ThemeType>) => UseThemeReturns;
 
   export { themes, useTheme };
 }`,
@@ -145,43 +145,49 @@ async function genDtsFile(
 }
 
 async function genRuntimeCode(themes: Theme[], attribute = 'class', selector = 'html') {
-  const clientCode = `import { computed, effectScope, unref } from 'vue';
+  const clientCode = `import { computed, effectScope, shallowRef, unref, triggerRef } from 'vue';
 import { tryOnScopeDispose, useColorMode } from '@vueuse/core';
 import { darkTheme, lightTheme } from 'naive-ui';
 
-export const themes = ${JSON.stringify(Array.from(themes))};
+const getHash = () => Math.random().toString(36).substring(2, 8)
 
-export function useTheme(initialValue = 'auto') {
-  const modes = unref(themes).map((i) => {
-    const val = ${attribute === 'class' ? `i.name.replace('.', ' ')` : `i.name`};
-    return [i.name, val];
-  });
 
-  const options = {
-    selector: '${selector}',
+export let themes = shallowRef(${JSON.stringify(Array.from(themes))});
 
-    attribute: '${attribute}',
+if (import.meta.env.DEV) themes.__hash = getHash();
 
-    initialValue: initialValue,
-
-    modes: Object.fromEntries(modes),
-
-    disableTransition: !!1,
-  };
-
+export let useTheme = (initialValue = 'auto', options = {}) => {
   let scope = effectScope(!!1);
 
-  let colorMode = scope.run(() => useColorMode(options)) || (() => {
-    console.warn('[vite-plugin-naive-ui-multi-theme] 未在组件上下文中使用');
-    return useColorMode(options)
-  })();
+  let colorMode = scope.run(() => {
+    const optionsComputed = computed(() => {
+      const modes = unref(themes).map((i) => {
+        const val = ${attribute === 'class' ? `i.name.replace('.', ' ')` : `i.name`};
+        return [i.name, val];
+      });
+
+      const _options = {
+        selector: '${selector}',
+        attribute: '${attribute}',
+        initialValue: initialValue,
+        modes: Object.fromEntries(modes),
+        disableTransition: !!1,
+        storageKey: '${PLUGIN_NAME}',
+        ...options,
+      };
+
+      return _options
+    })
+
+    return useColorMode(unref(optionsComputed))
+  });
 
   const setTheme = (theme) => {
     colorMode.value = theme;
   };
 
   const isDark = computed(() => {
-    return !!unref(themes).find((i) => i.name === colorMode.value)?.isDark;
+    return !!unref(themes)?.find((i) => i.name === colorMode.value)?.isDark;
   });
 
   const currentTheme = computed(() => {
@@ -189,7 +195,7 @@ export function useTheme(initialValue = 'auto') {
   });
 
   const currentThemeOverrides = computed(() => {
-    const res = unref(themes).find((i) => i.name === colorMode.value)?.themeOverrides || {};
+    const res = unref(themes)?.find((i) => i.name === colorMode.value)?.themeOverrides || {};
     return res;
   });
 
@@ -209,6 +215,27 @@ export function useTheme(initialValue = 'auto') {
     setTheme,
   };
 }
+
+if (import.meta.env.DEV) useTheme.__hash = getHash();
+
+if (import.meta.hot) {
+  import.meta.hot.accept(
+    (newModule) => {
+      if(!import.meta.hot.data.rawThemes) {
+        import.meta.hot.data.rawThemes = themes;
+      }
+
+      import.meta.hot.data.prevThemes = themes;
+
+      import.meta.hot.data.currThemes = newModule.themes;
+
+      import.meta.hot.data.rawThemes.value = newModule.themes.value;
+
+      themes.value = newModule.themes.value;
+    }
+  )
+}
+
 `;
 
   return clientCode;

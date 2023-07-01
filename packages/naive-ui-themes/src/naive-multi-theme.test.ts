@@ -40,10 +40,10 @@ describe('naiveMultiTheme', () => {
     expect(resolveId).to.equal(virtualModuleId);
 
     const code = await (plugin.load as any)(virtualModuleId);
-    expect(code).to.include('export const themes =');
+    expect(code).to.include('export let themes =');
 
     const virtualModule = server.moduleGraph.getModuleById(virtualModuleId);
-    expect(virtualModule?.transformResult?.code).to.include('export const themes =');
+    expect(virtualModule?.transformResult?.code).to.include('export let themes =');
   });
 
   // FIXME 无法测试HMR的情况

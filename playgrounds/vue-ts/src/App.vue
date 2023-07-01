@@ -1,18 +1,16 @@
 <script setup lang="tsx">
 import { themes, useTheme } from '~naive-ui-theme';
 
-const res = useTheme();
-res.setTheme('default.dark');
+(window as any).themes = themes;
+
+const { setTheme, currentTheme, currentThemeOverrides } = useTheme();
+setTheme('default.dark');
 </script>
 
 <template>
-  <div class="default.light:text-error bg-primary/100 bg-theme-default-dark-primary/10">
-    {{ res.currentThemeOverrides }}
-    <br />
-    <br />
-    <br />
-    {{ themes }}
-  </div>
+  <NConfigProvider :theme="currentTheme" :theme-overrides="currentThemeOverrides">
+    <RouterView></RouterView>
+  </NConfigProvider>
 </template>
 
 <style scoped>
