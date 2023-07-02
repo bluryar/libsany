@@ -1,6 +1,15 @@
-import { variantMatcher } from '@unocss/preset-mini/utils';
-import { CSSEntries, type Preset, type Variant, VariantHandlerContext, definePreset, mergeDeep } from 'unocss';
-import _, { isString } from 'lodash';
+import {
+  CSSEntries,
+  type Preset,
+  type Variant,
+  VariantHandlerContext,
+  VariantObject,
+  definePreset,
+  escapeRegExp,
+  mergeDeep,
+} from 'unocss';
+import { h } from '@unocss/preset-mini/utils';
+import _ from 'lodash';
 import { ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
 import tinycolor from 'tinycolor2';
 import { unsafeFileReaderSync } from './file-reader';
@@ -162,8 +171,13 @@ function parseThemes<NaiveTheme extends Theme>(
 ) {
   const { selector = 'html', attribute = 'class', layerName = PRESET_NAME, cssVarPrefix = '' } = options;
 
-  const mergedCommon: Partial<ThemeCommonVars> = {
+  const common: Partial<ThemeCommonVars> = {
     ...theme.themeOverrides.common,
+  };
+
+  const mergedCommon = {
+    ...(theme.name.endsWith('dark') ? commonDark : commonLight),
+    ...common,
   };
 
   let { mergedSelector } = getSelector(theme, selector || 'html', attribute || 'class');
@@ -180,59 +194,64 @@ function parseThemes<NaiveTheme extends Theme>(
     }
   }
 
-  const { rules, colorMap } = getCssRules(mergedCommon, cssVarPrefix);
+  const { rules, colorMap } = getCssRules(common, cssVarPrefix);
 
   const code = `${mergedSelector} {${rules.join('')}}`;
 
   const getVariant = (name = theme.name) => {
-    const v = variantMatcher(
+    let re: RegExp;
+    return {
       name,
-      (input) =>
-        ({
-          prefix: `${mergedSelector} $$ ${input.prefix}`,
-          layer: layerName,
-        } satisfies Partial<VariantHandlerContext>),
-    );
+      multiPass: !!1,
+      order: inner ? Infinity : undefined,
+      match(input, ctx) {
+        if (!re) re = new RegExp(`^${escapeRegExp(name)}(?:${ctx.generator.config.separators.join('|')})`);
 
-    v.multiPass = true;
+        const match = input.match(re);
+        if (match) {
+          return {
+            body(body) {
+              let mayByColorRecord = body?.find?.(
+                ([key, value]) => key?.endsWith?.('color') && (value as string)?.startsWith?.('var(--'),
+              );
+              if (mayByColorRecord) {
+                const [name, value] = mayByColorRecord;
+                if (_.isString(value)) {
+                  // 获取原始key, 即从用户主题配置文件获取的key
+                  let [, key = ''] = value.match(/^var\(--(.+)\)/) || [];
+                  // eg: var(--${maybeWithPrefix}-primary-color) => primaryColor
+                  key = _.camelCase(key.replace(cssVarPrefix, ''));
 
-    const match = v.match;
-    v.match = async (input, context) => {
-      const res = await match(input, context);
+                  let targetValue = (mergedCommon as any)[key];
+                  if (targetValue) {
+                    const split = input?.split(/(?:\/|:)/) || [];
+                    let { r, g, b, a } = tinycolor(targetValue).toRgb();
+                    let coverAlpha: any = h.bracket.percent.cssvar(split[split.length - 1]);
 
-      if (!isString(res) && !_.isNil(res) && res.matcher && input.endsWith(res.matcher!)) {
-        res.body = (body) => {
-          let mayByColorRecord = body?.find?.(
-            ([key, value]) => key?.endsWith?.('color') && (value as string)?.startsWith?.('var(--'),
-          );
-          if (mayByColorRecord) {
-            const [name, value] = mayByColorRecord;
-            if (isString(value)) {
-              // 获取原始key, 即从用户主题配置文件获取的key
-              let [, key = ''] = value.match(/^var\(--(.+)\)/) || [];
-              key = _.camelCase(key.replace(cssVarPrefix, ''));
-              const res = colorMap.get(key);
-
-              const entries = res?.getCSSEntries?.(name);
-              if (entries) {
-                return entries;
+                    coverAlpha = Number(_.isNil(coverAlpha) || Number.isNaN(coverAlpha) ? a : coverAlpha);
+                    return [
+                      ['--un-theme-opacity', Number.isNaN(coverAlpha) ? a : coverAlpha],
+                      [name, `rgba(${r},${g},${b},var(--un-theme-opacity))`],
+                    ];
+                  }
+                }
               }
-            }
-          }
-
-          return body;
-        };
-      }
-
-      return res;
-    };
-
-    // make it always the last one
-    if (inner) {
-      v.order = Infinity;
-    }
-
-    return v;
+              return body;
+            },
+            matcher: input.slice(match[0].length),
+            handle: (input, next) =>
+              next({
+                ...input,
+                ...({
+                  prefix: `${mergedSelector} $$ ${input.prefix}`,
+                  layer: layerName,
+                } satisfies Partial<VariantHandlerContext>),
+              }),
+          };
+        }
+      },
+      autocomplete: `${name}:`,
+    } satisfies VariantObject;
   };
 
   const variants = [getVariant(theme.name), getVariant(`[${theme.name}]`)];
@@ -247,14 +266,14 @@ function parseThemes<NaiveTheme extends Theme>(
   };
 }
 
-function getCssRules(mergedCommon: Partial<ThemeCommonVars & { [k: string]: any }>, cssVarPrefix: string) {
+function getCssRules(common: Partial<ThemeCommonVars & { [k: string]: any }>, cssVarPrefix: string) {
   type ThemeName = string;
   const colorMap = new Map<
     ThemeName,
     { value: string; rgbVars: string; rgba: string; getCSSEntries: (attrName: string) => CSSEntries }
   >();
 
-  const rules = Object.entries(mergedCommon).map(([key, value]) => {
+  const rules = Object.entries(common).map(([key, value]) => {
     let rules = `--${_.kebabCase(cssVarPrefix + '-' + key)}: ${value};`;
     const color = tinycolor(value);
 

@@ -13,7 +13,7 @@ res.setTheme('default.dark');
 </script>
 
 <template>
-  <div class="[default.light]:bg-primary bg-op-10">
+  <div class="default.dark:bg-primary/50% default.dark:bg-blue/50">
     {{ res.currentThemeOverrides }}
     <br />
     <br />

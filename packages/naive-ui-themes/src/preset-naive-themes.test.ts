@@ -201,8 +201,12 @@ describe('presetNaiveThemes', () => {
       'default.light:bg-primary',
       '[default.light]:bg-white',
       '[default.light]:bg-theme-default-light-primary',
+
+      'default.light:bg-primary/50',
+      'default.light:bg-primary/50%',
     ]);
     expect(css).toContain('html[theme="default.light"]');
+    expect(css).toContain('--un-theme-opacity:0.5');
 
     expect(css).toMatchInlineSnapshot(`
       "/* layer: preflights */
@@ -214,6 +218,8 @@ describe('presetNaiveThemes', () => {
       html[theme=\\"default.light\\"] .\\\\[default\\\\.light\\\\]\\\\:bg-theme-default-light-primary{--un-bg-opacity:1;background-color:rgba(34,130,252,var(--un-bg-opacity));}
       html[theme=\\"default.light\\"] .\\\\[default\\\\.light\\\\]\\\\:bg-white{--un-bg-opacity:1;background-color:rgba(255,255,255,var(--un-bg-opacity));}
       html[theme=\\"default.light\\"] .default\\\\.light\\\\:bg-primary{--un-theme-opacity:1;background-color:rgba(34,130,252,var(--un-theme-opacity));}
+      html[theme=\\"default.light\\"] .default\\\\.light\\\\:bg-primary\\\\/50,
+      html[theme=\\"default.light\\"] .default\\\\.light\\\\:bg-primary\\\\/50\\\\%{--un-theme-opacity:0.5;background-color:rgba(34,130,252,var(--un-theme-opacity));}
       html[theme=\\"default.light\\"] .\\\\[default\\\\.light\\\\]-color-white,
       html[theme=\\"default.light\\"] .default\\\\.light-color-white{--un-text-opacity:1;color:rgba(255,255,255,var(--un-text-opacity));}
       /* layer: default */
