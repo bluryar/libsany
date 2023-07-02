@@ -14,6 +14,9 @@
 - [x] ~~useTheme 实现与参数调整~~
 - [x] ~~naiveMultiTheme HMR 策略调整~~
 - [x] ~~presetNaiveThemes preflight 的字符串大小减少~~
+- [ ] SSR 支持
+- [ ] HMR 改进 - 新增\重命名\删除主题文件时, 目前虚拟模块还未测试能否正常应用新的 mode
+- [ ] 虚拟模块提供客户端导入模式
 
 </details>
 
