@@ -132,6 +132,9 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
   });
 }
 
+/**
+ * 生成插入css样式表的preflight规则， 主要是将naive的配置转换成css规则
+ */
 function getColorsRecord(
   colorCssVarValueMap: Map<string, string>,
   transformKey: (path: string) => string = (input) => input,
@@ -164,6 +167,9 @@ function getColorsRecord(
     }, {});
 }
 
+/**
+ * 解析配置项和主题配置文件得到中间过程中使用的各种信息
+ */
 function parseThemes<NaiveTheme extends Theme>(
   theme: NaiveTheme,
   options: PresetNaiveThemesOptions<NaiveTheme>,
