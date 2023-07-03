@@ -31,9 +31,18 @@ describe('fileReader', () => {
     const { themes } = await fileReader({
       dir: './packages/naive-ui-themes/test/fixtures/themes',
     });
-    expect(themes.length).toBe(1);
+    expect(themes.length).toBe(2);
     expect(themes).toMatchInlineSnapshot(`
       [
+        {
+          "isDark": true,
+          "name": "default.dark",
+          "themeOverrides": {
+            "common": {
+              "primaryColor": "red",
+            },
+          },
+        },
         {
           "isDark": false,
           "name": "default.light",

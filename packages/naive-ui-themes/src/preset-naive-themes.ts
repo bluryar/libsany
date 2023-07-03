@@ -210,35 +210,8 @@ function parseThemes<NaiveTheme extends Theme>(
         const match = input.match(re);
         if (match) {
           return {
-            body(body) {
-              let mayByColorRecord = body?.find?.(
-                ([key, value]) => key?.endsWith?.('color') && (value as string)?.startsWith?.('var(--'),
-              );
-              if (mayByColorRecord) {
-                const [name, value] = mayByColorRecord;
-                if (_.isString(value)) {
-                  // 获取原始key, 即从用户主题配置文件获取的key
-                  let [, key = ''] = value.match(/^var\(--(.+)\)/) || [];
-                  // eg: var(--${maybeWithPrefix}-primary-color) => primaryColor
-                  key = _.camelCase(key.replace(cssVarPrefix, ''));
-
-                  let targetValue = (mergedCommon as any)[key];
-                  if (targetValue) {
-                    const split = input?.split(/(?:\/|:)/) || [];
-                    let { r, g, b, a } = tinycolor(targetValue).toRgb();
-                    let coverAlpha: any = h.bracket.percent.cssvar(split[split.length - 1]);
-
-                    coverAlpha = Number(_.isNil(coverAlpha) || Number.isNaN(coverAlpha) ? a : coverAlpha);
-                    return [
-                      ['--un-theme-opacity', Number.isNaN(coverAlpha) ? a : coverAlpha],
-                      [name, `rgba(${r},${g},${b},var(--un-theme-opacity))`],
-                    ];
-                  }
-                }
-              }
-              return body;
-            },
             matcher: input.slice(match[0].length),
+            body: genVariantBody(cssVarPrefix, mergedCommon, input),
             handle: (input, next) =>
               next({
                 ...input,
@@ -263,6 +236,50 @@ function parseThemes<NaiveTheme extends Theme>(
     colorMap,
     variants: variants,
     code,
+  };
+}
+
+/**
+ * 生成变体的body， body可以覆盖原有rule的生成
+ * @param cssVarPrefix 前缀
+ * @param mergedCommon 合并后的common变量
+ * @param input 待匹配的用户输入 - default.dark:bg-primary/50%
+ */
+function genVariantBody(
+  cssVarPrefix: string,
+  mergedCommon: ThemeCommonVars,
+  input: string,
+): ((body: CSSEntries) => CSSEntries | undefined) | undefined {
+  return (body) => {
+    let mayByColorRecord = body?.find?.(
+      ([key, value]) => key?.endsWith?.('color') && (value as string)?.startsWith?.('var(--'),
+    );
+    if (mayByColorRecord) {
+      const [name, value] = mayByColorRecord;
+      if (_.isString(value)) {
+        // 获取原始key, 即从用户主题配置文件获取的key
+        let [, key = ''] = value.match(/^var\(--(.+)\)/) || [];
+        // eg: var(--${maybeWithPrefix}-primary-color) => primaryColor
+        key = _.camelCase(key.replace(cssVarPrefix, ''));
+
+        let targetValue = (mergedCommon as any)[key];
+        if (targetValue) {
+          const split = input?.split(/(?:\/|:)/) || [];
+          let { r, g, b, a } = tinycolor(targetValue).toRgb();
+          let coverAlpha: any = h.bracket.percent.cssvar(split[split.length - 1]);
+
+          coverAlpha = Number(_.isNil(coverAlpha) || Number.isNaN(coverAlpha) ? a : coverAlpha);
+
+          const entries = [
+            ['--un-theme-opacity', Number.isNaN(coverAlpha) ? a : coverAlpha],
+            [name, `rgba(${r},${g},${b},var(--un-theme-opacity))`],
+          ] satisfies CSSEntries;
+
+          return entries;
+        }
+      }
+    }
+    return body;
   };
 }
 
