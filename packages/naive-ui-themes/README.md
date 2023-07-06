@@ -20,6 +20,37 @@
 
 </details>
 
+| 亮色                                    | 暗色                                    |
+| --------------------------------------- | --------------------------------------- |
+| ![亮色主题](./screenshots/亮色主题.png) | ![暗色主题](./screenshots/暗色主题.png) |
+
+<details>
+  <summary>效果</summary>
+
+- **Unocss**
+
+  ![默认 - CSS Vars](./screenshots/默认-CSSVars.png)
+  _默认 - CSS Vars_
+
+  ![指定主题 - 固定颜色值](./screenshots/指定主题-固定颜色值.png)
+  _指定主题 - 固定颜色值_
+
+  ![指定主题 - 覆盖透明度](./screenshots/指定主题-覆盖透明度.png)
+  _指定主题 - 覆盖透明度_
+
+  ![指定主题 - 主题variant的另外种写法](./screenshots/指定主题-主题variant的另外种写法.png)
+  _指定主题 - 主题 variant 的另外种写法_
+
+- **Vite Plugins**
+
+  ![虚拟模块类型定义生成](./screenshots/虚拟模块类型定义生成.png)
+  _虚拟模块类型定义生成_
+
+  ![虚拟模块使用](./screenshots/虚拟模块使用.png)
+  _虚拟模块使用_
+
+</details>
+
 ## 使用
 
 1. 安装

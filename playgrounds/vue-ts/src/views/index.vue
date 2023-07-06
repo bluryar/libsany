@@ -1,19 +1,20 @@
 <script setup lang="tsx">
-import { themes, useTheme } from '~naive-ui-theme';
+import { type ThemeType, themes, useTheme } from '~naive-ui-theme';
+
+const type: ThemeType = 'default.dark';
 
 const res = useTheme();
-res.setTheme('default.dark');
+res.setTheme(type);
 
 let i = 0;
 setInterval(() => {
   const res1 = i++ % 2 ? 'default.light' : 'default.dark';
-  console.log('🚀 ~ file: index.vue:11 ~ setInterval ~ res:', res1);
   res.setTheme(res1 as any);
-}, 1000);
+}, 5000);
 </script>
 
 <template>
-  <div class="default.dark:bg-primary/50% [default.light]:bg-error">
+  <div class="bg-primary default.dark:bg-primary default.dark:bg-primary/50 [default.light]:bg-error">
     {{ res.currentThemeOverrides }}
     <br />
     <br />
