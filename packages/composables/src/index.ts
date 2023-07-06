@@ -1,3 +1,3 @@
 export * from './createHOC';
-export * from './useDialog';
+export * from './usePopup';
 export * from './types';

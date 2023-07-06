@@ -3,18 +3,18 @@ import { createHOC } from '../createHOC';
 import type { CreateHOCOptions } from '../createHOC/types';
 import type { ComponentExternalProps, ComponentType } from '../types';
 
-const UseDialogVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const;
-type UseDialogVisibleKey = (typeof UseDialogVisibleKeys)[number];
-interface UseDialogOptionsBase<Com extends ComponentType, ComponentRef = unknown>
+const UsePopupVisibleKeys = ['visible', 'show', 'modelValue', 'value'] as const;
+type UsePopupVisibleKey = (typeof UsePopupVisibleKeys)[number];
+interface UsePopupOptionsBase<Com extends ComponentType, ComponentRef = unknown>
   extends CreateHOCOptions<Com, ComponentRef> {
   /**
    * 弹出双向绑定的key `<Dialog v-model:visible="bool"></Dialog>`
    * @default 'visible'
    * */
-  visibleKey?: UseDialogVisibleKey;
+  visibleKey?: UsePopupVisibleKey;
 }
-export interface UseDialogOptionsAuto<Com extends ComponentType, ComponentRef = unknown>
-  extends UseDialogOptionsBase<Com, ComponentRef> {
+export interface UsePopupOptionsAuto<Com extends ComponentType, ComponentRef = unknown>
+  extends UsePopupOptionsBase<Com, ComponentRef> {
   /**
    * 是否自动挂载组件，由于 vue 不提供获取injectionKey的缘故, 建议当你需要使用外部注入的内容时, 设置为false
    */
@@ -29,16 +29,16 @@ export interface UseDialogOptionsAuto<Com extends ComponentType, ComponentRef = 
    */
   appContext?: any;
 }
-export interface UseDialogOptionsManual<Com extends ComponentType, ComponentRef = unknown>
-  extends UseDialogOptionsBase<Com, ComponentRef> {
+export interface UsePopupOptionsManual<Com extends ComponentType, ComponentRef = unknown>
+  extends UsePopupOptionsBase<Com, ComponentRef> {
   /**
    * 是否自动挂载组件，由于 vue 不提供获取injectionKey的缘故, 建议当你需要使用外部注入的内容时, 设置为false
    */
   auto?: false;
 }
-export type UseDialogOptions<Com extends ComponentType, ComponentRef = unknown> =
-  | UseDialogOptionsAuto<Com, ComponentRef>
-  | UseDialogOptionsManual<Com, ComponentRef>;
+export type UsePopupOptions<Com extends ComponentType, ComponentRef = unknown> =
+  | UsePopupOptionsAuto<Com, ComponentRef>
+  | UsePopupOptionsManual<Com, ComponentRef>;
 
 export interface SetState<Com extends ComponentType> {
   <Key extends string>(key: Key, value: unknown): void;
@@ -49,7 +49,7 @@ export interface SetState<Com extends ComponentType> {
   (state?: Partial<ComponentExternalProps<Com>>): void;
 }
 
-export interface UseDialogReturnBase<Com extends ComponentType, ComponentRef = unknown>
+export interface UsePopupReturnBase<Com extends ComponentType, ComponentRef = unknown>
   extends Omit<ReturnType<typeof createHOC<Com, ComponentRef>>, 'HOC'> {
   /**
    * 是否显示组件
@@ -66,8 +66,8 @@ export interface UseDialogReturnBase<Com extends ComponentType, ComponentRef = u
    */
   closeDialog: SetState<Com>;
 }
-export interface UseDialogReturnAuto<Com extends ComponentType, ComponentRef = unknown>
-  extends UseDialogReturnBase<Com, ComponentRef> {
+export interface UsePopupReturnAuto<Com extends ComponentType, ComponentRef = unknown>
+  extends UsePopupReturnBase<Com, ComponentRef> {
   /** 组件是否挂载完毕 */
   mounted: ComputedRef<boolean>;
 
@@ -86,15 +86,12 @@ export interface UseDialogReturnAuto<Com extends ComponentType, ComponentRef = u
    */
   dom: ShallowRef<HTMLElement | null>;
 }
-export interface UseDialogReturnManual<Com extends ComponentType, ComponentRef = unknown>
-  extends UseDialogReturnBase<Com, ComponentRef> {
+export interface UsePopupReturnManual<Com extends ComponentType, ComponentRef = unknown>
+  extends UsePopupReturnBase<Com, ComponentRef> {
   /**
    * 弹窗组件
    */
   Dialog: ReturnType<typeof createHOC<Com, ComponentRef>>['HOC'];
 }
-export type UseDialogReturn<Com extends ComponentType, ComponentRef = unknown> = UseDialogReturnAuto<
-  Com,
-  ComponentRef
-> &
-  UseDialogReturnManual<Com, ComponentRef>;
+export type UsePopupReturn<Com extends ComponentType, ComponentRef = unknown> = UsePopupReturnAuto<Com, ComponentRef> &
+  UsePopupReturnManual<Com, ComponentRef>;

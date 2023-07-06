@@ -15,7 +15,7 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
   /**
    * 代理插槽， 大部分情况下你都不应传入
    *
-   * 当你尝试编写 useDialog 时， 也许你会希望自动挂载弹窗组件，这时候，你可以将插槽代理
+   * 当你尝试编写 usePopup 时， 也许你会希望自动挂载弹窗组件，这时候，你可以将插槽代理
    */
   slots?: Slots;
 }

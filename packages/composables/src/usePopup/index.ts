@@ -22,37 +22,37 @@ import { vModels } from '../_utils_';
 import type { ComponentType, GetComponentLooseProps } from '../types';
 
 import type {
-  UseDialogOptions,
-  UseDialogOptionsAuto,
-  UseDialogOptionsManual,
-  UseDialogReturn,
-  UseDialogReturnAuto,
-  UseDialogReturnBase,
-  UseDialogReturnManual,
+  UsePopupOptions,
+  UsePopupOptionsAuto,
+  UsePopupOptionsManual,
+  UsePopupReturn,
+  UsePopupReturnAuto,
+  UsePopupReturnBase,
+  UsePopupReturnManual,
 } from './types';
 
 export type {
-  UseDialogOptions,
-  UseDialogOptionsAuto,
-  UseDialogOptionsManual,
-  UseDialogReturn,
-  UseDialogReturnAuto,
-  UseDialogReturnManual,
+  UsePopupOptions,
+  UsePopupOptionsAuto,
+  UsePopupOptionsManual,
+  UsePopupReturn,
+  UsePopupReturnAuto,
+  UsePopupReturnManual,
 };
 
 // overload
-export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
-  options: UseDialogOptionsAuto<Com, ComponentRef>,
-): UseDialogReturnAuto<Com, ComponentRef>;
+export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
+  options: UsePopupOptionsAuto<Com, ComponentRef>,
+): UsePopupReturnAuto<Com, ComponentRef>;
 
-export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
-  options: UseDialogOptionsManual<Com, ComponentRef>,
-): UseDialogReturnManual<Com, ComponentRef>;
+export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
+  options: UsePopupOptionsManual<Com, ComponentRef>,
+): UsePopupReturnManual<Com, ComponentRef>;
 
 // implement
-export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
-  options: UseDialogOptions<Com, ComponentRef>,
-): UseDialogReturn<Com, ComponentRef> {
+export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
+  options: UsePopupOptions<Com, ComponentRef>,
+): UsePopupReturn<Com, ComponentRef> {
   type Props = GetComponentLooseProps<Com>;
 
   const { auto = false, props: initState = {}, visibleKey = 'visible' } = options;
@@ -99,7 +99,7 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
   );
 
   // 构造共有返回值
-  let returns: UseDialogReturnBase<Com, ComponentRef> = {
+  let returns: UsePopupReturnBase<Com, ComponentRef> = {
     ...omit(createHOCReturns, ['HOC', 'restoreState'] as const),
 
     restoreState,
@@ -139,7 +139,7 @@ export function useDialog<Com extends ComponentType, ComponentRef = unknown>(
 
   if (isTrue(auto)) {
     const vm = getCurrentInstance();
-    const { appContext, to = () => document.body } = options as UseDialogOptionsAuto<Com, ComponentRef>;
+    const { appContext, to = () => document.body } = options as UsePopupOptionsAuto<Com, ComponentRef>;
     const display = ref(true);
     const dom = shallowRef<HTMLElement | null>(null);
 

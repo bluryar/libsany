@@ -4,9 +4,9 @@ import { mount } from '@vue/test-utils';
 import { array } from 'vue-types';
 import { isHTMLDivElement } from '@bluryar/shared';
 import { describe, expect, it } from 'vitest';
-import { useDialog } from './index';
+import { usePopup } from './index';
 
-describe('useDialog', () => {
+describe('usePopup', () => {
   const VDialog = defineComponent({
     name: 'VDialog',
     props: {
@@ -43,7 +43,7 @@ describe('useDialog', () => {
   });
 
   it('should create a dialog instance', async () => {
-    const { visible, openDialog, closeDialog, Dialog, getState, restoreState } = useDialog({
+    const { visible, openDialog, closeDialog, Dialog, getState, restoreState } = usePopup({
       component: VDialog,
       props: {
         formItems: [{ key: 'index', type: 'input', prop: { val: 1 } } as const],
@@ -128,7 +128,7 @@ describe('useDialog', () => {
       mounted,
       remount,
       ref: refInst,
-    } = useDialog({
+    } = usePopup({
       component: VDialog,
       props: {
         formItems: [{ key: 'index', type: 'input', prop: { val: 1 } } as const],
