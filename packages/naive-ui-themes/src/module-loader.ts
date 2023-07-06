@@ -1,12 +1,12 @@
-import path from 'path';
+import path from 'node:path';
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
-import vm from 'vm';
-import { pathToFileURL } from 'url';
+import { pathToFileURL } from 'node:url';
 import fg from 'fast-glob';
 import { createCommonJS } from 'mlly';
 import { BuildOptions, BuildResult, buildSync } from 'esbuild';
 import _ from 'lodash';
-import type { FileReaderOptions, Theme } from './types';
+import { GlobalThemeOverrides } from 'naive-ui';
+import type { ModuleLoaderOptions, Theme } from './types';
 
 const FILE_REGEX = /(\w+)?\.?(light|dark)\.(json|js|ts|mjs|cjs|mts|cts)$/;
 
@@ -19,7 +19,7 @@ const FILE_REGEX = /(\w+)?\.?(light|dark)\.(json|js|ts|mjs|cjs|mts|cts)$/;
  *
  * @deprecated
  */
-export async function fileReader(options?: FileReaderOptions) {
+export async function moduleLoader(options?: ModuleLoaderOptions) {
   const {
     patterns = ['*.(light|dark).(json|js|ts)', '(light|dark).(json|js|ts)'],
     dir = './src/themes',
@@ -52,7 +52,7 @@ export async function fileReader(options?: FileReaderOptions) {
       try {
         const modules = buildSync(getBuildOptions(file, esbuild));
 
-        const themeOverrides = parseModule(modules, file, themeName);
+        const themeOverrides = parseCommonJsModule(modules, file, themeName);
 
         themes.push({
           name: themeName,
@@ -76,11 +76,11 @@ export async function fileReader(options?: FileReaderOptions) {
  *
  * - **同步版本, 不安全版本**
  *
- * - 基于 esbuild 和 node:vm 模块
+ * - 基于 esbuild 和 new Function + with 模块
  *
- * @see fileReader
+ * @see moduleLoader
  */
-export function unsafeFileReaderSync(options?: FileReaderOptions) {
+export function unsafeModuleLoaderSync(options?: ModuleLoaderOptions) {
   const {
     patterns = ['*.(light|dark).json', '(light|dark).json'],
     dir = './src/themes',
@@ -113,7 +113,7 @@ export function unsafeFileReaderSync(options?: FileReaderOptions) {
     try {
       const modules = buildSync(getBuildOptions(file, esbuild));
 
-      const themeOverrides = parseModule(modules, file, themeName);
+      const themeOverrides = parseCommonJsModule(modules, file, themeName);
 
       themes.push({
         name: themeName,
@@ -152,7 +152,7 @@ function getBuildOptions(file: string, esbuild: BuildOptions): BuildOptions & { 
   };
 }
 
-function parseModule(
+function parseCommonJsModule(
   modules: BuildResult<
     BuildOptions & {
       write: false;
@@ -162,13 +162,17 @@ function parseModule(
   themeName: string,
 ) {
   const rawCode = modules.outputFiles[0].text;
-  const script = new vm.Script(rawCode);
-  const module = createCommonJS(pathToFileURL(file).toString());
-  const context = { module } as any;
-  script.runInNewContext(context);
   const exportName = `${themeName}.default`.replaceAll('.', '_');
+  const context = {
+    module: { export: {}, ...createCommonJS(pathToFileURL(file).toString()) },
+    [exportName]: null,
+  };
+  const inputCode = rawCode.replaceAll(`var ${exportName}`, exportName);
+  // eslint-disable-next-line no-new-func
+  const fn = new Function(exportName, `with (${exportName}) { ${inputCode} }`);
+  fn(context);
   const themeOverrides = context[exportName];
-  return themeOverrides;
+  return themeOverrides as GlobalThemeOverrides;
 }
 
 function readFilesAndCreate(resolvedDir: string, patterns: string[]): string[] | never {

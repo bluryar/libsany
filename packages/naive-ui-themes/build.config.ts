@@ -9,7 +9,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineBuildConfig({
-  entries: ['src/index', 'src/naive-multi-theme', 'src/preset-naive-themes', 'src/file-reader'],
+  entries: ['src/index', 'src/naive-multi-theme', 'src/preset-naive-themes', 'src/module-loader'],
 
   replace: {
     'import.meta.vitest': 'undefined',

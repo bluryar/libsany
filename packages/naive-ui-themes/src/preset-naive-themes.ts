@@ -12,7 +12,7 @@ import { h } from '@unocss/preset-mini/utils';
 import _ from 'lodash';
 import { ThemeCommonVars, commonDark, commonLight } from 'naive-ui';
 import tinycolor from 'tinycolor2';
-import { unsafeFileReaderSync } from './file-reader';
+import { unsafeModuleLoaderSync } from './module-loader';
 import type { PresetNaiveThemesOptions, Theme, UnoTheme as UnoThemeType } from './types';
 import * as Breakpoints from './breakpoints';
 import { getSelector, wrapCssVarKey } from './utils';
@@ -50,7 +50,7 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
   } = options;
 
   if (autoimportThemes) {
-    const { themes: _themes, files: _files } = unsafeFileReaderSync({ dir, patterns, esbuild });
+    const { themes: _themes, files: _files } = unsafeModuleLoaderSync({ dir, patterns, esbuild });
     themes = Array.from(_themes);
   }
 

@@ -38,9 +38,9 @@
       "types": "./dist/naive-multi-theme.d.ts",
       "import": "./dist/naive-multi-theme.mjs"
     },
-    "./dist/file-reader": {
-      "types": "./dist/file-reader.d.ts",
-      "import": "./dist/file-reader.mjs"
+    "./dist/module-loader": {
+      "types": "./dist/module-loader.d.ts",
+      "import": "./dist/module-loader.mjs"
     }
   },
   "module": "./dist/index.mjs",

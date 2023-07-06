@@ -2,15 +2,15 @@ import { readdir, rm } from 'fs/promises';
 import { resolve } from 'path';
 import { sleep } from '@bluryar/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { fileReader, unsafeFileReaderSync } from './file-reader';
+import { moduleLoader, unsafeModuleLoaderSync } from './module-loader';
 
-describe('fileReader', () => {
+describe('moduleLoader', () => {
   const NOT_EXIST_DIR = './do-not-exits-themes-async';
   beforeAll(() => clear(NOT_EXIST_DIR));
   afterAll(() => clear(NOT_EXIST_DIR));
 
   it('async: should create a default light.json', async () => {
-    const { themes } = await fileReader({
+    const { themes } = await moduleLoader({
       dir: NOT_EXIST_DIR,
     });
     expect(themes.length).toBe(1);
@@ -28,7 +28,7 @@ describe('fileReader', () => {
   });
 
   it('async: should read a default.light.json', async () => {
-    const { themes } = await fileReader({
+    const { themes } = await moduleLoader({
       dir: './packages/naive-ui-themes/test/fixtures/themes',
     });
     expect(themes.length).toBe(2);
@@ -100,7 +100,7 @@ describe('fileReader', () => {
   });
 });
 
-describe('unsafeFileReaderSync', () => {
+describe('unsafeModuleLoaderSync', () => {
   const NOT_EXIST_DIR = './do-not-exits-themes-sync';
   beforeAll(() => clear(NOT_EXIST_DIR));
   afterAll(() => clear(NOT_EXIST_DIR));
@@ -108,7 +108,7 @@ describe('unsafeFileReaderSync', () => {
   it('sync: should create a default light.json', async () => {
     await sleep(100);
 
-    const { themes } = unsafeFileReaderSync({
+    const { themes } = unsafeModuleLoaderSync({
       dir: NOT_EXIST_DIR,
     });
     expect(themes.length).toBe(1);
@@ -127,7 +127,7 @@ describe('unsafeFileReaderSync', () => {
 
   it('sync: should read a default.light.json', async () => {
     await sleep(50);
-    const { themes } = unsafeFileReaderSync({
+    const { themes } = unsafeModuleLoaderSync({
       dir: './packages/naive-ui-themes/test/fixtures/themes',
     });
     expect(themes.length).toBe(1);

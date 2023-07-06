@@ -7,7 +7,7 @@ import Inspect from 'vite-plugin-inspect';
 
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
-import { naiveMultiTheme, unsafeFileReaderSync } from '@bluryar/naive-ui-themes';
+import { naiveMultiTheme, unsafeModuleLoaderSync } from '@bluryar/naive-ui-themes';
 
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
@@ -18,7 +18,7 @@ dotenv.config({ path: '../../.env' });
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
-  const { files } = unsafeFileReaderSync({ ...fileReaderOptions, parse: !!0 });
+  const { files } = unsafeModuleLoaderSync({ ...fileReaderOptions, parse: !!0 });
 
   return {
     define: {

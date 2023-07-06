@@ -21,7 +21,7 @@ export interface UnoTheme extends UnoMiniTheme {
   [x: string]: any;
 }
 
-export interface FileReaderOptions {
+export interface ModuleLoaderOptions {
   /**
    * 搜索文件的glob模式, 注意这些是同构文件, 会被Node和客户端共享
    *
@@ -51,7 +51,7 @@ export interface FileReaderOptions {
   esbuild?: Omit<BuildOptions, 'write' | 'format' | 'platform' | 'bundle' | 'entryPoints' | 'loader'>;
 }
 
-export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends FileReaderOptions {
+export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends ModuleLoaderOptions {
   /**
    * 插件生成的代码被放置在样式文件的哪个位置
    *
@@ -124,7 +124,7 @@ export interface PresetNaiveThemesOptions<NaiveTheme extends Theme> extends File
   autoimportThemes?: boolean;
 }
 
-export interface NaiveMultiThemeOptions extends FileReaderOptions {
+export interface NaiveMultiThemeOptions extends ModuleLoaderOptions {
   /**
    * 主题 对应的类名\属性 被应用的选择器
    *

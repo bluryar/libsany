@@ -1,8 +1,8 @@
 import path from 'node:path';
 import type { ModuleNode, Plugin } from 'vite';
 import { normalizePath } from 'vite';
-import type { FileReaderOptions, NaiveMultiThemeOptions, Theme } from './types';
-import { fileReader } from './file-reader';
+import type { ModuleLoaderOptions, NaiveMultiThemeOptions, Theme } from './types';
+import { moduleLoader } from './module-loader';
 import { patchWriteFile } from './utils';
 
 const PLUGIN_NAME = 'vite-plugin-naive-ui-multi-theme';
@@ -86,9 +86,9 @@ export async function naiveMultiTheme(options?: NaiveMultiThemeOptions): Promise
   };
 }
 
-async function scanThemesDir(fileReaderOptions: FileReaderOptions, themes: Theme[]) {
+async function scanThemesDir(fileReaderOptions: ModuleLoaderOptions, themes: Theme[]) {
   const { dir, esbuild, patterns } = fileReaderOptions;
-  const { themes: _themes } = await fileReader({
+  const { themes: _themes } = await moduleLoader({
     dir,
     esbuild,
     patterns,

@@ -8,7 +8,7 @@ import {
   transformerVariantGroup,
 } from 'unocss';
 import type { UserConfig } from 'unocss';
-import { type FileReaderOptions, presetNaiveThemes, tryRemoveThemeVariant } from '@bluryar/naive-ui-themes';
+import { type ModuleLoaderOptions, presetNaiveThemes, tryRemoveThemeVariant } from '@bluryar/naive-ui-themes';
 import { createCommonJS } from 'mlly';
 import { presetScrollbar } from 'unocss-preset-scrollbar';
 
@@ -22,7 +22,7 @@ export const selectorOptions = {
 export const fileReaderOptions = {
   dir: resolve(__dirname, './src/themes'),
   patterns: ['*.(light|dark).(json|js|ts|cjs|mjs)'],
-} satisfies FileReaderOptions;
+} satisfies ModuleLoaderOptions;
 
 const config = {
   warn: !!1,
