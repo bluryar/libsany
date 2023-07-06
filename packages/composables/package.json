@@ -1,6 +1,6 @@
 {
   "name": "@bluryar/composables",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "private": false,
   "description": "⚡ Vue3组合式API",
   "author": "bluryar <bluryarl@gmail.com>",
