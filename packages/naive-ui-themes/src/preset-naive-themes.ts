@@ -178,7 +178,7 @@ function parseThemes<NaiveTheme extends Theme>(
   const { selector = 'html', attribute = 'class', layerName = PRESET_NAME, cssVarPrefix = '' } = options;
 
   const common: Partial<ThemeCommonVars> = {
-    ...theme.themeOverrides.common,
+    ...(theme?.themeOverrides?.common || {}),
   };
 
   const mergedCommon = {
