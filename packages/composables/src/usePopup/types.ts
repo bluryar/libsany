@@ -1,4 +1,4 @@
-import type { ComputedRef, Ref, ShallowRef } from 'vue-demi';
+import type { AppContext, ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from 'vue-demi';
 import { createHOC } from '../createHOC';
 import type { CreateHOCOptions } from '../createHOC/types';
 import type { ComponentExternalProps, ComponentType } from '../types';
@@ -22,12 +22,12 @@ export interface UsePopupOptionsAuto<Com extends ComponentType, ComponentRef = u
   /**
    * 挂载到的 DOM 元素或返回 DOM 元素的函数
    */
-  to?: HTMLElement | (() => HTMLElement);
+  to?: MaybeRefOrGetter<HTMLElement>;
 
   /**
    * appContext 对象
    */
-  appContext?: any;
+  appContext?: MaybeRefOrGetter<AppContext>;
 }
 export interface UsePopupOptionsManual<Com extends ComponentType, ComponentRef = unknown>
   extends UsePopupOptionsBase<Com, ComponentRef> {

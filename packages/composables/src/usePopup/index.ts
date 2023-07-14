@@ -151,14 +151,26 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
       (val) => {
         val ? _mount() : _destroy();
       },
-      { immediate: !!1, flush: 'post' },
+      { immediate: !!1, flush: 'pre' },
     );
 
     function _mount() {
       // create
       container.value = document.createDocumentFragment();
       vnode.value = createVNode(DialogHOC.value as DefineComponent);
-      vnode.value.appContext = appContext || vm?.appContext || vnode.value.appContext;
+      vnode.value.appContext = toValue(appContext) || vm?.appContext || vnode.value.appContext;
+      const contextProvides = (vm as any)?.provides;
+      const parentProvides = (vm?.parent as any)?.provides;
+      const rootProvides = (vm?.root as any)?.provides;
+      const appProvides = (vm?.appContext as any)?.provides;
+
+      const provides = Object.create(contextProvides || parentProvides || rootProvides || appProvides || {});
+      vnode.value.appContext = !vm
+        ? null
+        : {
+            ...(vnode.value.appContext as any),
+            provides: provides as any,
+          };
       render(vnode.value, container.value as unknown as HTMLElement);
 
       // mount

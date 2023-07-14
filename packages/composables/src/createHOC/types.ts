@@ -1,4 +1,4 @@
-import { EffectScope, type ShallowRef, type Slots } from 'vue-demi';
+import { EffectScope, type ShallowReactive, type ShallowRef, type Slots } from 'vue-demi';
 import type { ComponentType, GetComponentLooseProps } from '../types';
 
 export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unknown> {
@@ -10,7 +10,7 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
   /**
    * @desc- 初始化的状态，其他状态请通过 `setState` 设置。
    */
-  props?: GetComponentLooseProps<Com>;
+  props?: ShallowReactive<GetComponentLooseProps<Com>>;
 
   /**
    * 代理插槽， 大部分情况下你都不应传入

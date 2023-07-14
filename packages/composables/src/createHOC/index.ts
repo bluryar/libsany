@@ -46,22 +46,8 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   const componentRef = shallowRef<typeof Empty | Com>(Empty);
   const instance = shallowRef(ref);
 
-  componentRef.value = createComponent();
-
-  tryOnScopeDispose(stop);
-
-  function stop() {
-    scope.stop();
-
-    nextTick(() => {
-      restoreState();
-      componentRef.value = createComponent();
-      instance.value = null;
-    });
-  }
-
-  function createComponent() {
-    return defineComponent({
+  const componentFactory = () =>
+    defineComponent({
       name: 'HOC',
       inheritAttrs: !!0,
       setup(_, ctx) {
@@ -113,6 +99,19 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
         return h(this.getComponent(), this.getProps(), this.getSlots());
       },
     }) as typeof component;
+
+  componentRef.value = componentFactory();
+
+  tryOnScopeDispose(stop);
+
+  function stop() {
+    scope.stop();
+
+    nextTick(() => {
+      restoreState();
+      componentRef.value = componentFactory();
+      instance.value = null;
+    });
   }
 
   // overload
