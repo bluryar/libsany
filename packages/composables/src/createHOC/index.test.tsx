@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { type PropType, defineComponent, isReactive, isShallow, nextTick, shallowRef } from 'vue-demi';
+import { type PropType, defineComponent, isReactive, isShallow, nextTick, reactive, shallowRef } from 'vue-demi';
 import { describe, expect, it } from 'vitest';
 import { createHOC } from './index';
 
@@ -26,14 +26,14 @@ describe('createHOC', () => {
     const { HOC, setState, getState, ref, restoreState } = createHOC({
       component: TestComponent,
       ref: shallowRef(null),
-      props: { msg: 'Hello, world!', obj: { val: 1 } },
+      props: { msg: 'Hello, world!', obj: reactive({ val: 1 }) },
     });
 
-    const TESTDOM = mount(HOC.value as any);
+    const TESTDOM = mount(HOC as any);
 
     // 测试 HOC 是否被正确创建
     await nextTick();
-    expect(HOC.value).toBeDefined();
+    expect(HOC).toBeDefined();
     expect(ref.value).toBeDefined();
 
     // 测试 getState 是否能够正确获取 state
@@ -49,7 +49,7 @@ describe('createHOC', () => {
     expect(TESTDOM.text()).toBe('{"msg":"Foo, Bar!","obj":{"val":1}}');
 
     // 测试 setState 是否能够正确更新 state 的嵌套属性
-    setState({ obj: { val: 2 } });
+    setState({ obj: reactive({ val: 2 }) });
     await nextTick();
     expect(getState()).toEqual({ msg: 'Foo, Bar!', obj: { val: 2 } });
     expect(TESTDOM.text()).toBe('{"msg":"Foo, Bar!","obj":{"val":2}}');
@@ -72,6 +72,7 @@ describe('createHOC', () => {
     expect(getState()).toEqual({ msg: 'Hi, world!' });
     expect(TESTDOM.text()).toBe('{"msg":"Hi, world!"}');
   });
+
   it('should create a HOC with the slots', async () => {
     const { HOC, setState, getState } = createHOC({
       component: TestComponent,
@@ -82,7 +83,7 @@ describe('createHOC', () => {
       props: { msg: 'Hello, world!', obj: { val: 1 } },
     });
 
-    const TESTDOM = mount(HOC.value as any);
+    const TESTDOM = mount(HOC as any);
 
     // 测试 getState 是否能够正确获取 state
     await nextTick();

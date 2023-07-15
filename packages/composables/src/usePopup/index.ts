@@ -1,5 +1,4 @@
 import {
-  type DefineComponent,
   computed,
   createCommentVNode,
   createVNode,
@@ -62,15 +61,11 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
   const visible = ref(getInitVisible(initState));
   const scope = effectScope();
 
-  const createHOCReturns = createHOC<Com, ComponentRef>(
-    {
-      ...options,
-      props: getInitProps(initState),
-    },
-    {
-      scope,
-    },
-  );
+  const createHOCReturns = createHOC<Com, ComponentRef>({
+    ...options,
+    scope,
+    props: getInitProps(initState),
+  });
   const { HOC: DialogHOC, setState, getState } = createHOCReturns;
 
   // 开关弹窗
@@ -89,7 +84,7 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
     },
     { immediate: !!1 },
   );
-  const state = getState('shallowReadonly');
+  const state = getState();
   watch(
     () => (state as any)[visibleKey],
     (v) => {
@@ -157,7 +152,7 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
     function _mount() {
       // create
       container.value = document.createDocumentFragment();
-      vnode.value = createVNode(DialogHOC.value as DefineComponent);
+      vnode.value = createVNode(DialogHOC);
       vnode.value.appContext = toValue(appContext) || vm?.appContext || vnode.value.appContext;
       const contextProvides = (vm as any)?.provides;
       const parentProvides = (vm?.parent as any)?.provides;

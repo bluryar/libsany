@@ -52,7 +52,7 @@ describe('usePopup', () => {
 
     const state = getState();
 
-    const wrapper = mount(Dialog.value as any);
+    const wrapper = mount(Dialog as any);
 
     // 等待下一个tick
     await nextTick();
