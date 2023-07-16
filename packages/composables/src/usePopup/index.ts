@@ -1,24 +1,12 @@
-import {
-  computed,
-  createCommentVNode,
-  createVNode,
-  effectScope,
-  getCurrentInstance,
-  mergeProps,
-  ref,
-  render,
-  shallowRef,
-  unref,
-  watch,
-} from 'vue-demi';
+import { effectScope, mergeProps, ref, watch } from 'vue-demi';
 
-/* eslint-disable no-inner-declarations */
 import { toValue } from '@vueuse/core';
 import { isTrue, isUndef } from '@bluryar/shared';
-import { get, omit } from 'lodash-es';
+import { get, omit, pick } from 'lodash-es';
 import { createHOC } from '../createHOC';
 import { vModels } from '../_utils_';
 import type { ComponentType, GetComponentLooseProps } from '../types';
+import { useAutoMount } from '../useAutoMount';
 
 import type {
   UsePopupOptions,
@@ -133,79 +121,14 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
   }
 
   if (isTrue(auto)) {
-    const vm = getCurrentInstance();
-    const { appContext, to = () => document.body } = options as UsePopupOptionsAuto<Com, ComponentRef>;
-    const display = ref(true);
-    const dom = shallowRef<HTMLElement | null>(null);
-
-    const container = shallowRef<HTMLElement | DocumentFragment | null>(document.createDocumentFragment());
-    const vnode = shallowRef<ReturnType<typeof createVNode> | null>(null);
-
-    watch(
-      display,
-      (val) => {
-        val ? _mount() : _destroy();
-      },
-      { immediate: !!1, flush: 'pre' },
-    );
-
-    function _mount() {
-      // create
-      container.value = document.createDocumentFragment();
-      vnode.value = createVNode(DialogHOC);
-      vnode.value.appContext = toValue(appContext) || vm?.appContext || vnode.value.appContext;
-      const contextProvides = (vm as any)?.provides;
-      const parentProvides = (vm?.parent as any)?.provides;
-      const rootProvides = (vm?.root as any)?.provides;
-      const appProvides = (vm?.appContext as any)?.provides;
-
-      const provides = Object.create(contextProvides || parentProvides || rootProvides || appProvides || {});
-      vnode.value.appContext = !vm
-        ? null
-        : {
-            ...(vnode.value.appContext as any),
-            provides: provides as any,
-          };
-      render(vnode.value, container.value as unknown as HTMLElement);
-
-      // mount
-      dom.value = vnode.value.el as HTMLElement;
-      toValue(to).appendChild(container.value);
-      display.value = !!1;
-    }
-
-    function _destroy() {
-      // unmount
-      render(null, container.value as unknown as HTMLElement);
-      container.value!.parentNode?.removeChild(container.value!);
-      vnode.value?.component?.update();
-      vnode.value = createCommentVNode('v-if', true);
-      vnode.value?.component?.update();
-
-      // update
-      dom.value = vnode.value.el as HTMLElement;
-      container.value = document.createDocumentFragment();
-      display.value = !!0;
-    }
+    const parReturns = useAutoMount({
+      component: DialogHOC,
+      ...pick(options as UsePopupOptionsAuto<Com, ComponentRef>, ['to', 'appContext', 'vIf', 'scope'] as const),
+    });
 
     return {
       ...returns,
-
-      destroy() {
-        if (!display.value) return;
-
-        _destroy();
-      },
-
-      remount() {
-        if (display.value) return;
-
-        _mount();
-      },
-
-      mounted: computed(() => !!unref(dom)),
-
-      dom: dom,
+      ...parReturns,
     } as any;
   }
 

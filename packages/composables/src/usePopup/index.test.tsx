@@ -126,7 +126,7 @@ describe('usePopup', () => {
       restoreState,
       destroy,
       mounted,
-      remount,
+      mount,
       ref: refInst,
     } = usePopup({
       component: VDialog,
@@ -212,7 +212,7 @@ describe('usePopup', () => {
     expect(visible.value).toBe(false);
 
     // 重新挂载对话框: 状态将被重置
-    remount();
+    mount();
     await nextTick();
 
     expect(mounted.value).toBe(true);
@@ -226,7 +226,7 @@ describe('usePopup', () => {
     destroy();
     restoreState({ visible: !!1 });
     await nextTick();
-    remount();
+    mount();
     await nextTick();
     expect(mounted.value).toBe(true);
     expect(isHTMLDivElement(dom.value)).toBe(true);
