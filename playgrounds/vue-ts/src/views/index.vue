@@ -1,4 +1,7 @@
 <script setup lang="tsx">
+import { getCurrentInstance } from 'vue';
+import { NButton, NDrawer, NDrawerContent } from 'naive-ui';
+import { usePopup } from '@bluryar/composables';
 import { type ThemeType, themes, useTheme } from '~naive-ui-theme';
 
 const type: ThemeType = 'default.dark';
@@ -10,7 +13,31 @@ let i = 0;
 setInterval(() => {
   const res1 = i++ % 2 ? 'default.light' : 'default.dark';
   res.setTheme(res1 as any);
-}, 5000);
+}, 2000);
+
+const inst = getCurrentInstance();
+console.log('🚀 ~ file: index.vue:18 ~ inst:', inst);
+
+const { openDialog } = usePopup({
+  component: NDrawer,
+  auto: !!1,
+  props: {
+    width: '50%',
+    placement: 'right',
+    show: !!1,
+  },
+  slots: {
+    default: () => [
+      <NDrawerContent>
+        <NButton type="primary">123</NButton>
+      </NDrawerContent>,
+    ],
+  },
+});
+
+setTimeout(() => {
+  openDialog();
+}, 1000);
 </script>
 
 <template>

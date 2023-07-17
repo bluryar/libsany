@@ -1,4 +1,5 @@
-import type { ComputedRef, Ref, ShallowRef } from 'vue-demi';
+import type { ComputedRef, Ref } from 'vue-demi';
+import type { useAutoMount } from '../useAutoMount';
 import { createHOC } from '../createHOC';
 import type { CreateHOCOptions } from '../createHOC/types';
 import type { ComponentExternalProps, ComponentType } from '../types';
@@ -14,21 +15,14 @@ interface UsePopupOptionsBase<Com extends ComponentType, ComponentRef = unknown>
   visibleKey?: UsePopupVisibleKey;
 }
 export interface UsePopupOptionsAuto<Com extends ComponentType, ComponentRef = unknown>
-  extends UsePopupOptionsBase<Com, ComponentRef> {
+  extends UsePopupOptionsBase<Com, ComponentRef>,
+    Omit<NonNullable<Parameters<typeof useAutoMount>[0]>, 'component'> {
   /**
    * 是否自动挂载组件，由于 vue 不提供获取injectionKey的缘故, 建议当你需要使用外部注入的内容时, 设置为false
    */
   auto: true;
-  /**
-   * 挂载到的 DOM 元素或返回 DOM 元素的函数
-   */
-  to?: HTMLElement | (() => HTMLElement);
-
-  /**
-   * appContext 对象
-   */
-  appContext?: any;
 }
+
 export interface UsePopupOptionsManual<Com extends ComponentType, ComponentRef = unknown>
   extends UsePopupOptionsBase<Com, ComponentRef> {
   /**
@@ -36,6 +30,7 @@ export interface UsePopupOptionsManual<Com extends ComponentType, ComponentRef =
    */
   auto?: false;
 }
+
 export type UsePopupOptions<Com extends ComponentType, ComponentRef = unknown> =
   | UsePopupOptionsAuto<Com, ComponentRef>
   | UsePopupOptionsManual<Com, ComponentRef>;
@@ -66,26 +61,14 @@ export interface UsePopupReturnBase<Com extends ComponentType, ComponentRef = un
    */
   closeDialog: SetState<Com>;
 }
+
 export interface UsePopupReturnAuto<Com extends ComponentType, ComponentRef = unknown>
-  extends UsePopupReturnBase<Com, ComponentRef> {
+  extends UsePopupReturnBase<Com, ComponentRef>,
+    NonNullable<ReturnType<typeof useAutoMount>> {
   /** 组件是否挂载完毕 */
   mounted: ComputedRef<boolean>;
-
-  /**
-   * 销毁组件
-   */
-  destroy: () => void;
-
-  /**
-   * 重新挂载组件
-   */
-  remount: () => void;
-
-  /**
-   * 组件的 DOM 元素
-   */
-  dom: ShallowRef<HTMLElement | null>;
 }
+
 export interface UsePopupReturnManual<Com extends ComponentType, ComponentRef = unknown>
   extends UsePopupReturnBase<Com, ComponentRef> {
   /**
@@ -93,5 +76,6 @@ export interface UsePopupReturnManual<Com extends ComponentType, ComponentRef = 
    */
   Dialog: ReturnType<typeof createHOC<Com, ComponentRef>>['HOC'];
 }
+
 export type UsePopupReturn<Com extends ComponentType, ComponentRef = unknown> = UsePopupReturnAuto<Com, ComponentRef> &
   UsePopupReturnManual<Com, ComponentRef>;
