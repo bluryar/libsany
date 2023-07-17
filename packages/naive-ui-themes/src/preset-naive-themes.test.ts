@@ -149,7 +149,7 @@ describe('presetNaiveThemes', () => {
       .bg-primary-hover{background-color:var(--primary-color-hover);}
       .bg-primary-pressed{background-color:var(--primary-color-pressed);}
       .bg-red-500{--un-bg-opacity:1;background-color:rgba(239,68,68,var(--un-bg-opacity));}
-      @media (min-width: 768){
+      @media (min-width: 768px){
       .md\\\\:bg-primary{background-color:var(--primary-color);}
       }"
     `);

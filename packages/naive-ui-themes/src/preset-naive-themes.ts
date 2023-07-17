@@ -122,14 +122,18 @@ export function presetNaiveThemes<_NaiveTheme_ extends Theme, _UnoTheme_ extends
       const merged = mergeDeep(theme, customTheme);
 
       if (typeof breakpoints === 'object') {
-        merged.breakpoints = breakpoints as any;
+        merged.breakpoints = transformBreakpoints(breakpoints);
       } else if (breakpoints) {
-        merged.breakpoints = (Breakpoints as any)[`breakpoints${breakpoints}`];
+        merged.breakpoints = transformBreakpoints((Breakpoints as any)[`breakpoints${breakpoints}`]);
       }
 
       return merged;
     },
   });
+}
+
+function transformBreakpoints(breakpoints: Record<string, number>): Record<string, string> | undefined {
+  return Object.fromEntries(Object.entries(breakpoints).map(([key, value]) => [key, `${value}px`])) as any;
 }
 
 /**
