@@ -1,6 +1,6 @@
 {
   "name": "@bluryar/shared",
-  "version": "0.1.27",
+  "version": "0.2.0",
   "private": false,
   "description": "⚙️ `web` 和 `node` 公用的同一套工具代码",
   "author": "bluryar <bluryarl@gmail.com>",
