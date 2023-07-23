@@ -1,7 +1,7 @@
 import { effectScope, mergeProps, ref, watch } from 'vue-demi';
 
 import { toValue } from '@vueuse/core';
-import { isTrue, isUndef } from '@bluryar/shared';
+import { isTrue } from '@bluryar/shared';
 import { get, omit, pick } from 'lodash-es';
 import { createHOC } from '../createHOC';
 import { vModels } from '../_utils_';
@@ -52,9 +52,9 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
   const createHOCReturns = createHOC<Com, ComponentRef>({
     ...options,
     scope,
-    props: getInitProps(initState),
+    props: () => getInitProps(initState),
   });
-  const { HOC: DialogHOC, setState, getState } = createHOCReturns;
+  const { HOC: Popup, setState, getState } = createHOCReturns;
 
   // 开关弹窗
   const toggle = (_visible: boolean, ...args: unknown[]) => {
@@ -83,46 +83,28 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
 
   // 构造共有返回值
   let returns: UsePopupReturnBase<Com, ComponentRef> = {
-    ...omit(createHOCReturns, ['HOC', 'restoreState'] as const),
-
-    restoreState,
+    ...omit(createHOCReturns, ['HOC'] as const),
 
     visible,
 
-    openDialog,
+    open: openDialog,
 
-    closeDialog,
+    close: closeDialog,
   };
 
   // 返回初始props，弹窗需要在卸载时完成某些重置状态的步骤
-  function getInitProps(state: Props): GetComponentLooseProps<Com> | undefined {
+  function getInitProps(state: Props): Props {
     return mergeProps(
       state,
       vModels({
         [visibleKey]: visible,
       }),
-      {
-        onVnodeUnmounted() {
-          restoreState();
-        },
-      } as any,
     ) as Props;
-  }
-
-  /**
-   * 重置组件状态
-   *
-   * @param _state - 传入一个函数，它会在每次调用 `restoreState` 时执行，它的返回值会被作为新的state
-   */
-  function restoreState(_state?: Props): void {
-    visible.value = getInitVisible(_state || initState);
-
-    createHOCReturns.restoreState(isUndef(_state) ? undefined : getInitProps(_state));
   }
 
   if (isTrue(auto)) {
     const parReturns = useAutoMount({
-      component: DialogHOC,
+      component: Popup,
       ...pick(options as UsePopupOptionsAuto<Com, ComponentRef>, ['to', 'appContext', 'vIf', 'scope'] as const),
     });
 
@@ -135,6 +117,6 @@ export function usePopup<Com extends ComponentType, ComponentRef = unknown>(
   return {
     ...returns,
 
-    Dialog: DialogHOC,
+    Popup: Popup,
   } as any;
 }

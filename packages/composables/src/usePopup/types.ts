@@ -54,12 +54,12 @@ export interface UsePopupReturnBase<Com extends ComponentType, ComponentRef = un
   /**
    * 打开弹窗
    */
-  openDialog: SetState<Com>;
+  open: SetState<Com>;
 
   /**
    * 关闭弹窗
    */
-  closeDialog: SetState<Com>;
+  close: SetState<Com>;
 }
 
 export interface UsePopupReturnAuto<Com extends ComponentType, ComponentRef = unknown>
@@ -74,7 +74,7 @@ export interface UsePopupReturnManual<Com extends ComponentType, ComponentRef = 
   /**
    * 弹窗组件
    */
-  Dialog: ReturnType<typeof createHOC<Com, ComponentRef>>['HOC'];
+  Popup: ReturnType<typeof createHOC<Com, ComponentRef>>['HOC'];
 }
 
 export type UsePopupReturn<Com extends ComponentType, ComponentRef = unknown> = UsePopupReturnAuto<Com, ComponentRef> &

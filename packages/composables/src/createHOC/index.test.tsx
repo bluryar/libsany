@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { type PropType, defineComponent, isReactive, isShallow, nextTick, reactive, shallowRef } from 'vue-demi';
+import { type PropType, defineComponent, isReactive, isShallow, nextTick, reactive, ref, shallowRef } from 'vue-demi';
 import { describe, expect, it } from 'vitest';
 import { createHOC } from './index';
 
@@ -23,7 +23,7 @@ describe('createHOC', () => {
     },
   });
   it('should create a HOC with the correct properties', async () => {
-    const { HOC, setState, getState, ref, restoreState } = createHOC({
+    const { HOC, setState, getState, ref } = createHOC({
       component: TestComponent,
       ref: shallowRef(null),
       props: { msg: 'Hello, world!', obj: reactive({ val: 1 }) },
@@ -59,18 +59,6 @@ describe('createHOC', () => {
     await nextTick();
     expect(getState()).toEqual({ msg: 'Foo, Bar!', obj: { val: 3 } });
     expect(TESTDOM.text()).toBe('{"msg":"Foo, Bar!","obj":{"val":3}}');
-
-    // 测试 restoreState 是否能够正确恢复 state
-    restoreState();
-    await nextTick();
-    expect(getState()).toEqual({ msg: 'Hello, world!', obj: { val: 1 } });
-    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":1}}');
-
-    // 测试 restoreState 是否能够正确恢复 state 并且能够接受一个新的 state
-    restoreState({ msg: 'Hi, world!' });
-    await nextTick();
-    expect(getState()).toEqual({ msg: 'Hi, world!' });
-    expect(TESTDOM.text()).toBe('{"msg":"Hi, world!"}');
   });
 
   it('should create a HOC with the slots', async () => {
@@ -80,7 +68,7 @@ describe('createHOC', () => {
       slots: {
         default: () => [<div>{JSON.stringify(getState())}</div>],
       },
-      props: { msg: 'Hello, world!', obj: { val: 1 } },
+      props: () => ({ msg: 'Hello, world!', obj: { val: 1 } }),
     });
 
     const TESTDOM = mount(HOC as any);
@@ -97,5 +85,29 @@ describe('createHOC', () => {
     await nextTick();
     expect(getState()).toEqual({ msg: 'Foo, Bar!', obj: { val: 1 } });
     expect(TESTDOM.text()).toBe('{"msg":"Foo, Bar!","obj":{"val":1}}{"msg":"Foo, Bar!","obj":{"val":1}}');
+  });
+
+  it('should create a HOC with the reactive props', async () => {
+    const counter = ref(0);
+    const inst = ref();
+    const { HOC, setState, getState } = createHOC({
+      component: TestComponent,
+      ref: shallowRef(null),
+      slots: {
+        default: () => [<div>{JSON.stringify(getState())}</div>],
+      },
+      props: () => ({
+        msg: 'Hello, world!',
+        obj: { val: counter.value },
+      }),
+    });
+    const TESTDOM = mount(HOC as any);
+
+    await nextTick();
+    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":0}}{"msg":"Hello, world!","obj":{"val":0}}');
+    await nextTick();
+    counter.value++;
+    await nextTick();
+    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":1}}{"msg":"Hello, world!","obj":{"val":1}}');
   });
 });

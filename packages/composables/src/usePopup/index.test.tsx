@@ -36,14 +36,18 @@ describe('usePopup', () => {
         </div>
       );
 
-      // console.log('🚀 ~ file: index.test.tsx:32 ~ render ~ res:', res)
-
       return res;
     },
   });
 
   it('should create a dialog instance', async () => {
-    const { visible, openDialog, closeDialog, Dialog, getState, restoreState } = usePopup({
+    const {
+      visible,
+      open: openDialog,
+      close: closeDialog,
+      Popup: Dialog,
+      getState,
+    } = usePopup({
       component: VDialog,
       props: {
         formItems: [{ key: 'index', type: 'input', prop: { val: 1 } } as const],
@@ -70,7 +74,6 @@ describe('usePopup', () => {
           },
         ],
         "onUpdate:visible": [Function],
-        "onVnodeUnmounted": [Function],
         "visible": false,
       }
     `);
@@ -107,23 +110,15 @@ describe('usePopup', () => {
     expect(visible.value).toBe(true);
     expect(state.visible).toBe(true);
     expect(state.formItems?.length).toBe(3);
-
-    // 恢复对话框状态
-    restoreState();
-    await nextTick();
-    expect(visible.value).toBe(false);
-    expect(state.visible).toBe(false);
-    expect(state.formItems?.length).toBe(1);
   });
 
   it('should create a dialog instance, and auto mount it', async () => {
     const {
       visible,
-      openDialog,
-      closeDialog,
+      open: openDialog,
+      close: closeDialog,
       dom,
       getState,
-      restoreState,
       destroy,
       mounted,
       mount,
@@ -155,7 +150,6 @@ describe('usePopup', () => {
           },
         ],
         "onUpdate:visible": [Function],
-        "onVnodeUnmounted": [Function],
         "visible": false,
       }
     `);
@@ -192,15 +186,7 @@ describe('usePopup', () => {
     expect(state.visible).toBe(true);
     expect(state.formItems?.length).toBe(3);
 
-    // 恢复对话框状态
-    restoreState();
-    await nextTick();
-    expect(visible.value).toBe(false);
-    expect(state.visible).toBe(false);
-    expect(state.formItems?.length).toBe(1);
-    expect(isHTMLDivElement(dom.value)).toBe(true);
-
-    // 打开对话框并销毁它: 状态将被重置
+    // 打开对话框并销毁它: 状态不会被重置
     openDialog();
     expect(isHTMLDivElement(dom.value)).toBe(true);
     destroy();
@@ -208,36 +194,16 @@ describe('usePopup', () => {
     expect(isHTMLDivElement(dom.value)).toBe(false);
     expect(mounted.value).toBe(false);
     expect(dom.value).toBe(null);
-    expect(state.visible).toBe(false);
-    expect(visible.value).toBe(false);
+    expect(state.visible).toBe(true);
+    expect(visible.value).toBe(true);
 
-    // 重新挂载对话框: 状态将被重置
+    // 重新挂载对话框: 状态不会被重置
     mount();
     await nextTick();
 
-    expect(mounted.value).toBe(true);
-    expect(isHTMLDivElement(dom.value)).toBe(true);
-    expect(state.visible).toBe(false);
-    expect(visible.value).toBe(false);
-
-    // 打开对话框并销毁它, 然后恢复状态并重新挂载
-    openDialog();
-    await nextTick();
-    destroy();
-    restoreState({ visible: !!1 });
-    await nextTick();
-    mount();
-    await nextTick();
     expect(mounted.value).toBe(true);
     expect(isHTMLDivElement(dom.value)).toBe(true);
     expect(state.visible).toBe(true);
     expect(visible.value).toBe(true);
-    expect(getState()).toMatchInlineSnapshot(`
-      {
-        "onUpdate:visible": [Function],
-        "onVnodeUnmounted": [Function],
-        "visible": true,
-      }
-    `);
   });
 });

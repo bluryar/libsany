@@ -7,9 +7,10 @@ import {
   mergeProps,
   nextTick,
   readonly,
+  ref,
   shallowReactive,
   shallowRef,
-  unref,
+  watch,
 } from 'vue-demi';
 import { toValue, tryOnScopeDispose } from '@vueuse/core';
 import { cloneDeep, set } from 'lodash-es';
@@ -34,30 +35,40 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   type Emits = GetComponentEmits<Com> & EmitsOptions;
   type Slots = GetComponentSlots<Com>;
 
-  let { component, ref = shallowRef(null), props = {}, slots, scope = effectScope(!!1) } = options;
-  const instance = shallowRef(ref);
+  let {
+    component,
+    ref: componentRef = shallowRef(null),
+    props = ref({} satisfies Props),
+    slots,
+    scope = effectScope(!!1),
+  } = options;
+  const instance = shallowRef(componentRef);
 
-  let copiedProps = shallowRef(cloneDeep(props));
-  const getCopiedProps = () => cloneDeep(unref(copiedProps));
-  const setCopiedProps = (newProps: Props) => {
-    copiedProps.value = cloneDeep(newProps);
-  };
+  let mergedState = shallowReactive<Props>(cloneDeep(toValue(props)));
 
-  let mergedState = shallowReactive<Props>(getCopiedProps());
+  watch(
+    () => toValue(props),
+    (_props) => {
+      Object.assign(mergedState, _props);
+    },
+    { deep: !!1 },
+  );
 
-  const HOC: FunctionalComponent<Props, Emits, Slots> = (_, ctx) =>
-    h(
-      component as DefineComponent,
-      mergeProps(Object.assign(mergedState, mergeProps(mergedState, ctx.attrs)), {
-        ref: (el: any) => {
-          instance.value = el;
-        },
-      }),
-      {
-        ...slots,
-        ...ctx.slots,
+  const HOC: FunctionalComponent<Props, Emits, Slots> = (_, ctx) => {
+    const hasLength = !!Object.keys(ctx.attrs).length;
+    if (hasLength) Object.assign(mergedState, ctx.attrs);
+
+    const _props = mergeProps(mergedState, {
+      ref: (el: any) => {
+        instance.value = el;
       },
-    );
+    });
+
+    return h(component as DefineComponent, _props, {
+      ...toValue(slots),
+      ...ctx.slots,
+    });
+  };
 
   HOC.inheritAttrs = !!0;
 
@@ -67,7 +78,6 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
     scope.stop();
 
     nextTick(() => {
-      restoreState();
       instance.value = null;
     });
   }
@@ -98,19 +108,6 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
     return readonly(mergedState);
   }
 
-  /**
-   * 重置组件状态
-   *
-   * @param _state - 传入一个函数，它会在每次调用 `restoreState` 时执行，它的返回值会被作为新的state
-   */
-  function restoreState(_state?: Props): void {
-    if (!isUndef(_state)) setCopiedProps(toValue(_state));
-
-    for (const k of Object.keys(mergedState)) delete mergedState[k];
-
-    Object.assign(mergedState, getCopiedProps());
-  }
-
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
     HOC,
@@ -123,8 +120,5 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
 
     /** 设置属性, 两种写法, 传入一整个对象, 则便利这个对象的第一层赋值, 传入 `setState(k,v)` 则根据属性赋值 */
     setState,
-
-    /** 重置组件状态 */
-    restoreState,
   };
 }
