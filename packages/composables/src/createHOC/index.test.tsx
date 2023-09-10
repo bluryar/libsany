@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { type PropType, defineComponent, isReactive, isShallow, nextTick, reactive, ref, shallowRef } from 'vue-demi';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createHOC } from './index';
 
 describe('createHOC', () => {
@@ -109,5 +109,78 @@ describe('createHOC', () => {
     counter.value++;
     await nextTick();
     expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":1}}{"msg":"Hello, world!","obj":{"val":1}}');
+  });
+
+  it('should manual change component name', async () => {
+    const counter = ref(0);
+    const inst = ref();
+    const { HOC, setState, getState } = createHOC({
+      component: TestComponent,
+      ref: shallowRef(null),
+      name: 'TESTING',
+      slots: {
+        default: () => [<div>{JSON.stringify(getState())}</div>],
+      },
+      props: () => ({
+        msg: 'Hello, world!',
+        obj: { val: counter.value },
+      }),
+    });
+    const TESTDOM = mount(HOC as any);
+
+    await nextTick();
+    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":0}}{"msg":"Hello, world!","obj":{"val":0}}');
+    expect((HOC as any).name).toBe('TESTING');
+  });
+
+  it('should change data to trigger onUpdate hook', async () => {
+    const counter = ref(0);
+
+    const spy = vi.fn();
+
+    const onUpdate = (data: any) => {
+      expect(
+        [
+          '{"msg":"Hello, world!","obj":{"val":0}}',
+          '{"msg":"Hello, world!","obj":{"val":1}}',
+          '{"msg":"Hello, world!","obj":{"val":2}}',
+        ].includes(JSON.stringify(data)),
+      ).toBeTruthy();
+      spy();
+    };
+
+    const { HOC, getState } = createHOC({
+      component: TestComponent,
+      ref: shallowRef(null),
+      name: 'TESTING',
+      slots: {
+        default: () => [<div>{JSON.stringify(getState())}</div>],
+      },
+      props: () => ({
+        msg: 'Hello, world!',
+        obj: { val: counter.value },
+      }),
+
+      onUpdate: onUpdate,
+    });
+    const TESTDOM = mount(HOC as any);
+
+    expect(spy).toBeCalledTimes(1);
+
+    await nextTick();
+    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":0}}{"msg":"Hello, world!","obj":{"val":0}}');
+    expect((HOC as any).name).toBe('TESTING');
+    expect(spy).toBeCalledTimes(1);
+
+    counter.value++;
+    await nextTick();
+    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":1}}{"msg":"Hello, world!","obj":{"val":1}}');
+    expect(spy).toBeCalledTimes(2);
+
+    counter.value++;
+    await nextTick();
+    expect(TESTDOM.text()).toBe('{"msg":"Hello, world!","obj":{"val":2}}{"msg":"Hello, world!","obj":{"val":2}}');
+
+    expect(spy).toBeCalledTimes(3);
   });
 });

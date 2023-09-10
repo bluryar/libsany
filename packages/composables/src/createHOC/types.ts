@@ -27,4 +27,9 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
   slots?: MaybeRefOrGetter<Slots>;
 
   scope?: EffectScope;
+
+  /**
+   * 数据更新，假如高频更新请自行添加防抖、节流
+   *  */
+  onUpdate?: (data: GetComponentLooseProps<Com>) => any;
 }

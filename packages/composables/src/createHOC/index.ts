@@ -7,8 +7,8 @@ import {
   h,
   mergeProps,
   shallowReactive,
-  shallowReadonly,
   shallowRef,
+  toRaw,
   watchEffect,
 } from 'vue-demi';
 import { toValue, tryOnScopeDispose } from '@vueuse/core';
@@ -41,16 +41,22 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
     props,
     slots,
     scope = effectScope(!!1),
+    onUpdate = () => {},
   } = options;
   const instance = shallowRef(componentRef);
 
   let mergedState = shallowReactive<Props>({});
 
-  let stopWatch: WatchStopHandle | undefined;
+  let stopExternalWatch: WatchStopHandle | undefined;
+  let stopInnerWatch: WatchStopHandle | undefined;
   if (props) {
-    stopWatch = watchEffect(() => {
-      Object.assign(mergedState, toValue(props));
-    });
+    stopExternalWatch = watchEffect(
+      () => {
+        Object.assign(mergedState, toValue(props));
+        onUpdate(toRaw(mergedState));
+      },
+      { flush: 'pre' },
+    );
   }
 
   const HOC = defineComponent({
@@ -59,18 +65,27 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
     setup(_, ctx) {
       const attrs = ctx.attrs as Props;
 
-      watchEffect(() => {
-        const isUpdateByOutsideWatch = stopWatch && Object.keys(attrs).length;
-        // 从函数中传入，因此不再允许从模板中更新
-        if (isUpdateByOutsideWatch) {
-          console.warn('[createHOC] props is not allowed to be updated. because it is passed from the function.');
-          stopWatch?.();
-          stopWatch = undefined;
-          return;
-        }
+      // 传入props, 但是又同时设置了Hoc的props
+      const stopable = props && Object.keys(attrs).length !== 0;
 
-        attrs && Object.assign(mergedState, attrs);
-      });
+      // 从函数中传入，因此不再允许从模板中更新
+      if (stopable) {
+        console.warn('[createHOC] props is not allowed to be updated. because it is passed from the function.');
+        stopExternalWatch?.();
+        return;
+      }
+
+      stopInnerWatch = watchEffect(
+        () => {
+          if (!stopable) {
+            stopInnerWatch?.();
+            return;
+          }
+          Object.assign(mergedState, attrs);
+          onUpdate(toRaw(mergedState));
+        },
+        { flush: 'pre' },
+      );
 
       const setRef = (el: any) => {
         instance.value = el;
@@ -95,7 +110,8 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   function stop() {
     scope.stop();
 
-    stopWatch?.();
+    stopExternalWatch?.();
+    stopInnerWatch?.();
   }
 
   // overload
@@ -111,8 +127,10 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
       if (isUndef(args[0])) return;
 
       for (const [k, v] of Object.entries(args[0])) set(mergedState, k, v);
+      onUpdate(toRaw(mergedState));
     } else if (args.length === 2) {
       set(mergedState, args[0], args[1]);
+      onUpdate(toRaw(mergedState));
     }
   }
 
@@ -121,7 +139,7 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
    *
    */
   function getState() {
-    return shallowReadonly(mergedState);
+    return toRaw(mergedState);
   }
 
   return {
