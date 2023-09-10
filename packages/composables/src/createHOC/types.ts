@@ -5,6 +5,13 @@ export interface CreateHOCOptions<Com extends ComponentType, ComponentRef = unkn
   /** 【必传】需要处理的组件 */
   component: Com;
 
+  /**
+   * Wrapper组件的组件名
+   *
+   * @default 'HOC'
+   * */
+  name?: string;
+
   ref?: ShallowRef<ComponentRef | null>;
 
   /**

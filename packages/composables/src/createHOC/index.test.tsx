@@ -26,7 +26,7 @@ describe('createHOC', () => {
     const { HOC, setState, getState, ref } = createHOC({
       component: TestComponent,
       ref: shallowRef(null),
-      props: { msg: 'Hello, world!', obj: reactive({ val: 1 }) },
+      props: () => ({ msg: 'Hello, world!', obj: reactive({ val: 1 }) }),
     });
 
     const TESTDOM = mount(HOC as any);

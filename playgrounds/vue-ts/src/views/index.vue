@@ -1,5 +1,4 @@
 <script setup lang="tsx">
-import { getCurrentInstance } from 'vue';
 import { NButton, NDrawer, NDrawerContent } from 'naive-ui';
 import { usePopup } from '@bluryar/composables';
 import { type ThemeType, themes, useTheme } from '~naive-ui-theme';
@@ -15,16 +14,14 @@ setInterval(() => {
   res.setTheme(res1 as any);
 }, 2000);
 
-const inst = getCurrentInstance();
-console.log('🚀 ~ file: index.vue:18 ~ inst:', inst);
-
-const { openDialog } = usePopup({
+const { open: openDialog, getState } = usePopup({
+  name: 'NDrawerWrapper',
   component: NDrawer,
   auto: !!1,
+  visibleKey: 'show',
   props: {
     width: '50%',
     placement: 'right',
-    show: !!1,
   },
   slots: {
     default: () => [
@@ -36,8 +33,9 @@ const { openDialog } = usePopup({
 });
 
 setTimeout(() => {
+  console.log('🚀 ~ file: index.vue:36 ~ setTimeout ~ getState():', getState());
   openDialog();
-}, 1000);
+}, 500);
 </script>
 
 <template>

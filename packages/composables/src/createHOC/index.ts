@@ -1,21 +1,20 @@
 import {
   type DefineComponent,
   type EmitsOptions,
-  type FunctionalComponent,
+  type WatchStopHandle,
+  defineComponent,
   effectScope,
   h,
   mergeProps,
-  nextTick,
-  readonly,
-  ref,
   shallowReactive,
+  shallowReadonly,
   shallowRef,
-  watch,
+  watchEffect,
 } from 'vue-demi';
 import { toValue, tryOnScopeDispose } from '@vueuse/core';
-import { cloneDeep, set } from 'lodash-es';
+import { set } from 'lodash-es';
 import { isUndef } from '@bluryar/shared';
-import type { ComponentType, GetComponentEmits, GetComponentLooseProps, GetComponentSlots } from '../types';
+import type { ComponentType, GetComponentEmits, GetComponentProps, GetComponentSlots } from '../types';
 import type { CreateHOCOptions } from './types';
 
 export type { CreateHOCOptions };
@@ -31,55 +30,72 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
   options: CreateHOCOptions<Com, ComponentRef>,
 ) {
   // Shorthand
-  type Props = GetComponentLooseProps<Com>;
+  type Props = Partial<GetComponentProps<Com>>;
   type Emits = GetComponentEmits<Com> & EmitsOptions;
   type Slots = GetComponentSlots<Com>;
 
   let {
+    name = 'HOC',
     component,
     ref: componentRef = shallowRef(null),
-    props = ref({} satisfies Props),
+    props,
     slots,
     scope = effectScope(!!1),
   } = options;
   const instance = shallowRef(componentRef);
 
-  let mergedState = shallowReactive<Props>(cloneDeep(toValue(props)));
+  let mergedState = shallowReactive<Props>({});
 
-  watch(
-    () => toValue(props),
-    (_props) => {
-      Object.assign(mergedState, _props);
-    },
-    { deep: !!1 },
-  );
+  let stopWatch: WatchStopHandle | undefined;
+  if (props) {
+    stopWatch = watchEffect(() => {
+      Object.assign(mergedState, toValue(props));
+    });
+  }
 
-  const HOC: FunctionalComponent<Props, Emits, Slots> = (_, ctx) => {
-    const hasLength = !!Object.keys(ctx.attrs).length;
-    if (hasLength) Object.assign(mergedState, ctx.attrs);
+  const HOC = defineComponent({
+    name,
+    inheritAttrs: !!0,
+    setup(_, ctx) {
+      const attrs = ctx.attrs as Props;
 
-    const _props = mergeProps(mergedState, {
-      ref: (el: any) => {
+      watchEffect(() => {
+        const isUpdateByOutsideWatch = stopWatch && Object.keys(attrs).length;
+        // 从函数中传入，因此不再允许从模板中更新
+        if (isUpdateByOutsideWatch) {
+          console.warn('[createHOC] props is not allowed to be updated. because it is passed from the function.');
+          stopWatch?.();
+          stopWatch = undefined;
+          return;
+        }
+
+        attrs && Object.assign(mergedState, attrs);
+      });
+
+      const setRef = (el: any) => {
         instance.value = el;
-      },
-    });
+      };
 
-    return h(component as DefineComponent, _props, {
-      ...toValue(slots),
-      ...ctx.slots,
-    });
-  };
-
-  HOC.inheritAttrs = !!0;
+      return () =>
+        h(
+          component as DefineComponent,
+          mergeProps(mergedState, {
+            ref: setRef,
+          }),
+          {
+            ...toValue(slots),
+            ...ctx.slots,
+          },
+        );
+    },
+  });
 
   tryOnScopeDispose(stop);
 
   function stop() {
     scope.stop();
 
-    nextTick(() => {
-      instance.value = null;
-    });
+    stopWatch?.();
   }
 
   // overload
@@ -105,12 +121,12 @@ export function createHOC<Com extends ComponentType, ComponentRef = unknown>(
    *
    */
   function getState() {
-    return readonly(mergedState);
+    return shallowReadonly(mergedState);
   }
 
   return {
     /** 被包裹的组件，它包裹的组件的状态不仅可以通过它的props进行“透传”，也可以通过`setState`方法进行传递，也可以通过配置options.state传递 */
-    HOC,
+    HOC: HOC as typeof component,
 
     /** 内部组件的实例 */
     ref: instance,
