@@ -10,9 +10,6 @@ module.exports = {
   ],
   globals: {
     __DEV__: true,
-    __BMAPGL_SCRIPT__: true,
-    __BMAPGL_STYLE__: true,
-    BMAP_AK: true,
     BigInt: true,
   },
 }

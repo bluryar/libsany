@@ -31,7 +31,6 @@ export default defineConfig(() => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
         '@bluryar/shared': fileURLToPath(new URL('../../packages/shared/index.ts', import.meta.url)),
         '@bluryar/composables': fileURLToPath(new URL('../../packages/composables/index.ts', import.meta.url)),
-        '@bluryar/naive-ui-themes': fileURLToPath(new URL('../../packages/naive-ui-themes/index.ts', import.meta.url)),
       },
     },
     optimizeDeps: {

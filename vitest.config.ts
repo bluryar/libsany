@@ -17,8 +17,6 @@ export default defineConfig({
     alias: {
       '@bluryar/shared': './packages/shared/index.ts',
       '@bluryar/shared/*': './packages/shared/*',
-      '@bluryar/vue-bmapgl': './packages/vue-bmapgl/index.ts',
-      '@bluryar/vue-bmapgl/*': './packages/vue-bmapgl/*',
       '@bluryar/composables': './packages/composables/index.ts',
       '@bluryar/composables/*': './packages/composables/*',
     },
